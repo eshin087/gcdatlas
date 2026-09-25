@@ -4,6 +4,24 @@ All notable changes, newest first. Dates are UTC.
 
 ## Unreleased
 
+## 0.7.4 · 2026-09-25
+
+**New**
+- Ride along with the Halo: the *ride* button (or *ride along* in its card, or a tap on its marker) puts the camera behind the ship, the pilot's third-person view. C switches to the cockpit on the bridge and back; scroll moves the chase camera nearer or further. When the ship folds space the camera folds with it, behind a flash, so you never lose it. Drag to take the camera; play rides again.
+- The Halo is redesigned as a long-range cruiser: an armoured hull with a sharp bow, a bridge tower, swept wings, a dorsal fin and three engines, with its star-heart visible through an open reactor bay.
+- Menu text size: the atlas, settings and other panels are bigger by default (115%), with their own slider in settings.
+- The Sun is warm yellow-orange and its surface boils: bright granules flicker, patches swell and fade, and flame-like spicules ripple along the edge.
+- The Pillars of Creation take the JWST look: translucent rust-and-gold columns with glowing orange-red edges against a blue haze. Gas peels off the lit surfaces and drifts away, the edges shimmer, and young stars glow in the tips.
+
+**Changed**
+- The ship button now only shows or hides the Halo's blue marker, and it is off by default. It no longer flies to the ship.
+- Labels fade in and out instead of popping, and the orange numbers in the info panel fade in when the object changes. The panel fades in when the page opens.
+- Labels of other things no longer sit on top of the object you are looking at. Its own parts (moons inside its bounds, a galaxy's companions) and things visibly in front of it keep theirs.
+
+**Fixed**
+- Objects picked from the scale ladder, a shared or reloaded link, and the end of a size compare no longer arrive paused: the camera keeps moving (a slow circle at the ladder's scale, the angle loop otherwise).
+- Following the Halo between destinations no longer shows empty space: the camera stays attached to the ship through the fold.
+
 ## 0.7.3 · 2026-09-25
 
 **New**
