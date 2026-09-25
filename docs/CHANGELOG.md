@@ -4,6 +4,12 @@ All notable changes, newest first. Dates are UTC.
 
 ## Unreleased
 
+## 0.7.6 · 2026-09-25
+
+**Fixed**
+- Music starts as soon as the page loads when the browser allows it, and otherwise on the first click, tap or key press. Before, a scroll or a touch could leave it silent until a later click.
+- The first track skips its quiet intro and fades in over 0.6 s instead of 3 s.
+
 ## 0.7.5 · 2026-09-25
 
 **New**
