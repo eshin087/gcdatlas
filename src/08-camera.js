@@ -267,7 +267,7 @@ addEventListener('keydown', e => {
   const k = e.key.toLowerCase();
   if (!$('#help').hidden){ if (k === 'escape' || k === '?' || k === 'h') toggleHelp(false); return; }
   if (k === 'escape'){
-    if (!$('#settings').hidden){ toggleSettings(false); return; }
+    if (!$('#settings').hidden || !$('#tours').hidden || !$('#timem').hidden){ togglePanel(null, false); return; }
     if (!$('#atlas').hidden){ toggleAtlas(false); return; }
     unlock(); return;
   }

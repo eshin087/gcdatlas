@@ -32,6 +32,7 @@ button,input{font:inherit}
 .info::before{content:"";position:absolute;inset:-60px -120px -50px -80px;z-index:-1;pointer-events:none;
   background:radial-gradient(closest-side,rgba(3,4,9,.9),rgba(3,4,9,.7) 55%,rgba(3,4,9,0))}
 .brand{font-family:var(--disp);font-size:13px;letter-spacing:.08em;color:var(--dim)}
+.tbadge{font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;color:var(--void);background:var(--flare);border-radius:2px;padding:1px 6px;margin-left:8px;vertical-align:1px}
 .stop{margin-top:12px;color:var(--flare);font-size:11px;letter-spacing:.14em;text-transform:uppercase;font-variant-numeric:tabular-nums}
 .title{display:flex;align-items:center;gap:6px;margin:4px 0 2px}
 .info h1{font-family:var(--disp);font-weight:400;font-size:clamp(22px,3vw,31px);line-height:1.1;margin:0;letter-spacing:.02em;text-wrap:balance}
@@ -45,6 +46,21 @@ button,input{font:inherit}
 .scale .rlab{color:var(--faint);letter-spacing:.1em;text-transform:uppercase;font-size:10px}
 .scale .bar{display:inline-block;height:5px;border:1px solid var(--soft);border-top:0;flex:none}
 .progress{margin-top:4px;color:var(--faint);font-size:11px;white-space:pre;font-variant-numeric:tabular-nums}
+
+/* info actions: share, compare */
+.acts{display:flex;gap:6px;margin:6px 0 2px}
+.act{pointer-events:auto;font-size:10.5px;letter-spacing:.06em;color:var(--dim);background:rgba(5,7,14,.5);border:1px solid var(--line);border-radius:10px;padding:2px 9px;cursor:pointer}
+.act:hover{color:var(--flare);border-color:rgba(255,179,92,.5)}
+.act[aria-pressed="true"]{color:var(--flare);border-color:rgba(255,179,92,.6)}
+
+/* story captions and compare banner, bottom centre */
+.caption{position:fixed;left:50%;bottom:calc(76px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);width:min(640px,calc(100vw - 32px));box-sizing:border-box;
+  display:flex;align-items:center;gap:12px;padding:10px 14px;background:rgba(5,7,14,.72);border:1px solid var(--line);border-left:2px solid var(--flare);border-radius:3px;
+  color:var(--ink);font-size:13px;line-height:1.5;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);z-index:3;text-wrap:pretty}
+.caption span{flex:1}
+.caption span::after{content:"_";color:var(--flare);margin-left:2px;animation:blink 1s steps(1) infinite}
+.caption.done span::after{content:""}
+@keyframes blink{50%{opacity:0}}
 
 /* ---- controls, top right */
 .controls{position:fixed;right:calc(16px + env(safe-area-inset-right,0px));top:calc(14px + env(safe-area-inset-top,0px));
@@ -133,6 +149,21 @@ button,input{font:inherit}
 .sound-row button{flex:0 0 auto}
 .sound-row input{flex:1;accent-color:var(--flare);min-width:80px}
 
+/* tours and time machine panels */
+.tour-list{padding:2px 0 8px}
+.trow{display:block;width:100%;text-align:left;background:none;border:0;border-left:2px solid transparent;padding:7px 12px 7px 18px;cursor:pointer;color:var(--soft);position:relative}
+.trow:hover{background:rgba(140,160,210,.1)}
+.trow b{display:block;font-weight:500;font-size:12.5px;color:var(--ink)}
+.trow small{display:block;color:var(--faint);font-size:10.5px}
+.trow[aria-current="true"]{background:var(--flare-bg);border-left-color:var(--flare)}
+.trow[aria-current="true"] b{color:var(--flare)}
+.trow[aria-current="true"]::before{content:">";position:absolute;left:6px;top:7px;color:var(--flare)}
+.tm-date{display:flex;align-items:center;gap:10px}
+.tm-date span{flex:1;font-size:17px;color:var(--flare);font-variant-numeric:tabular-nums;letter-spacing:.02em}
+.tm-sub{display:block;margin:4px 0 0;line-height:1.4}
+#deep{width:100%;accent-color:var(--flare)}
+.tm-jump button{flex:1 0 auto}
+
 /* ---- scale ladder, right edge */
 .ladder{position:fixed;right:calc(22px + env(safe-area-inset-right,0px));top:calc(78px + env(safe-area-inset-top,0px));bottom:calc(64px + env(safe-area-inset-bottom,0px));width:2px;
   background:linear-gradient(rgba(143,160,210,.55),rgba(143,160,210,.25));border-radius:1px;z-index:2;transition:right .25s}
@@ -173,6 +204,8 @@ button,input{font:inherit}
   .hint{display:none}
   .atlas,.panel{top:auto;left:12px;right:12px;width:auto;bottom:calc(56px + env(safe-area-inset-bottom,0px))}
   .atlas{max-height:44vh}
+  .caption{bottom:calc(92px + env(safe-area-inset-bottom,0px));font-size:12px;padding:8px 10px}
+  .atlas:not([hidden]) ~ .caption{display:none}
   .panel{max-height:66vh}
   .atlas-head input{display:block}
   .atlas-head .pcount{display:none}

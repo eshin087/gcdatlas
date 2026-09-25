@@ -152,6 +152,7 @@ function render(){
     if (o.inRange && !o.inRange()){ o.vis = 0; o.pvis = 0; continue; }
     const pmin = o.pxMin || 7;
     let vis = o.visFn ? o.visFn(rpx) : (o.alwaysFull ? 1 : smooth(pmin, pmin*2.6, rpx));
+    if (cmp && (o === cmp.a || o === cmp.b)) vis = Math.max(vis, smooth(1, 3, rpx));   // side by side, even tiny things are drawn for real
     // shaders compile on demand: until this object's are ready it keeps showing as a glowing dot
     if (vis > 0.003 && o.prog && !progReady(o.prog)) vis = 0;
     o.vis = vis;
@@ -221,11 +222,17 @@ function setInfo(i){
   atlasMark(i);
 }
 function updateModeUI(){
-  $('#mode').textContent = tour.on ? 'guided tour' : (orbit.lock >= 0 || flight ? 'locked on' : 'free camera');
+  $('#mode').textContent = cmp ? 'size compare' : tour.on ? tourName() : (orbit.lock >= 0 || flight ? 'locked on' : 'free camera');
   $('#btnFree').setAttribute('aria-pressed', String(!tour.on && orbit.lock < 0 && !flight));
-  $('#btnTour').setAttribute('aria-pressed', String(tour.on));
+  $('#btnTour').setAttribute('aria-pressed', String(tour.on)); $('#btnTour').textContent = tour.on ? 'pause tour' : 'resume ' + tourName();
+  if (typeof tourRows !== 'undefined') tourRows.forEach(r => r.b.setAttribute('aria-current', String(tour.on && r.id === TOUR_ID)));
 }
-function goTo(i){ hideHint(); if (OBJ[i].marker) return; if (tour.on && TOUR.includes(i)){ tween = null; if (flight) finishFlightHere(); tourGo(i); } else lockOn(i); }
+function goTo(i){
+  hideHint(); if (OBJ[i].marker) return;
+  if (cmpPick){ cmpPick = false; atlasTitle(); startCompare(cmpA, i); return; }
+  if (cmp) endCompare(true);
+  if (tour.on && TOUR.includes(i)){ tween = null; if (flight) finishFlightHere(); tourGo(i); } else lockOn(i);
+}
 const labelEls = OBJ.map((o, i) => {
   const b = document.createElement('button'); b.className = 'lab' + (o.layer < 3 || o.marker ? ' big' : '') + (o.marker ? ' star' : '') + (o.labelClass ? ' ' + o.labelClass : '');
   b.textContent = o.label || o.name; b.tabIndex = -1;
@@ -477,7 +484,7 @@ function setOpt(key, v, quiet){
   saveSet(); syncSettingsUI();
 }
 const cycle = (list, cur) => list[(list.indexOf(cur) + 1) % list.length];
-function toggleSettings(on){ settingsEl.hidden = !on; $('#btnSettings').setAttribute('aria-expanded', String(on)); if (on) syncSettingsUI(); }
+let toggleSettings = on => { settingsEl.hidden = !on; $('#btnSettings').setAttribute('aria-expanded', String(on)); if (on) syncSettingsUI(); };
 settingsEl.querySelectorAll('.seg button').forEach(b => b.addEventListener('click', () => setOpt(b.parentElement.dataset.key, b.dataset.v)));
 settingsEl.querySelectorAll('.tog button').forEach(b => b.addEventListener('click', () => setOpt(b.dataset.key, !SET[b.dataset.key])));
 $('#volume').addEventListener('input', e => setOpt('volume', e.target.value, true));
@@ -545,7 +552,7 @@ function onSearchKey(e){
 for (const el of [searchEl, atlasSearch]){ el.addEventListener('input', onSearchInput); el.addEventListener('keydown', onSearchKey); }
 searchEl.addEventListener('focus', () => { hideHint(); if (atlasEl.hidden) toggleAtlas(true); });
 $('#btnAtlas').addEventListener('click', () => toggleAtlas(atlasEl.hidden));
-$('#atlasClose').addEventListener('click', () => toggleAtlas(false));
+$('#atlasClose').addEventListener('click', () => { toggleAtlas(false); if (cmpPick){ cmpPick = false; atlasTitle(); } });
 function focusSearch(){ if (IS_SMALL || getComputedStyle(searchEl.parentElement).display === 'none'){ toggleAtlas(true); atlasSearch.focus({ preventScroll:true }); } else searchEl.focus({ preventScroll:true }); }
 
 $('#prevObj').addEventListener('click', () => { hideHint(); stepObject(-1); });
@@ -562,7 +569,7 @@ function toggleHelp(on){ $('#help').hidden = !on; if (on) $('#helpClose').focus(
 for (const ev of ['pointerdown', 'keydown', 'wheel', 'touchstart']) addEventListener(ev, () => music.gesture(), { capture:true, passive:true });
 
 // ================================================================ main loop
-let last = performance.now(), ema = 16, adaptCount = 0, runTime = 0, resizePending = false, refocusT = 0, lodT = 0;
+let tmT = 0, last = performance.now(), ema = 16, adaptCount = 0, runTime = 0, resizePending = false, refocusT = 0, lodT = 0;
 addEventListener('resize', () => { if (resizePending) return; resizePending = true; requestAnimationFrame(() => { resizePending = false; resize(); ladTitles(); }); });
 // when zooming out from inside the galaxy, rise gently above the disk so the Milky Way unfolds instead of staying edge-on
 function riseAboveDisk(dt){
@@ -581,11 +588,179 @@ function refocus(dt){
   const D = frel(OBJ[i]); cam.rel = V.sub(cam.rel, D); orbit.target = V.sub(orbit.target, D); cam.focus = i;
 }
 // CPU simulations (N-body collisions, gas streams, ejecta) only run while someone can see them
+// ---------------------------------------------------------------- panels: only one of tours, time machine and settings is open at a time
+const PANELS = { tours:['#tours', '#btnTours'], timem:['#timem', '#btnTime'], settings:['#settings', '#btnSettings'] };
+function togglePanel(id, on){
+  for (const [k, [p, b]] of Object.entries(PANELS)){ const show = k === id ? on : false; $(p).hidden = !show; $(b).setAttribute('aria-expanded', String(show)); }
+  if (on && id === 'settings') syncSettingsUI();
+  if (on && id === 'timem') syncTimeUI();
+}
+toggleSettings = on => togglePanel('settings', on);
+$('#btnTours').addEventListener('click', () => togglePanel('tours', $('#tours').hidden));
+$('#toursClose').addEventListener('click', () => togglePanel('tours', false));
+$('#btnTime').addEventListener('click', () => togglePanel('timem', $('#timem').hidden));
+$('#timeClose').addEventListener('click', () => togglePanel('timem', false));
+
+// ---------------------------------------------------------------- tours and story captions
+const tourRows = TOURS.map(t => {
+  const n = tourStops(t.id).length; if (n < 3) return null;
+  const b = document.createElement('button'); b.className = 'trow';
+  b.innerHTML = '<b></b><small></small>'; b.querySelector('b').textContent = t.name; b.querySelector('small').textContent = t.blurb + ' · ' + n + ' stops';
+  b.addEventListener('click', () => startTour(t.id));
+  $('#tourList').appendChild(b); return { b, id:t.id };
+}).filter(Boolean);
+function startTour(id){
+  hideHint(); if (cmp) endCompare(false);
+  useTour(id); tween = null; if (flight) finishFlightHere();
+  tour.on = true; tourGo(TOUR[0]); updateModeUI();
+  $('#stopCount').textContent = String(TOUR.length).padStart(2, '0');
+  toast(tourName() + ' · ' + TOUR.length + ' stops');
+}
+const capEl = $('#caption'), capText = $('#capText'), capBtn = $('#capBtn');
+let capFull = '', capShown = 0, capT = 0;
+function setCaption(txt, btn){
+  if (txt === capFull){ return; }
+  capFull = txt; capShown = 0; capT = 0; capText.textContent = ''; capEl.classList.remove('done');
+  capEl.hidden = !txt; capBtn.hidden = !btn; if (btn) capBtn.textContent = btn;
+}
+function updateCaption(dt){
+  let txt = '', btn = '';
+  if (cmp) { txt = cmpText(); btn = 'end compare'; }
+  else if (tour.on && tour.phase !== 'fly' && TOUR_CAP[tour.obj]) txt = TOUR_CAP[tour.obj];
+  setCaption(txt, btn);
+  if (capFull && capShown < capFull.length){
+    capT += dt*(reduceMotion ? 1e4 : 55); const k = Math.min(capFull.length, Math.floor(capT));
+    if (k !== capShown){ capShown = k; capText.textContent = capFull.slice(0, k); if (k >= capFull.length) capEl.classList.add('done'); }
+  }
+}
+capBtn.addEventListener('click', () => { if (cmp) endCompare(true); });
+
+// ---------------------------------------------------------------- size compare: put a second object beside this one, at true scale
+let cmp = null, cmpPick = false, cmpA = -1;
+const sizeR = o => o.sizeR || (o.starR ? o.starR*o.rad : o.rad*(o.solid || 0.6));
+const sizeKm = o => sizeR(o)*(o.scaleKm ? o.scaleKm(1) : LY);
+function atlasTitle(t){ $('#atlas .ptitle').textContent = t || 'atlas'; }
+function beginComparePick(){
+  hideHint();
+  if (cmp){ endCompare(true); return; }
+  cmpA = orbit.lock >= 0 ? orbit.lock : infoObj; cmpPick = true;
+  atlasTitle('compare ' + OBJ[cmpA].name + ' with'); toggleAtlas(true); focusSearch();
+  toast('pick something to put beside ' + OBJ[cmpA].name);
+}
+function startCompare(a, b){
+  if (a === b) return;
+  const A = OBJ[a], B = OBJ[b];
+  if (tour.on) stopTour(false);
+  cmp = { a:A, b:B };
+  const ra = sizeR(A), rb = sizeR(B), sep = (ra + rb)*1.3, w = ra + sep + rb, h = 2*Math.max(ra, rb);
+  const vp = viewParams(A, 0); vp.off = [0, 0, 0]; vp.offFn = null;
+  vp.dist = Math.max(w/(2*tanX), h/(2*tanY))*1.25; vp.dist = Math.max(vp.dist, A.rad*A.minZoom*1.05);
+  orbit.offFn = null; setInfo(a); startFlight(A, vp, null); updateModeUI();
+  $('#btnCompare').setAttribute('aria-pressed', 'true'); $('#btnCompare').textContent = 'end compare';
+}
+function endCompare(refly){
+  if (!cmp) return; const A = cmp.a; cmp = null;
+  $('#btnCompare').setAttribute('aria-pressed', 'false'); $('#btnCompare').textContent = 'compare size';
+  if (refly && orbit.lock === A.index){ orbit.off = [0, 0, 0]; const vp = viewParams(A, 0); vp.off = [0, 0, 0]; startFlight(A, vp, null); }
+  updateModeUI();
+}
+function fmtRatio(r){ return r >= 100 ? fmtNum(r) : r >= 10 ? String(Math.round(r)) : r.toFixed(1); }
+function cmpText(){
+  const A = cmp.a, B = cmp.b, da = 2*sizeKm(A), db = 2*sizeKm(B);
+  const [big, small, dbig, dsmall] = db >= da ? [B, A, db, da] : [A, B, da, db];
+  const r = dbig/dsmall;
+  return r < 1.05 ? `${A.name} and ${B.name} are about the same size (${fmtLen(da, 2)} across)` :
+    `${big.name} is ${fmtRatio(r)} times as wide as ${small.name}: ${fmtLen(dbig, 2)} vs ${fmtLen(dsmall, 2)} across`;
+}
+function placeCompare(dt){
+  const A = cmp.a, B = cmp.b, ra = sizeR(A), rb = sizeR(B), sep = (ra + rb)*1.3;
+  B.rel = V.add(A.rel, V.mul(cam.right, sep)); B.dist = V.len(B.rel);
+  if (!flight && orbit.lock === A.index){ const want = V.mul(cam.right, (sep + rb - ra)/2); orbit.off = V.lerp(orbit.off, want, 1 - Math.exp(-dt*3)); orbit.offFn = null; }
+}
+$('#btnCompare').addEventListener('click', beginComparePick);
+
+// ---------------------------------------------------------------- time machine: the Solar System clock, date jumps, and deep time for the stars
+let ssRate = SS_RATE/86400;   // days of Solar System time per second (default: 10 minutes per second)
+const tmDate = $('#tmDate'), tmSub = $('#tmSub'), deepEl = $('#deep'), deepTxt = $('#deepTxt'), tbadge = $('#tbadge');
+const realJD = () => Date.now()/86400000 + 2440587.5;
+function fmtJD(jd){
+  const d = new Date((jd - 2440587.5)*86400000); if (isNaN(d)) return '?';
+  const y = d.getUTCFullYear(), p = x => String(x).padStart(2, '0');
+  return (y < 0 ? '-' + String(-y).padStart(4, '0') : String(y).padStart(4, '0')) + '-' + p(d.getUTCMonth() + 1) + '-' + p(d.getUTCDate()) + ' ' + p(d.getUTCHours()) + ':' + p(d.getUTCMinutes()) + ' UTC';
+}
+// named stars (and anything travelling with them) drift with the catalogue star they match
+const DRIFTERS = [];
+for (const o of OBJ){
+  if (o.parent || o.layer !== 3 || o.group !== 'stars' || !o.pos || V.len(o.pos) > 6000 || o === sun) continue;
+  const v = catalogStars.velocityAt(o.pos); if (v){ o.pos0 = o.pos.slice(); o.vel = v; DRIFTERS.push(o); }
+}
+if (BYKEY.proxima && BYKEY.alphacen && BYKEY.alphacen.vel && !BYKEY.proxima.vel){ const p = BYKEY.proxima; p.pos0 = p.pos.slice(); p.vel = BYKEY.alphacen.vel; DRIFTERS.push(p); }
+function setDeep(kyr){
+  DEEP = kyr/1000; catalogStars.setDeep(DEEP);
+  for (const o of DRIFTERS) o.pos = V.add(o.pos0, V.mul(o.vel, DEEP));
+  deepEl.value = kyr; syncTimeUI();
+}
+function syncTimeUI(){
+  const jd = jdNow(), off = jd - realJD();
+  tmDate.textContent = fmtJD(jd);
+  tmSub.textContent = Math.abs(off) < 0.02 ? 'the Solar System as it is right now' : (off > 0 ? 'the Solar System ' + fmtSpan(off) + ' from now' : 'the Solar System ' + fmtSpan(-off) + ' ago');
+  const yrs = Math.round(Math.abs(DEEP)*1e6).toLocaleString('en-US');
+  const dt = DEEP ? 'the stars ' + yrs + ' years ' + (DEEP > 0 ? 'from now' : 'ago') : "today's sky"; if (deepTxt.textContent !== dt) deepTxt.textContent = dt;
+  $('#timem').querySelectorAll('.seg[data-key="ssrate"] button').forEach(b => b.setAttribute('aria-checked', String(Math.abs(+b.dataset.v - ssRate) < 1e-4)));
+  const badge = DEEP ? 'stars ' + (DEEP > 0 ? '+' : '-') + yrs + ' yr' : (Math.abs(off) > 1 ? fmtJD(jd).slice(0, 10) : '');
+  tbadge.hidden = !badge; if (badge) tbadge.textContent = badge;
+}
+function fmtSpan(days){ return days < 1 ? Math.round(days*24) + ' hours' : days < 60 ? Math.round(days) + ' days' : days < 730 ? Math.round(days/30.44) + ' months' : Math.round(days/365.25).toLocaleString('en-US') + ' years'; }
+$('#timem').querySelectorAll('.seg[data-key="ssrate"] button').forEach(b => b.addEventListener('click', () => { ssRate = +b.dataset.v; if (!timeScale) setOpt('time', 1, true); syncTimeUI(); }));
+$('#timem').querySelectorAll('.tm-jump button').forEach(b => b.addEventListener('click', () => { ssDays += +b.dataset.j; syncTimeUI(); toast(fmtJD(jdNow()).slice(0, 10)); }));
+$('#tmNow').addEventListener('click', () => { ssDays = realJD() - JD_NOW; ssRate = SS_RATE/86400; setDeep(0); toast('back to now'); });
+deepEl.addEventListener('input', () => setDeep(+deepEl.value));
+
+// ---------------------------------------------------------------- share links: the address remembers the object, camera angle, comparison, tour and time
+function viewHash(){
+  const p = new URLSearchParams(), i = orbit.lock >= 0 ? orbit.lock : infoObj, o = OBJ[i];
+  p.set('o', o.key);
+  if (orbit.lock >= 0 && !flight) p.set('c', orbit.yaw.toFixed(3) + ',' + orbit.pitch.toFixed(3) + ',' + (orbit.distT/o.rad).toPrecision(4));
+  if (cmp) p.set('vs', cmp.b.key);
+  if (tour.on) p.set('tour', TOUR_ID);
+  if (Math.abs(jdNow() - realJD()) > 1) p.set('jd', jdNow().toFixed(2));
+  if (DEEP) p.set('deep', Math.round(DEEP*1000));
+  return p.toString();
+}
+let lastHash = '', hashT = 0;
+function updateHash(dt){
+  hashT -= dt; if (hashT > 0 || flight) return; hashT = 1;
+  const h = viewHash(); if (h === lastHash) return; lastHash = h;
+  try { history.replaceState(null, '', '#' + h); } catch (e) {}
+}
+function applyHash(){
+  let p; try { p = new URLSearchParams(location.hash.slice(1)); } catch (e) { return false; }
+  const o = BYKEY[p.get('o')]; if (!o || o.marker) return false;
+  if (p.get('jd')) ssDays = +p.get('jd') - JD_NOW;
+  if (p.get('deep')) setDeep(clamp(+p.get('deep'), -200, 200));
+  if (p.get('tour')){ useTour(p.get('tour')); if (TOUR.includes(o.index)){ tour.on = true; tourGo(o.index, true); return true; } }
+  tour.on = false;
+  const c = (p.get('c') || '').split(',').map(Number);
+  const vp = viewParams(o, 0);
+  cam.focus = o.index; orbit.lock = o.index; orbit.frame = o.R0; orbit.off = [0, 0, 0]; orbit.offFn = null;
+  if (c.length === 3 && c.every(isFinite)){ orbit.yaw = c[0]; orbit.pitch = c[1]; orbit.dist = orbit.distT = Math.max(c[2]*o.rad, o.rad*o.minZoom); }
+  else { orbit.yaw = vp.yaw; orbit.pitch = vp.pitch; orbit.dist = orbit.distT = vp.dist; }
+  orbit.target = frel(o); setInfo(o.index); applyOrbit();
+  const vs = BYKEY[p.get('vs')]; if (vs && !vs.marker) startCompare(o.index, vs.index);
+  return true;
+}
+async function share(){
+  const url = location.href.split('#')[0] + '#' + viewHash();
+  try { await navigator.clipboard.writeText(url); toast('link copied · it opens exactly this view'); }
+  catch (e) { try { history.replaceState(null, '', '#' + viewHash()); } catch (e2) {} toast('copy the page address to share this exact view'); }
+}
+$('#btnShare').addEventListener('click', share);
+
 const simActive = o => o.vis > 0.003 || o.pvis > 0.003 || o.index === orbit.lock || (tour.on && o.index === tour.obj) || (flight && flight.obj === o);
 function tick(dt){
   const sdt = dt*timeScale;
   GT += dt;
-  ssDays += sdt*SS_RATE/86400;
+  ssDays += sdt*ssRate;
   for (const o of OBJ){ o.t += sdt; if (o.update && (!o.sim || simActive(o))) o.update(sdt); if (o.parent && !o.selfPos) o.pos = V.add(o.parent.pos, o.offset); }
   if (flight) updateFlight(dt);
   else {
@@ -599,6 +774,7 @@ function tick(dt){
     refocus(dt);
   }
   for (const o of OBJ){ o.rel = V.sub(frel(o), cam.rel); o.dist = V.len(o.rel); }
+  if (cmp) placeCompare(dt);
   updateDrift(dt);
 }
 function frame(now){
@@ -609,6 +785,8 @@ function frame(now){
   tick(dt);
   render();
   updateHUD(dt);
+  updateCaption(dtR); updateHash(dtR);
+  tmT -= dtR; if (tmT <= 0){ tmT = 0.25; syncTimeUI(); }
   runTime += dtR;
   ema = ema*0.95 + dtR*1000*0.05;
   if (runTime > 2.5) progIdle(1);
@@ -626,16 +804,16 @@ function frame(now){
 resize();
 ladTitles();
 if (document.fonts) document.fonts.load('500 20px "IBM Plex Mono"').then(() => buildAtlas(cellW, cellH)).catch(() => {});
-TOUR_KEYS.forEach(k => { if (BYKEY[k]) TOUR.push(BYKEY[k].index); });
+useTour('grand');
 $('#stopCount').textContent = String(TOUR.length).padStart(2, '0');
 $('#atlasCount').textContent = `${atlasRows.length} places`;
 music.set(SET.sound);
 syncSettingsUI();
 tick(0);
-tourGo(TOUR[0], true);
+if (!applyHash()) tourGo(TOUR[0], true);
 tick(0);
-updateModeUI();
-window.__cosmos = { dbg:{ imp, impSpec, get cols(){ return cols; }, get sceneH(){ return sceneH; }, get LODK(){ return LODK; }, PROGS }, OBJ, BYKEY, tourGo, lockOn, setTour, cam, orbit, tour, TOUR, SET, setOpt, music, LADDER, goLadder,
+updateModeUI(); syncTimeUI();
+window.__cosmos = { startTour, startCompare, endCompare, setDeep, viewHash, applyHash, get cmp(){ return cmp; }, get ssRate(){ return ssRate; }, dbg:{ imp, impSpec, get cols(){ return cols; }, get sceneH(){ return sceneH; }, get LODK(){ return LODK; }, PROGS }, OBJ, BYKEY, tourGo, lockOn, setTour, cam, orbit, tour, TOUR, SET, setOpt, music, LADDER, goLadder,
   setDetail:i => setOpt('detail', i, true), render, zoomTo, tick, flightDur:() => flight ? flight.dur : 0, hud:() => { roTimer = 0; updateHUD(0.2); },
   simulate:(sec) => { for (let k=0; k<sec*30; k++) tick(1/30); return { obj:tour.obj, view:tour.view, phase:tour.phase, lock:orbit.lock }; },
   view:(i, v) => { if (typeof i === 'string') i = BYKEY[i].index; const o = OBJ[i], vp = viewParams(o, v); flight = null; tween = null; cam.focus = i; orbit.lock = i; orbit.frame = o.R0; orbit.yaw = vp.yaw; orbit.pitch = vp.pitch; orbit.dist = orbit.distT = vp.dist; orbit.off = vp.off; orbit.offFn = vp.offFn; orbit.target = V.add(frel(o), vp.off); setInfo(i); applyOrbit(); tick(0); } };

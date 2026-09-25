@@ -6,12 +6,13 @@
 <button id="shipArrow" class="shiparrow" hidden aria-label="Follow the Halo"><b aria-hidden="true">&gt;</b><span></span></button>
 
 <section class="info" aria-live="polite">
-  <div class="brand">gcdatlas</div>
+  <div class="brand">gcdatlas <span id="tbadge" class="tbadge" hidden></span></div>
   <div class="stop"><span id="stopNum">01</span> / <span id="stopCount">11</span> · <span id="mode">tour</span></div>
   <div class="title">
     <h1 id="objName">Earth</h1>
-    <button class="nav" id="prevObj" aria-label="Previous object">&lsaquo;</button><button class="nav" id="nextObj" aria-label="Next object">&rsaquo;</button>
+    <button class="nav" id="prevObj" aria-label="Previous stop">&lsaquo;</button><button class="nav" id="nextObj" aria-label="Next stop">&rsaquo;</button>
   </div>
+  <div class="acts"><button class="act" id="btnShare" title="Copy a link to exactly this view">share</button><button class="act" id="btnCompare" title="Put another object beside this one at true scale">compare size</button></div>
   <div id="objType" class="type"></div>
   <div id="objDist" class="where"></div>
   <p id="objFact" class="fact"></p>
@@ -27,8 +28,8 @@
     <input id="search" type="search" placeholder="search the universe" autocomplete="off" spellcheck="false" aria-controls="atlas"><kbd>/</kbd>
   </label>
   <button class="btn primary" id="btnAtlas" aria-expanded="false" aria-controls="atlas">atlas</button>
-  <button class="btn" id="btnTour" aria-pressed="true">tour</button>
-  <button class="btn" id="btnFree" aria-pressed="false">free cam</button>
+  <button class="btn" id="btnTours" aria-expanded="false" aria-controls="tours">tours</button>
+  <button class="btn" id="btnTime" aria-expanded="false" aria-controls="timem">time</button>
   <button class="btn" id="btnShip" aria-pressed="true" title="Show where the Halo is">ship</button>
   <button class="btn" id="btnSound" aria-pressed="true" title="Background music (M)">sound</button>
   <button class="btn" id="btnSettings" aria-expanded="false" aria-controls="settings">settings</button>
@@ -43,6 +44,39 @@
   </div>
   <div id="atlasList" class="atlas-list" role="listbox" aria-label="Objects"></div>
   <div class="atlas-foot">real positions and sizes · distances from Earth</div>
+</aside>
+
+<aside id="tours" class="panel" aria-label="Tours" hidden>
+  <div class="panel-head"><span class="ptitle">tours</span><button class="btn" id="toursClose">close</button></div>
+  <div class="opt tog"><button id="btnTour" aria-pressed="true">pause tour</button><button id="btnFree" aria-pressed="false">free camera</button></div>
+  <div id="tourList" class="tour-list"></div>
+  <div class="panel-foot">space pauses or resumes · [ ] step between stops</div>
+</aside>
+
+<aside id="timem" class="panel" aria-label="Time machine" hidden>
+  <div class="panel-head"><span class="ptitle">time machine</span><button class="btn" id="timeClose">close</button></div>
+  <div class="opt">
+    <div class="tm-date"><span id="tmDate">2026-09-25 12:00 UTC</span><button class="btn" id="tmNow">now</button></div>
+    <div class="opt-note tm-sub" id="tmSub">the Solar System as it is right now</div>
+  </div>
+  <div class="opt">
+    <div class="opt-l">solar system clock <span class="opt-note">per second</span></div>
+    <div class="seg" data-key="ssrate" role="radiogroup" aria-label="Solar System clock">
+      <button data-v="-365.25" role="radio">-1 yr</button><button data-v="-1" role="radio">-1 day</button><button data-v="0" role="radio">pause</button><button data-v="0.006944" role="radio">10 min</button><button data-v="1" role="radio">1 day</button><button data-v="30.44" role="radio">1 month</button><button data-v="365.25" role="radio">1 yr</button>
+    </div>
+  </div>
+  <div class="opt">
+    <div class="opt-l">jump</div>
+    <div class="tog tm-jump">
+      <button data-j="-36525">-100 yr</button><button data-j="-365.25">-1 yr</button><button data-j="-30.44">-1 mo</button><button data-j="30.44">+1 mo</button><button data-j="365.25">+1 yr</button><button data-j="36525">+100 yr</button>
+    </div>
+  </div>
+  <div class="opt">
+    <div class="opt-l">deep time <span class="opt-note" id="deepTxt">today's sky</span></div>
+    <input id="deep" type="range" min="-200" max="200" step="1" value="0" aria-label="Deep time in thousands of years">
+    <div class="opt-note tm-sub">drag to see the stars drift over ±200,000 years (measured proper motions) and the constellations change shape</div>
+  </div>
+  <div class="panel-foot">planet positions are accurate from 1800 to 2050 and approximate beyond</div>
 </aside>
 
 <aside id="settings" class="panel" aria-label="Settings" hidden>
@@ -86,6 +120,8 @@
   <div id="ladTrack" class="lad-track"></div>
   <div id="ladMark" class="ladmark" role="slider" tabindex="0" aria-label="Zoom" aria-valuetext=""><span id="ladTxt"></span></div>
 </div>
+
+<div id="caption" class="caption" hidden aria-live="polite"><span id="capText"></span><button class="btn" id="capBtn" hidden>end compare</button></div>
 
 <div class="strip">
   <div id="toast" class="toast" role="status"></div>
