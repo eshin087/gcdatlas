@@ -31,6 +31,12 @@ This file carries the context of the chat sessions that built gcdatlas (v0.1 to 
 | Social features | Planned only, behind the `social` flag (off). Design in `docs/ROADMAP.md`. |
 | Music | Generative "gcd radio": rotating mix of lofi, chill house and ambient. |
 
+## Current state (2026-09-25)
+
+- **Live: v0.7.5** (PR #3 merged, commit `7855d40`). The local folder is on `main`, in sync with GitHub, with no leftover branches or uncommitted changes. The next version is **v0.7.6**.
+- Every version so far is a merged PR (#1 = 0.7.3, #2 = 0.7.4, #3 = 0.7.5), so any of them can be reverted.
+- Nothing is half-done. The open ideas are listed under *Open items and ideas* below.
+
 ## Where things are
 
 - Site: https://gcdatlas.vercel.app (Vercel project `gcdatlas`, deploys `main` automatically; every PR gets a preview URL).
@@ -46,11 +52,23 @@ This file carries the context of the chat sessions that built gcdatlas (v0.1 to 
 - 0.7: content packs (nebulae, galaxies, extreme stars, black hole zoo), live Earth (satellites, launches), your sky, Earth's story, screensaver, photo mode, daily discovery, collection log, flybys, docs and tests.
 - 0.7.1: phone layout and idle fade. 0.7.2: back to subtle black holes and the ASCII angle bar. 0.7.3: play / pause and angle loops, pitch-black shadows, Gaia BH1 and Cygnus X-1 fixes, the Sun's ejections, Halo beams, Solar System framing, smooth arrivals. 0.7.4: ride along with the redesigned Halo (chase and cockpit), a warm boiling Sun, JWST-style Pillars, fading labels, menu text size. 0.7.5: 16 new places and two tours, scenic travel, an enlarged Solar System overview, fiery stars, angle and scale-bar arrows.
 
-Until 0.7.5 the code was pushed through the GitHub website from a cloud session, because that session had no git credentials. From Claude Code on the owner's machine, use git and `gh` directly.
+Until 0.7.5 the code was pushed through the GitHub website from a cloud session, because that session had no git credentials (the commits on GitHub for 0.7.4 and 0.7.5 are several small upload commits per version for that reason). From Claude Code on the owner's machine, use git and `gh` directly: one commit per change, one PR per version.
+
+## How the work was done (keep doing this)
+
+1. When a request has open choices, ask 2 to 4 multiple-choice questions with a recommended option first, then build without further check-ins.
+2. Build, then look: `npm run shots -- key:view,...` and read `tests/out/sheet.png`. Tune until it looks right, and check a phone size (`--phone`).
+3. For quick experiments, write throwaway Playwright scripts as `tests/_name.mjs` (they reuse `tests/lib.mjs`), and delete them before committing. `__cosmos` has test hooks: `view(key, i)`, `tick(dt)`, `land()` (finish any multi-leg flight), `render()`, `setDays(d)` (move the Solar System clock), `stepObject`, `stepAngle`, `startShipCam`.
+4. Performance check for new shaders: time a frame on SwiftShader and compare with existing heavy views (the Pillars are the heaviest, about 5 s per frame in headless tests; that is normal there).
+5. Before shipping new facts, have a separate agent fact-check them against NASA/ESA/STScI sources. In 0.7.5 this caught 12 errors.
+6. Update `docs/CHANGELOG.md`, `docs/ACCURACY.md` (anything illustrative), `docs/CATALOG.md` (`npm run catalog`), this file and `CLAUDE.md` gotchas, and bump `package.json`. Then open the PR, check the Vercel preview and merge.
+7. The final report to the owner covers what changed, what was checked and one next step. No em dashes.
 
 ## Open items and ideas
 
-- Content packs still open (`docs/CONTENT.md`): small worlds (Ceres, Vesta, Bennu, Arrokoth, Halley, 'Oumuamua), human spaceflight sites, exoplanets, planet surfaces.
+- Content still open (`docs/CONTENT.md`): Vesta, Bennu, human spaceflight sites (Apollo, Mars rovers, Parker Solar Probe, Tiangong), 51 Pegasi b, K2-18 b, planet surfaces. Some tour stops already name future keys (`apollo11`, `parker`, `olympus`, `perseverance`, `vesta`, `peg51b`, `k218b`); they are skipped until those objects exist.
+- Visual polish the owner asked for and may want more of: the Milky Way and the Pillars compared with the iconic images, and more ASCII fire and motion. The Einstein Cross images are subtle against the lens galaxy.
+- The scenic waypoint picker (`scenicWaypoint` in `src/08-camera.js`) only triggers on some trips. Its thresholds can be tuned so more trips pass something.
 - ASCII Earth phase 2 (landmarks, city scale), live sky events phase 2 (a toast when an ISS pass or launch is minutes away), Content Security Policy (`docs/ROADMAP.md`).
 - The live API functions work in production (checked 2026-09-25: 16,619 satellites, 15 launches).
 
