@@ -63,7 +63,7 @@ void main(){
   } else {
     float dc = length(cross(o, d)), tc = -dot(o, d);
     if(tc > 0. && dc > RP){
-      col += vec3(1., 0.82, 0.6)*exp(-(dc - RP)/0.012)*(fwd*2.5 + 0.03);
+      col += limbAir(o, d, RP, 0.007, L, vec3(1., 0.86, 0.66), vec3(1., 0.6, 0.35), 0.85);
       vec3 pc = o + d*tc; float al = abs(pc.y)/length(pc);
       col += mix(aur, aur2, 0.4)*exp(-(dc - RP*1.015)/0.01)*exp(-pow((al - 0.95)/0.04, 2.))*(0.6 + 0.6*noise(vec3(pc*60. + uTime*0.4)))*0.9;
     }

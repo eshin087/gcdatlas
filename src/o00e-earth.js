@@ -58,18 +58,11 @@ void main(){
     // atmosphere along the view path: blue by day, orange at the terminator
     float path = pow(1. - mu, 2.5);
     vec3 sky = mix(vec3(1., 0.42, 0.16), vec3(0.3, 0.55, 1.), smoothstep(-0.02, 0.3, sdot));
-    col += sky*path*smoothstep(-0.25, 0.1, sdot)*0.55;
+    col += sky*path*smoothstep(-0.1, 0.25, sdot)*0.42;
     alpha = 1.;
   }
   // limb: the thin shell of air seen edge-on
-  float tc = -dot(o, d); vec3 pc = o + d*max(tc, 0.); float dc = length(pc);
-  if(dc > RP*0.995 && dc < RA*1.4){
-    float hgt = (dc - RP)/(RA - RP);
-    float s = dot(normalize(pc), L);
-    vec3 sky = mix(vec3(1., 0.38, 0.12), vec3(0.32, 0.56, 1.), smoothstep(-0.05, 0.25, s));
-    float dens = exp(-max(hgt, 0.)*3.2)*smoothstep(-0.25, 0.05, s)*(hs.x > 0. ? 0.35 : 1.);
-    col += sky*dens*0.75 + vec3(1., 0.6, 0.3)*exp(-max(hgt, 0.)*6.)*pow(max(dot(d, L), 0.), 8.)*1.5;
-  }
+  if(hs.x < 0.) col += limbAir(o, d, RP, 0.0075, L, vec3(0.3, 0.55, 1.), vec3(1., 0.42, 0.16), 1.25);
   // aurora curtains around the geomagnetic poles, glowing on the night side
   if(uP0.y > 0.){
     vec3 mp = normalize(uP2.xyz);

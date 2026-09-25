@@ -54,16 +54,46 @@ function compile(type, src){
   }
   return s;
 }
-function program(vs, fs){
-  const p = gl.createProgram();
-  gl.attachShader(p, compile(gl.VERTEX_SHADER, vs));
-  gl.attachShader(p, compile(gl.FRAGMENT_SHADER, fs));
-  gl.linkProgram(p);
-  if (!gl.getProgramParameter(p, gl.LINK_STATUS)) throw new Error('link failed: ' + gl.getProgramInfoLog(p));
-  const u = {}; const n = gl.getProgramParameter(p, gl.ACTIVE_UNIFORMS);
-  for (let i=0;i<n;i++){ const info = gl.getActiveUniform(p,i); u[info.name.replace(/\[0\]$/,'')] = gl.getUniformLocation(p, info.name); }
-  return {p, u};
+// Programs compile lazily: an object's shaders are built the first time it is about to be drawn (in the background
+// where KHR_parallel_shader_compile exists), so the atlas can hold hundreds of objects without a long start-up.
+const PAR = gl.getExtension('KHR_parallel_shader_compile');
+const PROGS = [];
+function program(vs, fs, eager){
+  const pr = { vs, fs, p:null, u:{}, ready:false, started:false };
+  PROGS.push(pr);
+  if (eager) progReady(pr, true);
+  return pr;
 }
+function progStart(pr){
+  if (pr.started) return;
+  pr.started = true;
+  const p = gl.createProgram();
+  const mk = (type, src) => { const s = gl.createShader(type); gl.shaderSource(s, src); gl.compileShader(s); gl.attachShader(p, s); return s; };
+  pr.sv = mk(gl.VERTEX_SHADER, pr.vs); pr.sf = mk(gl.FRAGMENT_SHADER, pr.fs);
+  gl.linkProgram(p); pr.p = p;
+}
+function progFinish(pr){
+  const p = pr.p;
+  if (!gl.getProgramParameter(p, gl.LINK_STATUS)){
+    for (const [s, src] of [[pr.sv, pr.vs], [pr.sf, pr.fs]]) if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)){
+      const log = gl.getShaderInfoLog(s); console.error(log + '\n' + src.split('\n').map((l,i)=>(i+1)+': '+l).join('\n')); throw new Error('shader compile failed: ' + log); }
+    throw new Error('link failed: ' + gl.getProgramInfoLog(p));
+  }
+  const n = gl.getProgramParameter(p, gl.ACTIVE_UNIFORMS);
+  for (let i=0;i<n;i++){ const info = gl.getActiveUniform(p,i); pr.u[info.name.replace(/\[0\]$/,'')] = gl.getUniformLocation(p, info.name); }
+  gl.deleteShader(pr.sv); gl.deleteShader(pr.sf); pr.sv = pr.sf = null;
+  pr.ready = true;
+}
+// true when the program can be used now; with wait = true (or no parallel compile) it finishes synchronously
+function progReady(pr, wait){
+  if (pr.ready) return true;
+  progStart(pr);
+  if (!wait && PAR && !gl.getProgramParameter(pr.p, PAR.COMPLETION_STATUS_KHR)) return false;
+  progFinish(pr); return true;
+}
+function useProg(pr){ progReady(pr, true); gl.useProgram(pr.p); }
+// warm the cache: start compiling programs nobody has asked for yet, a few at a time, while the page idles
+function progIdle(budget = 1){ if (!PAR) return; let k = 0; for (const pr of PROGS){ if (pr.started) continue; progStart(pr); if (++k >= budget) break; } }
 function makeTex(w, h, internal, format, type, filter, data){
   const t = gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D, t);
   gl.texImage2D(gl.TEXTURE_2D, 0, internal, w, h, 0, format, type, data || null);

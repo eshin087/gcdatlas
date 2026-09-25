@@ -79,10 +79,12 @@ void main(){
   // K-corona: streamers near the equator, fine polar plumes; column density falls as r^-2.6
   if(!hit && uP1.z > 0.){
     vec3 u = normalize(pc); float lat = u.y;
-    float st = 0.3 + 1.6*exp(-lat*lat*4.)*pow(fbm3(vec3(atan(u.z, u.x)*2.2, lat*2., 1.3) + uTime*0.003), 2.)*1.6;
+    // helmet streamers near the equator, fine radial rays everywhere (noise that depends only on direction = radial streaks)
+    float st = 2.6*exp(-lat*lat*4.)*pow(fbm3(vec3(atan(u.z, u.x)*2.2, lat*2., 1.3) + uTime*0.003), 3.);
+    float rays = pow(noise(u*vec3(24., 24., 24.) + vec3(0., uTime*0.004, 0.)), 4.)*1.4 + pow(noise(u*55. + 3.), 6.)*1.2;
     float plumes = pow(noise(u*vec3(26., 3., 26.) + 5.), 3.)*smoothstep(0.5, 0.9, abs(lat))*1.2;
-    float I = pow(1./max(b, 1.), 2.6)*(st + plumes)*smoothstep(1., 1.02, b);
-    col += vec3(0.95, 0.93, 1.)*I*uP1.z*0.8;
+    float I = pow(1./max(b, 1.), 3.)*(0.04 + st + rays + plumes)*smoothstep(1., 1.02, b);
+    col += vec3(0.95, 0.93, 1.)*I*uP1.z*0.75;
   }
   // coronal mass ejection: a bright expanding loop-shaped shell
   if(uP3.w > 0.){
@@ -97,7 +99,7 @@ void main(){
     }
   }
   // soft outer glow so the star reads from a distance
-  col += blackbody(uP0.x)*exp(-max(b - 1., 0.)*6.)*0.08*(hit ? 0. : 1.);
+  col += blackbody(uP0.x)*exp(-max(b - 1., 0.)*11.)*0.045*(hit ? 0. : 1.);
   outCol(col, alpha);
 }`;
 P.star = program(VS_RECT, FS_STAR);
@@ -265,13 +267,11 @@ void main(){
     if(uP2.w > 0.){ vec3 q = uP2.xyz - p; float tq = dot(q, L); if(tq > 0.){ float dq = length(q - L*tq); sh = smoothstep(uP2.w*0.96, uP2.w*1.04, dq); } }
     float lam = kind > 0.5 && kind < 4.5 ? dif : pow(dif, 0.8)*(0.4 + 0.6*pow(mu, 0.2));   // gas and cloud tops vs rough regolith
     col = base*(lam*sh*1.25 + 0.006);
-    col += atm*pow(1. - mu, 3.)*smoothstep(-0.2, 0.4, dot(n, L))*0.45*atmK;
+    col += diskAir(mu, dot(n, L), atm, atm*vec3(1., 0.6, 0.45), atmK*1.3);
     if(kind > 0.5 && kind < 1.5) col += vec3(0.25, 0.08, 0.02)*smoothstep(0.1, -0.2, dot(n, L))*0.08;
     alpha = 1.;
   } else if(length(atm) > 0.){
-    float dc = length(cross(o, d)), tc = -dot(o, d);
-    if(tc > 0.){ vec3 pc = o + d*tc; float lit = smoothstep(-0.3, 0.3, dot(normalize(pc), L));
-      col += atm*exp(-(dc - RP)/(0.018*atmK + 0.004))*lit*0.5*atmK + atm*exp(-(dc - RP)/0.003)*pow(max(dot(d, L), 0.), 6.)*2.; }
+    col += limbAir(o, d, RP, 0.004 + 0.016*atmK, L, atm, atm*vec3(1., 0.55, 0.4), atmK*1.1);
   }
   outCol(col, alpha);
 }`;

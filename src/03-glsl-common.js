@@ -13,6 +13,7 @@ uniform float uTime; uniform float uOut; uniform float uPix; uniform sampler3D u
 uniform vec3 uPos; uniform float uRad; uniform mat3 uRot; uniform float uLod; uniform vec3 uCamLocal; uniform float uVis; uniform vec4 uSky;
 uniform sampler2D uTex; uniform sampler2D uMW; uniform vec4 uGC;
 uniform vec4 uP0; uniform vec4 uP1; uniform vec4 uP2; uniform vec4 uP3; uniform vec4 uP4; uniform mat3 uM0;
+uniform float uGT; uniform float uTw;   // global clock (s) and star twinkle amount
 out vec4 fragColor;
 #define PI 3.14159265
 float hash13(vec3 p){ p = fract(p*0.1031); p += dot(p, p.zyx + 31.32); return fract((p.x + p.y)*p.z); }
@@ -67,6 +68,11 @@ vec3 starCell(vec3 d, float sc, float dens, float sd){
   vec3 cr = cross(d, sp); float pw = uPix*0.8;
   float f = exp(-dot(cr,cr)/(pw*pw));
   float mag = 0.1 + 0.25*hash13(c + sd + 5.1) + 3.2*pow(hash13(c + sd + 63.7), 16.);
+  // twinkle: every star drifts on its own slow, never-repeating rhythm, with a rare brief glint
+  float h = hash13(c + sd + 19.1);
+  float tw = noise(vec3(c.xy*0.71 + c.z*0.37, uGT*(0.22 + 0.8*h) + sd*3.1)) - 0.5;
+  float glint = pow(noise(vec3(c.zx*0.53 + 11. + sd, uGT*(0.05 + 0.12*h))), 24.)*6.;
+  mag *= max(1. + uTw*(tw*0.85 + glint), 0.15);
   return blackbody(2800. + 9500.*pow(hash13(c + sd + 87.3), 2.2))*mag*f;
 }
 // the Milky Way as seen from inside it: measured sky map near the Sun, a procedural band elsewhere in the disk
@@ -87,6 +93,23 @@ vec3 starfield(vec3 d){
   col += vec3(0.28,0.07,0.2)*smoothstep(0.55, 0.8, fbm3(d*3. + 11.))*0.02*uSky.w;
   col += vec3(0.05,0.16,0.22)*smoothstep(0.58, 0.82, fbm3(d*4. - 7.))*0.018*uSky.w;
   return col;
+}
+// a thin, sunlit atmosphere seen edge-on beyond the limb: only the lit air glows, broken into drifting haze layers.
+// o, d: local ray; R: planet radius; H: scale height; L: light direction; c: day colour; tw: twilight colour; k: strength
+vec3 limbAir(vec3 o, vec3 d, float R, float H, vec3 L, vec3 c, vec3 tw, float k){
+  float tc = -dot(o, d); if(tc <= 0.) return vec3(0.);
+  vec3 pc = o + d*tc; float dc = length(pc); if(dc < R) return vec3(0.);
+  float h = (dc - R)/H; if(h > 9.) return vec3(0.);
+  vec3 u = pc/dc; float s = dot(u, L);
+  float lit = smoothstep(-0.1, 0.35, s);
+  vec3 col = mix(tw, c, smoothstep(0., 0.4, s));
+  float haze = 0.35 + 1.1*fbm3(vec3(atan(u.z, u.x)*9., u.y*14., h*0.6) + vec3(uTime*0.012, 0., 0.));
+  float fs = pow(max(dot(d, L), 0.), 10.);
+  return col*exp(-h)*(lit*0.3 + fs*1.1)*haze*k;
+}
+// the same air seen from above, brightening towards the lit limb only (no ring on the night side)
+vec3 diskAir(float mu, float sdot, vec3 c, vec3 tw, float k){
+  return mix(tw, c, smoothstep(0., 0.35, sdot))*pow(1. - mu, 3.5)*smoothstep(-0.05, 0.45, sdot)*0.3*k;
 }
 void outCol(vec3 c, float a){ fragColor = vec4(max(c, 0.)*uOut*uVis, clamp(a, 0., 1.)*uVis); }
 // camera ray in object-local units (object bounding sphere = radius 1)
@@ -112,8 +135,9 @@ void main(){
 // per-cell glyph selection: tone map, pick density glyph or an edge glyph
 const FS_CELL = `#version 300 es
 precision highp float;
-uniform sampler2D uScene; uniform vec2 uGrid; uniform float uExp; uniform float uIn; uniform float uLv; uniform float uDir0; uniform float uEdge;
+uniform sampler2D uScene; uniform vec2 uGrid; uniform float uExp; uniform float uIn; uniform float uLv; uniform float uDir0; uniform float uEdge; uniform float uT; uniform float uDith;
 out vec4 o;
+float h21(vec2 p){ vec3 p3 = fract(vec3(p.xyx)*0.1031); p3 += dot(p3, p3.yzx + 33.33); return fract((p3.x + p3.y)*p3.z); }
 vec3 tmAt(vec2 c){ vec3 x = texture(uScene, (c + .5)/uGrid).rgb*uIn; return 1. - exp(-x*uExp); }
 float lum(vec3 t){ return max(dot(t, vec3(.2126,.7152,.0722)), max(t.r, max(t.g, t.b))*.62); }
 void main(){
@@ -121,6 +145,15 @@ void main(){
   vec3 t = tmAt(c); float v = lum(t);
   float g = 0.; const float th = 0.03;
   if(v > th) g = 1. + min(floor(pow((v - th)/(1. - th), 1.2)*uLv), uLv - 1.);
+  // faint glow and haze: instead of a flat carpet of dots, a sparse field whose density follows the brightness
+  // and which slowly reshuffles, cell by cell, so gas and glow shimmer gently like distant stars
+  const float th2 = 0.14;
+  if(uDith > 0.5 && v > th && v < th2){
+    float p = pow((v - th)/(th2 - th), 0.9);
+    float ph = h21(c), rate = 0.12 + 0.3*h21(c + 7.1);
+    float k = floor(uT*rate + ph*9.);
+    if(h21(c + k*13.37 + 0.5) > p*1.1) g = 0.;
+  }
   if(uEdge > 0.5 && v > 0.09 && v < 0.9){
     float l00 = lum(tmAt(c + vec2(-1,-1))), l10 = lum(tmAt(c + vec2(0,-1))), l20 = lum(tmAt(c + vec2(1,-1)));
     float l01 = lum(tmAt(c + vec2(-1,0))), l21 = lum(tmAt(c + vec2(1,0)));

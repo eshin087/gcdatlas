@@ -36,7 +36,7 @@ const catalogStars = (() => {
   const o = addObj({ key:'sky', name:'the naked-eye stars', label:'', type:'1,982 stars at their measured distances', layer:1, pos:[0,0,0], rad:6000, noPick:true, noLabel:true, noImpostor:true, alwaysFull:true, atlas:false,
     particleVis:() => 1,
     particles:[
-      {ps, prog:'catStar', mode:3, sb:1, size:1, q0:() => [1, 0.42, 0, 0], rad:1, rot:() => I3},
+      {ps, prog:'catStar', mode:3, sb:1, size:1, q0:() => [1, 0.42, GT, twinkleAmt()], rad:1, rot:() => I3},
       {ps:lines, prog:'lnBasic', lines:true, mode:3, sb:0.2, size:1, rad:1, rot:() => I3, vis:() => labelsOn ? smooth(6, 30, orbit.dist)*(1 - smooth(900, 4000, orbit.dist))*(1 - smooth(1500, 5000, V.len(o.rel))) : 0},
     ] });
   o.starPos = starPos;

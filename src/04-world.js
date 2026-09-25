@@ -5,6 +5,15 @@ const LY = 9.4607e12, AU = 1.495979e8;   // km
 const KM = 1/LY, AU_LY = AU/LY;         // light-years per km / per AU
 const RSUN = 695700;
 const IS_SMALL = Math.min(innerWidth, innerHeight) < 600;
+// user settings, remembered between visits when the browser allows it
+const SET = (() => {
+  const d = { detail:1, travel:'quick', glow:true, labels:true, twinkle:true, shipFinder:true, sound:true, volume:0.55 };
+  try { const s = JSON.parse(localStorage.getItem('gcdatlas.settings') || '{}'); for (const k in d) if (k in s && typeof s[k] === typeof d[k]) d[k] = s[k]; } catch (e) {}
+  return d;
+})();
+function saveSet(){ try { localStorage.setItem('gcdatlas.settings', JSON.stringify(SET)); } catch (e) {} }
+let GT = 0;   // global clock in seconds (drives twinkle, shimmer and other ambient motion)
+const twinkleAmt = () => SET.twinkle ? (reduceMotion ? 0.35 : 1) : 0;
 const QUALITY = IS_SMALL ? 0.55 : 1;
 const DEG = Math.PI/180;
 // J2000 equatorial -> galactic rotation (rows)
@@ -123,14 +132,20 @@ void main(){
   gl_Position = vec4(v.x/uTan.x, v.y/uTan.y, 0., v.z);
   float f = aP.w/d2*uQ0.x;
   float b = min(uQ0.y*pow(f, 0.42), 2.6);
-  gl_PointSize = clamp(1.3 + 0.55*log(1. + f*6.), 1.3, 3.6);
-  vC = aC.rgb*b*uOut*uVis*smoothstep(0.004, 0.02, b);
+  // twinkle: three incommensurate slow waves per star, plus a rare glint, so the pattern never visibly repeats
+  float id = float(gl_VertexID);
+  float h1 = fract(sin(id*12.9898)*43758.545), h2 = fract(sin(id*78.233)*12543.13), h3 = fract(sin(id*39.425)*31337.7), t = uQ0.z;
+  float tw = sin(t*(0.5 + 1.3*h1) + h2*6.283)*0.5 + sin(t*(1.7 + 2.3*h2) + h3*6.283)*0.25 + sin(t*(0.11 + 0.23*h3) + h1*6.283)*0.4;
+  float glint = pow(max(sin(t*(0.031 + 0.05*h3) + h1*97.), 0.), 60.);
+  b *= max(1. + uQ0.w*(0.2*tw + 1.4*glint), 0.2);
+  gl_PointSize = clamp(1.3 + 0.55*log(1. + f*6.) + uQ0.w*glint, 1.3, 4.2);
+  vC = mix(aC.rgb, vec3(0.85, 0.92, 1.), 0.3*glint*uQ0.w)*b*uOut*uVis*smoothstep(0.004, 0.02, b);
 }`;
 const P = {
-  bg: program(VS_RECT, FS_BG),
-  cell: program(VS_RECT, FS_CELL),
-  glow: program(VS_RECT, FS_GLOW),
-  final: program(VS_RECT, FS_FINAL),
+  bg: program(VS_RECT, FS_BG, true),
+  cell: program(VS_RECT, FS_CELL, true),
+  glow: program(VS_RECT, FS_GLOW, true),
+  final: program(VS_RECT, FS_FINAL, true),
   ptBasic: program(particleVS(PB_BASIC), FS_POINT),
   lnBasic: program(particleVS(PB_BASIC), FS_LINE),
   spike: program(VS_SPIKE, FS_LINE),

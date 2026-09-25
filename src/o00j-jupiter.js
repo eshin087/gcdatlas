@@ -80,8 +80,8 @@ void main(){
   } else {
     float dc = length(cross(os, ds)), tc = -dot(os, ds);
     if(tc > 0.){ vec3 pc = os + ds*tc; float lit = smoothstep(-0.3, 0.2, dot(normalize(pc*vec3(1., 1./sq, 1.)), L));
-      col += vec3(0.9, 0.8, 0.65)*exp(-(dc - RP)/0.008)*lit*0.4;
-      col += vec3(0.6, 0.35, 1.)*exp(-(dc - RP)/0.012)*exp(-pow((abs(pc.y)/length(pc) - 0.95)/0.04, 2.))*0.5; }
+      col += limbAir(os, ds, RP, 0.006, L, vec3(0.9, 0.82, 0.7), vec3(0.9, 0.6, 0.4), 0.9);
+      col += vec3(0.6, 0.35, 1.)*exp(-(dc - RP)/0.012)*exp(-pow((abs(pc.y)/length(pc) - 0.95)/0.04, 2.))*0.45*(0.3 + 1.2*noise(vec3(pc*50. + uTime*0.3))); }
   }
   outCol(col, alpha);
 }`;

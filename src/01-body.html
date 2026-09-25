@@ -1,48 +1,95 @@
-<canvas id="view" tabindex="0" aria-label="Animated ASCII universe. Drag to orbit, scroll or pinch to zoom, tap an object to lock the camera on it."></canvas>
+<canvas id="view" tabindex="0" aria-label="Animated ASCII universe. Drag to orbit, scroll or pinch to zoom, tap an object to fly to it."></canvas>
 <div id="labels" class="labels"></div>
+
+<!-- ship finder: brackets around the Halo when it is on screen, an arrow at the edge when it is not -->
+<button id="shipMark" class="shipmark" hidden tabindex="-1" aria-label="Follow the Halo"><i></i><i></i><i></i><i></i><span></span></button>
+<button id="shipArrow" class="shiparrow" hidden aria-label="Follow the Halo"><b aria-hidden="true">&gt;</b><span></span></button>
 
 <section class="info" aria-live="polite">
   <div class="brand">gcdatlas</div>
   <div class="stop"><span id="stopNum">01</span> / <span id="stopCount">11</span> · <span id="mode">tour</span></div>
   <div class="title">
-    <h1 id="objName">earth</h1>
+    <h1 id="objName">Earth</h1>
     <button class="nav" id="prevObj" aria-label="Previous object">&lsaquo;</button><button class="nav" id="nextObj" aria-label="Next object">&rsaquo;</button>
   </div>
   <div id="objType" class="type"></div>
   <div id="objDist" class="where"></div>
   <p id="objFact" class="fact"></p>
   <div id="readout" class="readout"></div>
-  <div class="scale" aria-hidden="true"><span id="scaleBar" class="bar"></span><span id="scaleTxt"></span></div>
+  <div class="scale" title="A ruler for what you are looking at: at the distance of this object, the bar's length on screen equals the distance written next to it.">
+    <span class="rlab">ruler</span><span id="scaleBar" class="bar"></span><span id="scaleTxt"></span>
+  </div>
   <div id="progress" class="progress"></div>
 </section>
 
 <nav class="controls" aria-label="View controls">
+  <label class="search"><span class="sr">Search the universe</span>
+    <input id="search" type="search" placeholder="search the universe" autocomplete="off" spellcheck="false" aria-controls="atlas"><kbd>/</kbd>
+  </label>
   <button class="btn primary" id="btnAtlas" aria-expanded="false" aria-controls="atlas">atlas</button>
   <button class="btn" id="btnTour" aria-pressed="true">tour</button>
   <button class="btn" id="btnFree" aria-pressed="false">free cam</button>
-  <button class="btn" id="btnSpeed">time 1x</button>
-  <button class="btn" id="btnDetail">detail fine</button>
-  <button class="btn" id="btnGlow" aria-pressed="true">glow</button>
-  <button class="btn" id="btnLabels" aria-pressed="true">labels</button>
+  <button class="btn" id="btnShip" aria-pressed="true" title="Show where the Halo is">ship</button>
+  <button class="btn" id="btnSound" aria-pressed="true" title="Background music (M)">sound</button>
+  <button class="btn" id="btnSettings" aria-expanded="false" aria-controls="settings">settings</button>
   <button class="btn" id="btnHelp" aria-label="Controls help">?</button>
 </nav>
 
 <aside id="atlas" class="atlas" aria-label="Universe atlas" hidden>
   <div class="atlas-head">
+    <span class="ptitle">atlas</span><span id="atlasCount" class="pcount"></span>
     <input id="atlasSearch" type="search" placeholder="search the universe" autocomplete="off" spellcheck="false" aria-label="Search objects">
     <button class="btn" id="atlasClose" aria-label="Close atlas">close</button>
   </div>
-  <div id="atlasList" class="atlas-list"></div>
+  <div id="atlasList" class="atlas-list" role="listbox" aria-label="Objects"></div>
   <div class="atlas-foot">real positions and sizes · distances from Earth</div>
 </aside>
 
-<div id="ladder" class="ladder" aria-label="Scale">
-  <div id="ladMark" class="ladmark"><span id="ladTxt"></span></div>
+<aside id="settings" class="panel" aria-label="Settings" hidden>
+  <div class="panel-head"><span class="ptitle">settings</span><button class="btn" id="settingsClose">close</button></div>
+  <div class="opt">
+    <div class="opt-l">detail <span id="detailInfo" class="opt-note"></span></div>
+    <div class="seg" data-key="detail" role="radiogroup" aria-label="Detail">
+      <button data-v="0" role="radio">ultra</button><button data-v="1" role="radio">fine</button><button data-v="2" role="radio">normal</button><button data-v="3" role="radio">bold</button>
+    </div>
+  </div>
+  <div class="opt">
+    <div class="opt-l">travel <span class="opt-note">how fast flights between objects are</span></div>
+    <div class="seg" data-key="travel" role="radiogroup" aria-label="Travel speed">
+      <button data-v="cinematic" role="radio">cinematic</button><button data-v="quick" role="radio">quick</button><button data-v="warp" role="radio">warp</button>
+    </div>
+  </div>
+  <div class="opt">
+    <div class="opt-l">time <span class="opt-note">orbits, spins and explosions</span></div>
+    <div class="seg" data-key="time" role="radiogroup" aria-label="Time speed">
+      <button data-v="0" role="radio">pause</button><button data-v="0.25" role="radio">0.25x</button><button data-v="1" role="radio">1x</button><button data-v="3" role="radio">3x</button><button data-v="10" role="radio">10x</button>
+    </div>
+  </div>
+  <div class="opt">
+    <div class="opt-l">show</div>
+    <div class="tog">
+      <button data-key="glow" aria-pressed="true">glow</button><button data-key="labels" aria-pressed="true">labels</button><button data-key="twinkle" aria-pressed="true">twinkle</button><button data-key="shipFinder" aria-pressed="true">ship finder</button>
+    </div>
+  </div>
+  <div class="opt">
+    <div class="opt-l">sound <span class="opt-note">generated live, never the same twice</span></div>
+    <div class="tog sound-row">
+      <button data-key="sound" aria-pressed="true">music</button>
+      <input id="volume" type="range" min="0" max="1" step="0.05" aria-label="Volume">
+    </div>
+  </div>
+  <div class="panel-foot">keys: V detail · Y travel · T time · G glow · L labels · M music</div>
+</aside>
+
+<div id="ladder" class="ladder" aria-label="Scale ladder: drag to zoom, click a name to travel there">
+  <div class="lad-cap">view width</div>
+  <div id="ladTrack" class="lad-track"></div>
+  <div id="ladMark" class="ladmark" role="slider" tabindex="0" aria-label="Zoom" aria-valuetext=""><span id="ladTxt"></span></div>
 </div>
 
 <div class="strip">
   <div id="toast" class="toast" role="status"></div>
-  <div id="hint" class="hint">drag to orbit · scroll or pinch to zoom from a planet out to the whole universe · tap anything to fly there · press / for the atlas</div>
+  <div id="hint" class="hint">drag to orbit · scroll or drag the scale on the right to zoom from a planet out to the whole universe · tap anything to fly there · press / to search</div>
 </div>
 
 <div id="help" class="help" hidden>
@@ -52,17 +99,19 @@
     <dl>
       <dt>drag</dt><dd>orbit the camera</dd>
       <dt>scroll / pinch / + -</dt><dd>zoom, all the way from a moon to the observable universe</dd>
-      <dt>right-drag / shift-drag</dt><dd>pan (unlocks the camera)</dd>
+      <dt>scale ladder (right)</dt><dd>drag the marker to zoom; let go near a name, or click one, to travel there</dd>
+      <dt>ruler (top left)</dt><dd>at the distance of the object you are looking at, the bar's length equals the distance written beside it</dd>
       <dt>click or tap</dt><dd>fly to an object and lock onto it</dd>
-      <dt>/ or atlas</dt><dd>search every object in the atlas</dd>
-      <dt>scale ladder</dt><dd>jump to planet, star, galaxy or cosmic scale</dd>
+      <dt>/ or the search box</dt><dd>search everything in the atlas; arrow keys and Enter pick a result</dd>
+      <dt>right-drag / shift-drag</dt><dd>pan (unlocks the camera)</dd>
       <dt>[ ] or ‹ ›</dt><dd>previous / next tour stop</dd>
       <dt>W A S D · R F</dt><dd>fly freely</dd>
       <dt>space</dt><dd>start or pause the guided tour</dd>
-      <dt>esc</dt><dd>unlock (free camera)</dd>
-      <dt>T · V · G · L</dt><dd>time speed · detail · glow · labels</dd>
+      <dt>esc</dt><dd>close panels, then unlock (free camera)</dd>
+      <dt>V · Y · T</dt><dd>detail · travel speed · time speed</dd>
+      <dt>G · L · M</dt><dd>glow · labels · music</dd>
     </dl>
-    <p class="note">Everything sits at its real position and real size: the planets where they are today, 1,982 naked-eye stars at their measured distances, the Milky Way, its neighbours and the cosmic web out to the edge of the observable universe. Brightness is compressed so faint things stay visible, and fast processes (orbits, explosions, mergers) are sped up. The few objects too small to see next to their surroundings (a quasar's engine, a kilonova) are drawn magnified, and the scale bar shows their true size. The Halo, the ring ship that wanders between wonders, is the one invented thing here. Simulations: Schwarzschild light bending, relativistic Doppler beaming, Keplerian and flat rotation curves, restricted N-body galaxy collision, Roche-lobe mass transfer, light-echo geometry, gravitational-wave inspiral.</p>
+    <p class="note">Everything sits at its real position and real size: the planets where they are today, 1,982 naked-eye stars at their measured distances, the Milky Way, its neighbours and the cosmic web out to the edge of the observable universe. Brightness is compressed so faint things stay visible, stars twinkle gently for life, and fast processes (orbits, explosions, mergers) are sped up. The few objects too small to see next to their surroundings (a quasar's engine, a kilonova) are drawn magnified, and the ruler shows their true size. The music is generated in your browser as you listen. The Halo, the crescent flagship that wanders between wonders, is the one invented thing here.</p>
     <p><button class="btn" id="helpClose">close</button></p>
   </div>
 </div>

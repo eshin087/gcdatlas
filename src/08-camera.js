@@ -60,7 +60,15 @@ function startFlight(o, vp, onDone){
   const tbl = [0]; let acc = 0;
   for (let i=1;i<=64;i++){ const x = (i - 0.5)/64, ease = Math.sin(Math.PI*x)*0.85 + 0.15, hover = scenic ? 1 - 0.8*Math.exp(-Math.pow((x - sPeak)/0.07, 2)) : 1; acc += 1/(ease*hover); tbl.push(acc); }
   const prog = tbl.map(v => v/acc);   // prog[i] = time fraction at which s/S = i/64
-  flight = { t:0, dur:reduceMotion ? 1 : clamp(1.6 + path.S*0.42, 2.4, 13) + (scenic ? 3 : 0), path, A, B, dir0:V.norm(V.sub(cam.rel, A)), dir1:dirEnd, prog,
+  // travel speed: cinematic (slow and scenic), quick (default), warp (near-instant, same path and effects compressed)
+  let dur = clamp(1.6 + path.S*0.42, 2.4, 13) + (scenic ? 3 : 0);
+  if (SET.travel === 'quick') dur = clamp(1.3 + path.S*0.2, 1.8, 6.5) + (scenic ? 1.4 : 0);
+  else if (SET.travel === 'warp') dur = clamp(0.85 + path.S*0.03, 0.95, 1.6);
+  if (reduceMotion) dur = 1;
+  // start compiling the destination's shaders now, so it is ready to draw on arrival
+  if (o.prog) progReady(o.prog); for (const sp of o.particles || []) if (P[sp.prog]) progReady(P[sp.prog]);
+  music.whoosh(dur);
+  flight = { t:0, dur, path, A, B, dir0:V.norm(V.sub(cam.rel, A)), dir1:dirEnd, prog,
     up0:cam.up.slice(), up1:M3.apply(o.R0, [0,1,0]), obj:o, vp, onDone, switched:false, spin:scenic ? 0 : (rnd() < 0.5 ? -1 : 1)*0.5, scenic, dirMid, upMid };
   tween = null;
 }
@@ -133,7 +141,7 @@ function updateTour(dt){
     if (tour.t > v.hold){
       if (tour.view < o.views.length - 1){
         tour.phase = 'swing'; tour.t = 0;
-        startTween(viewParams(o, tour.view + 1), reduceMotion ? 0.6 : 3.4);
+        startTween(viewParams(o, tour.view + 1), reduceMotion ? 0.6 : (SET.travel === 'warp' ? 1.4 : SET.travel === 'quick' ? 2.6 : 3.4));
         tween.onDone = () => { tour.view++; tour.phase = 'hold'; tour.t = 0; };
       } else tourGo(tourNext(1));
     }
@@ -255,19 +263,25 @@ function pick(cx, cy){
 }
 addEventListener('keydown', e => {
   if (e.target.closest && (e.target.closest('input') || (e.target.closest('button') && (e.key === ' ' || e.key === 'Enter')))) return;
+  if (e.ctrlKey || e.metaKey || e.altKey) return;
   const k = e.key.toLowerCase();
   if (!$('#help').hidden){ if (k === 'escape' || k === '?' || k === 'h') toggleHelp(false); return; }
-  if (!$('#atlas').hidden && k === 'escape'){ toggleAtlas(false); return; }
+  if (k === 'escape'){
+    if (!$('#settings').hidden){ toggleSettings(false); return; }
+    if (!$('#atlas').hidden){ toggleAtlas(false); return; }
+    unlock(); return;
+  }
   if (k === ' '){ e.preventDefault(); setTour(!tour.on); return; }
-  if (k === 'escape'){ unlock(); return; }
-  if (k === '/' || k === 'o'){ e.preventDefault(); toggleAtlas(true); return; }
+  if (k === '/' || k === 'o'){ e.preventDefault(); focusSearch(); return; }
+  if (k === 'y'){ setOpt('travel', cycle(['quick', 'warp', 'cinematic'], SET.travel)); return; }
+  if (k === 'm'){ setOpt('sound', !SET.sound); return; }
   if (k === '[' || k === ']'){ stepObject(k === ']' ? 1 : -1); return; }
   if (k === '+' || k === '='){ beginManual(); zoomBy(0.6); return; }
   if (k === '-' || k === '_'){ beginManual(); zoomBy(1.7); return; }
-  if (k === 't'){ cycleSpeed(); return; }
-  if (k === 'v'){ cycleDetail(); return; }
-  if (k === 'g'){ toggleGlow(); return; }
-  if (k === 'l'){ toggleLabels(); return; }
+  if (k === 't'){ setOpt('time', cycle([1, 3, 10, 0, 0.25], timeScale)); return; }
+  if (k === 'v'){ setOpt('detail', (detailIdx + 1) % DETAIL.length); return; }
+  if (k === 'g'){ setOpt('glow', !SET.glow); return; }
+  if (k === 'l'){ setOpt('labels', !SET.labels); return; }
   if (k === '?' || k === 'h'){ toggleHelp(true); return; }
   if ('wasdrfqe'.includes(k) && k.length === 1){ keys.add(k); if (!e.repeat) beginManual(); }
   if (k.startsWith('arrow')){ e.preventDefault(); keys.add(k); if (!e.repeat) beginManual(); }
