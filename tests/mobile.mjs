@@ -71,7 +71,7 @@ void lockBefore;
 // a wake-up tap that lands on an object's label does not fly there either
 await page.waitForFunction(() => document.body.classList.contains('ui-idle'), null, { timeout:15000 }).catch(() => fail('the interface did not fade again'));
 const lab = await page.evaluate(() => {
-  const b = [...document.querySelectorAll('#labels .lab:not(.star)')].find(el => { const r = el.getBoundingClientRect(); return el.style.visibility !== 'hidden' && r.width > 0 && r.top > 60 && r.bottom < innerHeight - 220; });
+  const b = [...document.querySelectorAll('#labels .lab:not(.star)')].find(el => { const r = el.getBoundingClientRect(); return el.classList.contains('on') && r.width > 0 && r.top > 60 && r.bottom < innerHeight - 220; });
   if (!b) return null; const r = b.getBoundingClientRect(); return { x:r.left + r.width/2, y:r.top + r.height/2, t:b.textContent };
 });
 if (lab){

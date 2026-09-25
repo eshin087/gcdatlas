@@ -1,5 +1,5 @@
-// Camera motion regression: the angle loop after picking an object, play / pause (button and space), and flights that land
-// exactly on a moving destination (no jump on arrival). Deterministic: steps the simulation with __cosmos.tick.
+// Camera motion regression: the angle loop after picking an object, play / pause (button and space), flights that land
+// exactly on a moving destination (no jump on arrival), ladder picks that keep moving, and riding along with the Halo. Deterministic: steps the simulation with __cosmos.tick.
 // Usage: node tests/motion.mjs
 import { openPage, report } from './lib.mjs';
 
@@ -47,5 +47,38 @@ const fl = await page.evaluate(() => {
 if (!fl.lock) fail('the flight did not land on Earth');
 if (fl.worstFrameToFrameScale > 1.12) fail('Earth jumped in size between two frames (x' + fl.worstFrameToFrameScale + ')');
 
-report('motion', errors, `Saturn loops through ${loop.views} angles · pause, play and space work · universe to Earth, largest frame-to-frame change x${fl.worstFrameToFrameScale}`);
+// 4. a scale picked on the ladder keeps the camera moving on arrival (a slow circle), and shared links start playing too
+const lad = await page.evaluate(() => {
+  const C = __cosmos, m = C.LADDER.find(m => m.key === 'jupiter') || C.LADDER[0];
+  C.goLadder(m); const n = Math.ceil((C.flightDur() + 0.2)*60); for (let i=0;i<n;i++) C.tick(1/60);
+  const y0 = C.orbit.yaw; for (let i=0;i<120;i++) C.tick(1/60);
+  return { name:m.name, show:C.show.on, playing:!document.getElementById('btnPlay').classList.contains('paused'), moved:Math.abs(C.orbit.yaw - y0) > 1e-3 };
+});
+if (!lad.show || !lad.playing || !lad.moved) fail('a ladder pick arrived paused: ' + JSON.stringify(lad));
+
+// 5. the Halo: its indicator is off until the ship button is pressed; riding along lands behind it, stays with it through a fold, and a drag lets go
+const ride = await page.evaluate(() => {
+  const C = __cosmos, h = C.BYKEY.halo, vis = () => !document.getElementById('shipMark').hidden || !document.getElementById('shipArrow').hidden;
+  const r = { markOff:!vis() };
+  document.getElementById('btnShip').click(); C.tick(1/60); C.hud(); r.markOn = C.SET.haloMark;
+  document.getElementById('btnShip').click();
+  C.startShipCam('chase'); const n = Math.ceil((C.flightDur() + 0.3)*60); for (let i=0;i<n;i++) C.tick(1/60);
+  r.riding = C.shipCam.on; r.dist = Math.hypot(...h.rel)/h.rad;
+  const k0 = h.S.target.key; let far = 0, i = 0;
+  while (h.S.target.key === k0 && i < 60*60){ C.tick(1/60); i++; }
+  for (let j=0;j<60;j++){ C.tick(1/60); far = Math.max(far, Math.hypot(...h.rel)/h.rad); }
+  r.folded = h.S.target.key !== k0; r.farAfterFold = +far.toFixed(2); r.stillRiding = C.shipCam.on;
+  C.setShipCamMode('cockpit'); for (let j=0;j<60;j++) C.tick(1/60); r.cockpit = Math.hypot(...h.rel)/h.rad < 1;
+  C.togglePlay(); r.paused = !C.shipCam.on; C.togglePlay(); r.resumed = C.shipCam.on;
+  C.setShipCamMode('chase'); C.stopShipCam();
+  return r;
+});
+if (!ride.markOff) fail('the Halo indicator shows before the ship button is pressed');
+if (!ride.markOn) fail('the ship button did not switch the Halo indicator on');
+if (!ride.riding || ride.dist > 6) fail('riding along did not land behind the ship: ' + JSON.stringify(ride));
+if (!ride.folded || !ride.stillRiding || ride.farAfterFold > 6) fail('the camera lost the ship when it folded space: ' + JSON.stringify(ride));
+if (!ride.cockpit) fail('the cockpit view is not on the ship');
+if (!ride.paused || !ride.resumed) fail('pause / play did not stop and resume riding along');
+
+report('motion', errors, `Saturn loops through ${loop.views} angles · pause, play and space work · universe to Earth, largest frame-to-frame change x${fl.worstFrameToFrameScale} · ladder picks keep moving · riding the Halo through a fold (camera within ${ride.farAfterFold} ship radii)`);
 await browser.close();
