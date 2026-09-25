@@ -2,91 +2,92 @@
 
 **The real universe, drawn entirely in ASCII.** Live at **https://gcdatlas.vercel.app**
 
-gcdatlas is an explorable atlas of the known universe where every frame is made of printable ASCII characters. Planets are where they are today, about 2,000 naked-eye stars sit at their measured distances, and one continuous zoom takes you from Earth's surface to the edge of the observable universe.
+gcdatlas is an explorable atlas of the known universe where every frame is made of printable ASCII characters. Planets are where they are today, about 2,000 naked-eye stars sit at their measured distances, every active satellite circles the Earth, and one continuous zoom takes you from a city street's worth of sky to the edge of the observable universe.
 
 - Denser glyphs mean more light. Colour comes from the physics: blackbody temperature, Doppler shift, emission lines.
-- Black holes bend light (Schwarzschild ray tracing), galaxies collide (N-body), binary stars trade gas across the Roche lobe, neutron stars merge and ripple spacetime.
-- The Halo, a starship that wanders between wonders, is the one invented thing here.
+- Black holes bend light (Schwarzschild ray tracing) above the true shape of their curved space (Flamm's paraboloid). Galaxies collide, binary stars trade gas, a star is torn apart, two black holes merge and ripple spacetime.
+- The Halo, a crescent starship with a captured star for a heart, is the one invented thing here.
+
+How accurate is it? See [docs/ACCURACY.md](docs/ACCURACY.md). The short version: positions, distances and sizes are real; the look of each object is a physically based artist's rendering.
 
 ## Features
 
-- **Search and atlas**: type in the search box (or press `/`) to find anything; the atlas stays open while you hop between places, with the current one highlighted.
-- **Scale ladder**: the rungs on the right run from the Moon to the observable universe. Drag the marker to zoom; let go near a rung, or click one, to fly there at that scale.
-- **Ruler**: the bar under the description equals the stated distance at the object you are looking at.
-- **Settings**: detail (character size), travel speed (cinematic, quick, warp), time speed, glow, labels, star twinkle, ship finder, music and volume. Remembered between visits.
-- **Soundtrack**: ambient music generated live in the browser (slow pads over a low drone, distant chimes, faint space wind), so it never repeats. Starts on your first click; `M` or the sound button turns it off.
-- **The Halo**: a crescent flagship that folds space from wonder to wonder. The ship finder brackets it on screen or points to it from the screen edge; click either to follow it.
+| | |
+| --- | --- |
+| **Atlas and search** | Type in the search box (or press `/`). Sort by distance, size or name, filter by kind (black holes, nebulae…), see what you have not visited yet, reset in one click. |
+| **Tours** | Guided tours with captions. `‹ ›` next to *tours* skip stops; while a tour plays the right-hand scale becomes the tour's track. Break away and *resume tour* takes you back. Choose how long each stop lasts. |
+| **Flybys** | Sweeping camera moves past the giants (the Sun, UY Scuti, TON 618, the Milky Way…) that show their scale. |
+| **Scale ladder** | Drag the marker to zoom from the Moon to the observable universe; let go near a name to fly there. |
+| **Time machine** | Run the Solar System clock forwards or back, jump years, or drag deep time to watch the constellations change over ±200,000 years. |
+| **Tonight** | *Your sky*: stand at your location and look up at the real sky. What is up tonight: Moon phase, bright planets, ISS passes, launches, meteor showers, eclipses. |
+| **Earth's story** | 4.54 billion years on one slider: magma ocean, snowball Earth, the first forests, the asteroid, the first humans, today. |
+| **Live Earth** | Every active satellite from CelesTrak's tracking data, the ISS and Hubble at their real positions, the next rocket launches at their pads, air traffic on real routes (simulated). |
+| **Screensaver** | Full screen, the interface fades, an endless shuffled tour plays with the music (`Z`). Can start by itself after a few idle minutes. |
+| **Photo mode** | Frame a shot, save it as a picture or copy it as ASCII text (`P`). |
+| **Today's discovery** | One object a day, the same for everyone, with a streak. |
+| **Collection log** | Ticks off what you have seen, with badges. Stored only on your device. |
+| **Music** | gcd radio: a generative mix of lofi, chill house and ambient, synthesised live so it never loops. Pick a style or skip a track. |
+| **Share** | Links reproduce your exact view, tour and date. |
 
 ## Controls
 
 | Input | Action |
 | --- | --- |
-| drag | orbit the camera |
-| scroll / pinch / + - | zoom, from a moon to the observable universe |
+| drag | orbit the camera (in *your sky*: look around) |
+| scroll / pinch / + - | zoom |
 | right-drag / shift-drag | pan |
 | click or tap | fly to an object |
-| `/` or the search box | find anything |
+| `/` | search |
 | `[` `]` | previous / next tour stop |
 | W A S D, R F | fly freely |
-| space | start or pause the guided tour |
+| space | start, pause or resume the tour |
 | esc | close panels, then free camera |
 | V · Y · T | detail · travel speed · time speed |
 | G · L · M | glow · labels · music |
+| Z · P · B | screensaver · photo mode · your sky |
 
 ## Build and run
 
-No dependencies. Node 18 or newer:
+```sh
+node build.mjs          # writes dist/index.html (no dependencies, Node 18+)
+npx serve dist          # or open dist/index.html directly (live data needs the /api functions, see below)
+npx vercel dev          # the site plus the /api functions, as in production
+```
+
+Vercel runs the same build (see `vercel.json`); every push to `main` redeploys the site, and every pull request gets its own preview URL.
+
+Tests (Playwright, headless Chromium):
 
 ```sh
-node build.mjs          # writes dist/index.html
-npx serve dist          # or open dist/index.html directly
+npm install             # dev dependencies only: playwright, sharp
+npm test                # smoke test: loads, renders every object, no errors
+npm run test:tour       # plays the grand tour for 1,000 simulated seconds
+npm run shots -- sun:0,ton618:1     # screenshots of any objects / angles into tests/out/
+npm run catalog         # regenerates docs/CATALOG.md, the list of everything implemented
 ```
 
-Vercel runs the same build (see `vercel.json`); every push to `main` redeploys the site.
+## Where things are
 
-## How it works
-
-One WebGL2 page, built by concatenating `src/` in order:
-
-| File | Role |
+| Path | Role |
 | --- | --- |
-| `00-head.html`, `01-body.html` | styles and interface markup |
-| `02-core.js` | WebGL helpers, maths, noise texture, particle buffers, the glyph atlas |
-| `03-glsl-common.js` | shared shader code and the ASCII pipeline (cell, glow and composite passes) |
-| `04-world.js` | units and coordinates, ephemerides, the object registry |
-| `05-data.js` | generated star catalogue and textures (see `tools/`) |
-| `06*.js` | the sky, the Milky Way, galaxies, the cosmic web |
-| `o*.js` | objects, one family per file |
-| `07*.js` | the Halo, comets, meteors and other transient events; `07m-music.js` is the soundtrack |
-| `08-camera.js` | camera, flights, tour, input |
-| `09-render.js` | frame rendering, labels, atlas, scale ladder, main loop |
+| `src/00-head.html`, `src/01-body.html` | styles and interface markup |
+| `src/02-core.js` … `src/04-world.js` | WebGL helpers, shared shader code and the ASCII pipeline, units, ephemerides, settings, feature flags, the object registry |
+| `src/05-data.js` | generated star catalogue and textures (`tools/`) |
+| `src/06*.js`, `src/o*.js` | the sky, galaxies, the cosmic web, and the built-in objects (one family per file) |
+| `src/objects/` | content packs and add-ons (nebulae, galaxies, extreme stars, the black hole zoo, flybys, gravity grids, live Earth) |
+| `src/07*.js` | the Halo, transient events, music |
+| `src/08*.js` | camera, flights, tours, input |
+| `src/09*.js` | rendering, interface, atlas, features (screensaver, photo, collection, tonight, Earth's story) |
+| `api/` | serverless functions: `/api/sats` (CelesTrak), `/api/launches` (Launch Library 2) |
+| `tests/`, `tools/` | test harness, catalogue and data generators |
+| `docs/` | architecture, accuracy, workflow, testing, security, roadmap, changelog, content catalogue |
 
-The rendering pipeline: the scene is ray-marched into an HDR buffer at twice the character grid, each cell picks a glyph by measured ink coverage (or an edge glyph `- / | \` along silhouettes), a soft glow is blurred underneath, and the glyphs are composited at full resolution.
-
-Large distances stay precise because the camera is positioned relative to the object it is looking at, never in absolute coordinates on the GPU.
-
-## Adding an object
-
-New objects can go in `src/objects/` (loaded after the built-in `o*.js` files, in name order). An object is one `addObj({...})` call, or `addStar`, `addBody` or `addGalaxy` for the common kinds:
-
-```js
-addStar({ key:'vega', name:'Vega', type:'A0V star · Lyra', group:'stars',
-  fact:'One or two true, vivid sentences.',
-  pos:radec(hms(18,36,56.3), dms(38,47,1), 25), R:2.36, T:9602,
-  views:[{ d:[0, 0.3, 1], k:2.2, hold:9, drift:0.03 }] });
-```
-
-- `pos` is in light-years (heliocentric galactic coordinates); `radec(raHours, decDegrees, distanceLy)` converts catalogue positions.
-- `views` are the tour's camera angles: `d` direction in the object's frame, `k` distance in object radii, `off` look-at offset, `hold` seconds, `drift` slow orbit speed. Give every object one close, dramatic angle.
-- `group` puts it in the atlas (`solar`, `stars`, `nebulae`, `galaxies`, `cosmic`, `travel`); `aka` adds search words.
-
-It scales: shaders compile only when an object is about to be seen (in the background where the browser supports it), CPU simulations pause while their object is off screen, distant objects draw as single glowing points, and the renderer trims ray-march steps before lowering detail on slower devices.
+Start with [CLAUDE.md](CLAUDE.md) (working conventions) and [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
 ## Data and credits
 
-- Star positions and parallaxes: Hipparcos, via [star-catalog-lite](https://www.npmjs.com/package/star-catalog-lite)
-- Star colours, constellation lines and the Milky Way outline: [d3-celestial](https://github.com/ofrohn/d3-celestial) by Olaf Frohn
+- Star positions and parallaxes: Hipparcos, via [star-catalog-lite](https://www.npmjs.com/package/star-catalog-lite); colours, constellation lines and the Milky Way outline: [d3-celestial](https://github.com/ofrohn/d3-celestial) by Olaf Frohn
 - Earth's coastlines: [Natural Earth](https://www.naturalearthdata.com/) via [world-atlas](https://github.com/topojson/world-atlas)
 - Planet orbits: JPL approximate Keplerian elements; body orientations: IAU WGCCRE
-
-To regenerate `src/05-data.js`: `cd tools && npm install && npm run all`.
+- Satellites: [CelesTrak](https://celestrak.org/) general perturbations data; launches: [The Space Devs](https://thespacedevs.com/) Launch Library 2
+- Object facts and measurements: NASA, ESA, ESO and the published literature (see docs/ACCURACY.md)
