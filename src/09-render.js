@@ -325,12 +325,12 @@ function updateHUD(dt){
     if (tour.on){
       const obj = OBJ[tour.obj];
       if (tour.phase === 'fly') p = 'en route ' + '>'.repeat(1 + Math.floor(performance.now()/250) % 3);
-      else { const v = obj.views[tour.view], n = obj.views.length; f = tour.phase === 'swing' ? 1 : clamp(tour.t/holdOf(v), 0, 1); p = `angle ${tour.view + 1}/${n}`; }
+      else { const v = obj.views[tour.view], n = obj.views.length; f = tour.phase === 'swing' ? 1 : clamp(tour.t/holdOf(v), 0, 1); const k = Math.round(f*18);
+        p = `angle ${tour.view + 1}/${n}  [${'#'.repeat(k)}${'-'.repeat(18 - k)}]`; }
     } else if (orbit.lock >= 0 || flight) p = 'drag to orbit · scroll out to the edge of the universe';
     else p = 'free camera · W A S D to fly · tap an object to lock on';
-    const pl = $('#progLabel'), pb = $('#progBar');
+    const pl = $('#progLabel');
     if (pl.textContent !== p) pl.textContent = p;
-    pb.hidden = f < 0; if (f >= 0) pb.firstChild.style.width = (f*100).toFixed(1) + '%';
     $('#progress').classList.toggle('hintish', !tour.on && f < 0);
     updateTourTrack();
     updateScale();
@@ -542,7 +542,6 @@ function setOpt(key, v, quiet){
     case 'glow': SET.glow = glowOn = !!v; break;
     case 'labels': SET.labels = labelsOn = !!v; break;
     case 'twinkle': SET.twinkle = !!v; break;
-    case 'gravity': SET.gravity = !!v; if (!quiet) toast(v ? 'gravity grids on · the shape of space around black holes' : 'gravity grids off'); break;
     case 'shipFinder': SET.shipFinder = !!v; if (!quiet) toast(v ? 'ship finder on · the Halo is bracketed in blue' : 'ship finder off'); break;
     case 'sound': SET.sound = !!v; music.set(SET.sound); if (!quiet) toast(v ? 'music on' : 'music off'); break;
     case 'volume': SET.volume = clamp(+v, 0, 1); music.volume(); break;

@@ -61,12 +61,7 @@ void main(){
   float b = length(cross(o, d));
   float w = smoothstep(11., 19.5, b);
   vec3 bg = vec3(0.);
-  if(!captured && T > 0.01){
-    vec3 dv = normalize(mix(uRot*normalize(v), rd, w));
-    bg = starfield(dv);
-    // uP1.w: a dormant hole has nothing of its own to show, so the lensed background (magnified into arcs and an Einstein ring) is lifted to make its pull visible
-    if(uP1.w > 0.) bg += uP1.w*smoothstep(15., 3.2, b)*(starCell(dv, 84., 0.24, 5.)*0.8 + starCell(dv, 44., 0.13, 9.) + vec3(0.5, 0.58, 0.9)*0.03*fbm3(dv*6.));
-  }
+  if(!captured && T > 0.01) bg = starfield(normalize(mix(uRot*normalize(v), rd, w)));
   // the jets are in front of the hole, but only faintly where they cross its shadow, so the shadow stays black
   col += jc*(captured ? 0.12 : 1.);
   // photon ring: light that orbited the hole piles up in a razor-thin ring at the shadow's edge

@@ -52,10 +52,7 @@ body:has(#view.dragging) *{-webkit-user-select:none;user-select:none}
 .scale{display:flex;align-items:center;gap:8px;margin-top:8px;color:var(--soft);font-size:calc(11px*var(--ts));font-variant-numeric:tabular-nums;white-space:nowrap;pointer-events:auto;cursor:help;width:max-content}
 .scale .rlab{color:var(--faint);letter-spacing:.1em;text-transform:uppercase;font-size:calc(10px*var(--ts))}
 .scale .bar{display:inline-block;height:5px;border:1px solid var(--soft);border-top:0;flex:none}
-.progress{display:flex;align-items:center;gap:10px;margin-top:6px;color:var(--dim);font-size:calc(11px*var(--ts));white-space:pre;font-variant-numeric:tabular-nums}
-.progress .plab{color:var(--soft)}
-.pbar{position:relative;display:inline-block;width:150px;height:6px;border-radius:3px;background:rgba(127,220,255,.14);border:1px solid rgba(127,220,255,.35);overflow:hidden}
-.pbar i{position:absolute;left:0;top:0;bottom:0;background:linear-gradient(90deg,#46b9ff,var(--cyan));box-shadow:0 0 8px rgba(127,220,255,.8);transition:width .15s linear}
+.progress{margin-top:4px;color:var(--faint);font-size:calc(11px*var(--ts));white-space:pre;font-variant-numeric:tabular-nums}
 
 .mode{display:inline-block;padding:1px 7px;border-radius:2px;border:1px solid rgba(255,179,92,.45);color:var(--flare)}
 .mode.m-tour{border-color:rgba(160,240,170,.5);color:#a8f0b0}
@@ -374,7 +371,6 @@ body.sky .info .acts,body.sky .ladder,body.sky .lad-chip,body.sky .progress{opac
   .readout{white-space:pre-wrap;width:auto;max-width:none}
   .progress{margin-top:5px}
   .progress.hintish{display:none}
-  .pbar{flex:1;width:auto;max-width:200px}
   body.ui-idle .info{background:transparent;border-color:transparent;-webkit-backdrop-filter:none;backdrop-filter:none;pointer-events:none;transition:background 1s,border-color 1s}
   /* hidden: a pill above the dock brings it back */
   .info-pill{top:auto;left:calc(10px + env(safe-area-inset-left,0px));bottom:calc(var(--dock-h,64px) + 8px);padding:6px 14px 6px 6px;font-size:calc(12px*var(--ts));background:rgba(5,7,14,.72)}

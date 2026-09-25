@@ -77,7 +77,7 @@ function updateLadChip(){
 }
 
 // ---------------------------------------------------------------- idle: fade the interface after a few quiet seconds (sooner on a tour), but never while you are using it
-const IDLE = { at:performance.now() + 3000, on:false, hover:false, readUntil:0, obj:-1 };
+const IDLE = { at:performance.now() + 3000, on:false, hover:false, readUntil:0, obj:-1, eatClick:0 };
 function wakeUI(){ IDLE.at = performance.now(); if (IDLE.on){ IDLE.on = false; bodyCL.remove('ui-idle'); } }
 function idleAfter(){
   const m = SET.fadeUI; if (m === 'off') return Infinity;
@@ -99,10 +99,13 @@ addEventListener('pointermove', e => {
   }
   wakeUI();
 }, { capture:true, passive:true });
+// on a touch screen the first tap after a fade only brings the interface back: it does not pick an object on the canvas,
+// and its click does not reach a label or anything else under the finger
 addEventListener('pointerdown', e => {
-  if (IDLE.on && e.pointerType !== 'mouse' && e.target === canvas) wakeTapAt = performance.now();   // the first tap only brings the interface back
+  if (IDLE.on && e.pointerType !== 'mouse'){ wakeTapAt = performance.now(); IDLE.eatClick = performance.now(); }
   wakeUI();
 }, { capture:true, passive:true });
+addEventListener('click', e => { if (IDLE.eatClick && performance.now() - IDLE.eatClick < 900){ IDLE.eatClick = 0; e.stopPropagation(); e.preventDefault(); } }, { capture:true });
 for (const ev of ['wheel', 'keydown']) addEventListener(ev, () => wakeUI(), { capture:true, passive:true });
 document.addEventListener('mouseleave', () => { IDLE.hover = false; });
 function updateIdle(){
