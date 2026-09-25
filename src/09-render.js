@@ -91,7 +91,19 @@ function drawParticles(o, s, vis = 1){
   if (s.q1) gl.uniform4fv(pr.u.uQ1, s.q1());
   if (s.mat) gl.uniformMatrix3fv(pr.u.uM, false, s.mat());
   if (s.len) gl.uniform1f(pr.u.uLen, s.len);
+  if (pr.u.uHole) gl.uniform4fv(pr.u.uHole, HOLE);
   gl.bindVertexArray(s.ps.vao); gl.drawArrays(s.lines ? gl.LINES : gl.POINTS, 0, s.count ? s.count() : s.ps.count);
+}
+// black holes: every shadow is pitch black. Each hole's shadow radius (2.6 r_s); per frame the one biggest on screen is handed to the particle shader
+for (const o of OBJ) o.holeR = o.prog === P.blackhole ? o.rad*0.13 : (o.isBH && o.sizeR ? o.sizeR*2.6 : 0);
+const HOLES = OBJ.filter(o => o.holeR > 0), HOLE = new Float32Array(4);
+function pickHole(){
+  let best = 0; HOLE[3] = 0;
+  for (const o of HOLES){
+    if (o.hidden || !(o.dist > o.holeR)) continue;
+    const px = o.holeR/o.dist/tanY*(viewHcss/2);   // shadow radius on screen, in pixels
+    if (px > 1.5 && px > best){ best = px; HOLE[0] = o.rel[0]; HOLE[1] = o.rel[1]; HOLE[2] = o.rel[2]; HOLE[3] = o.holeR; }
+  }
 }
 // distant objects become softly glowing dots (and fade into their detailed rendering as they grow)
 const imp = makePS(512);
@@ -130,6 +142,7 @@ function drawDrift(){
 // (EXTRAS draw hooks are declared in 04-world.js)
 function render(){
   camRot = [...cam.right, ...cam.up, ...cam.fwd];
+  pickHole();
   // where are we? inside the Milky Way the sky is full of stars; outside it turns to galaxies
   const mw = milkyway, dGC = V.len(mw.rel), span = orbit.dist, dSun = V.len(sun.rel);
   gcDir = V.norm(mw.rel); nearSun = 1 - smooth(4000, 15000, dSun);
@@ -221,13 +234,9 @@ function hideHint(){ if (hintHidden) return; hintHidden = true; $('#hint').style
 const distFromEarth = o => o.distEarth || fmtDist(V.len(V.sub(o.pos, earth.pos))) + ' from Earth';
 const readoutEl = $('#readout'); let roLast = '';
 function setReadout(t){
+  // the numbers wrap inside the panel, the same width as the fact above them
   if (t === roLast) return; roLast = t;
-  const one = !isCompact() ? t.replace(/\n+/g, '  ·  ') : t;
-  readoutEl.textContent = one; readoutEl.title = t.replace(/\n+/g, ' · ');
-  if (isCompact()){ readoutEl.style.fontSize = ''; return; }
-  // shrink a step or two if the line is too long for the space beside the panel
-  readoutEl.style.fontSize = '';
-  for (let k = 0; k < 3 && readoutEl.scrollWidth > readoutEl.clientWidth + 1; k++) readoutEl.style.fontSize = `calc(${(11.5 - 0.6*(k + 1)).toFixed(1)}px*var(--ts))`;
+  readoutEl.textContent = t;
 }
 function setInfo(i){
   infoObj = i; const o = OBJ[i];
@@ -243,6 +252,12 @@ function updateModeUI(){
   const m = cmp ? 'size compare' : tour.on ? tourName() : (orbit.lock >= 0 || flight ? 'locked on' : 'free camera'), me = $('#mode');
   if (me.textContent !== m){ me.textContent = m; me.className = 'mode ' + (tour.on ? 'm-tour' : m === 'free camera' ? 'm-free' : 'm-lock'); }
   $('#btnTours').classList.toggle('touring', tour.on);
+  const playing = isPlaying();
+  for (const b of [$('#btnPlay'), $('#btnPlayM')]){
+    b.classList.toggle('paused', !playing); b.setAttribute('aria-pressed', String(!playing));
+    b.setAttribute('aria-label', playing ? 'Pause the camera (space)' : (motion.last === 'tour' || orbit.lock < 0 ? 'Play the tour (space)' : 'Play the angles (space)')); b.title = b.getAttribute('aria-label');
+  }
+  $('#btnPlay').lastChild.textContent = playing ? 'pause' : 'play';
   $('#btnResume').hidden = $('#btnResumeI').hidden = tour.on || tour.last == null || !!cmp;
   const sh = typeof ship !== 'undefined' && orbit.lock === ship.index; $('#btnShip').classList.toggle('following', sh); $('#btnShip').textContent = sh && !isCompact() ? 'following ship' : 'ship';
   $('#btnFree').setAttribute('aria-pressed', String(!tour.on && orbit.lock < 0 && !flight));
@@ -266,7 +281,7 @@ const starEls = STAR_LABELS.map(s => { const b = document.createElement('span');
 function uiRects(){
   const r = [infoEl.getBoundingClientRect(), controlsEl.getBoundingClientRect(), brandEl.getBoundingClientRect()];
   const lb = ladderEl.getBoundingClientRect(); if (lb.height > 0) r.push({ left:lb.left - 190, right:lb.right + 12, top:lb.top - 30, bottom:lb.bottom + 10 });
-  for (const el of [ladChipEl, infoPillEl]) if (!el.hidden){ const b = el.getBoundingClientRect(); if (b.height > 0) r.push(b); }
+  for (const el of [$('.topr'), infoPillEl]) if (!el.hidden){ const b = el.getBoundingClientRect(); if (b.height > 0) r.push(b); }
   if (!atlasEl.hidden) r.push(atlasEl.getBoundingClientRect());
   if (!settingsEl.hidden) r.push(settingsEl.getBoundingClientRect());
   return r;
@@ -300,8 +315,11 @@ function updateLabels(){
   }
   // labels hide behind planets, stars and black holes that stand in front of them
   const occ = [];
-  for (const o of OBJ){ if (!o.solid || !o.onScreen || o.vis < 0.5) continue; const pr = projectCSS(o.rel); if (!pr) continue; const r = o.rad*o.solid/(pr.z*tanY)*(viewHcss/2); if (r > 3) occ.push({ x:pr.x, y:pr.y, r, z:pr.z, o }); }
-  const hidden = c => occ.some(q => q.z < c.pr.z*0.999 && q.o.index !== c.i && Math.hypot(c.pr.x - q.x, c.pr.y - q.y) < q.r*0.97);
+  for (const o of OBJ){
+    if (!(o.solid || o.holeR) || !o.onScreen || o.vis < 0.5) continue; const pr = projectCSS(o.rel); if (!pr) continue;
+    const R = o.holeR || o.rad*o.solid, r = R/(pr.z*tanY)*(viewHcss/2); if (r > 3) occ.push({ x:pr.x, y:pr.y, r, z:pr.z, o, zf:o.holeR ? pr.z - R : pr.z*0.999, k:o.holeR ? 1.04 : 0.97 });
+  }
+  const hidden = c => occ.some(q => q.zf < c.pr.z && q.o.index !== c.i && Math.hypot(c.pr.x - q.x, c.pr.y - q.y) < q.r*q.k);
   cand.sort((a, b) => b.pri - a.pri);
   for (const c of cand){
     if (occ.length && hidden(c)) continue;
@@ -327,6 +345,9 @@ function updateHUD(dt){
       if (tour.phase === 'fly') p = 'en route ' + '>'.repeat(1 + Math.floor(performance.now()/250) % 3);
       else { const v = obj.views[tour.view], n = obj.views.length; f = tour.phase === 'swing' ? 1 : clamp(tour.t/holdOf(v), 0, 1); const k = Math.round(f*18);
         p = `angle ${tour.view + 1}/${n}  [${'#'.repeat(k)}${'-'.repeat(18 - k)}]`; }
+    } else if (show.on && OBJ[show.obj] && OBJ[show.obj].views.length > 1){
+      const obj = OBJ[show.obj], v = obj.views[show.view], n = obj.views.length; f = show.phase === 'swing' ? 1 : clamp(show.t/holdOf(v), 0, 1); const k = Math.round(f*18);
+      p = `angle ${show.view + 1}/${n}  [${'#'.repeat(k)}${'-'.repeat(18 - k)}]`;
     } else if (orbit.lock >= 0 || flight) p = 'drag to orbit · scroll out to the edge of the universe';
     else p = 'free camera · W A S D to fly · tap an object to lock on';
     const pl = $('#progLabel');
@@ -680,7 +701,7 @@ $('#btnFree').addEventListener('click', () => { hideHint(); unlock(); toast('fre
 $('#btnShip').addEventListener('click', () => { if (typeof ship !== 'undefined' && orbit.lock === ship.index && !flight){ toast('already following the Halo'); return; } followShip(); });
 function playFlyby(o){
   hideHint(); if (cmp) endCompare(false);
-  stopTour(false); tween = null; flyMove = null;
+  stopTour(false); tween = null; flyMove = null; if (show.on || show.pending){ show.on = show.pending = false; motion.last = 'show'; }
   setInfo(o.index);
   startFlight(o, viewParamsV(o, o.flyby), () => { flyMove = { o, v:o.flyby, t:0 }; });
   updateModeUI(); toast('flyby · ' + o.flyby.flyby);
@@ -689,6 +710,7 @@ $('#btnFlyby').addEventListener('click', () => { const o = OBJ[infoObj]; if (o.f
 music.onTrack = tr => { $('#nowPlaying').textContent = tr.name; if (SET.sound) toast('\u266a ' + tr.name); };
 $('#npSkip').addEventListener('click', () => { music.skip(); if (!SET.sound) toast('music is off · turn it on to hear the next track'); });
 $('#btnResume').addEventListener('click', () => { hideHint(); if (cmp) endCompare(false); setTour(true); });
+for (const b of ['#btnPlay', '#btnPlayM']) $(b).addEventListener('click', () => { hideHint(); if (cmp) endCompare(false); togglePlay(); });
 $('#btnResumeI').addEventListener('click', () => $('#btnResume').click());
 $('#settingsHelp').addEventListener('click', () => { togglePanel('settings', false); toggleHelp(true); });
 $('#tourPrev').addEventListener('click', () => { hideHint(); stepObject(-1); });
@@ -900,7 +922,8 @@ function tick(dt){
   else {
     if (tween) updateTween(dt);
     if (tour.on) updateTour(dt);
-    else if (flyMove){ if (!flyMove.frozen) flyMove.t += dt; const h = flyMove.v.hold; playMove(flyMove.o, flyMove.v, clamp(flyMove.t/h, 0, 1)); if (flyMove.t >= h) flyMove = null; }
+    else if (flyMove){ if (!flyMove.frozen) flyMove.t += dt; const h = flyMove.v.hold; playMove(flyMove.o, flyMove.v, clamp(flyMove.t/h, 0, 1)); if (flyMove.t >= h){ flyMove = null; if (motion.last === 'show' && orbit.lock >= 0) resumeShow(); } }
+    else if (show.on) updateShow(dt);
     updateKeys(dt);
     if (!tween) orbit.dist = Math.exp(Math.log(orbit.dist) + (Math.log(orbit.distT) - Math.log(orbit.dist))*(1 - Math.exp(-dt*7)));
     riseAboveDisk(dt);

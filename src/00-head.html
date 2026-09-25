@@ -48,7 +48,7 @@ body:has(#view.dragging) *{-webkit-user-select:none;user-select:none}
 .type{color:var(--dim);font-size:calc(11.5px*var(--ts));letter-spacing:.03em}
 .where{color:var(--soft);font-size:calc(11.5px*var(--ts));font-variant-numeric:tabular-nums}
 .fact{margin:9px 0 0;max-width:46ch;color:var(--soft);font-size:calc(12.5px*var(--ts))}
-.readout{margin-top:8px;color:var(--flare);font-size:calc(11.5px*var(--ts));font-variant-numeric:tabular-nums;white-space:nowrap;min-height:1.5em;width:max-content;max-width:calc(100vw - 300px);overflow:hidden;text-overflow:ellipsis}
+.readout{margin-top:8px;color:var(--flare);font-size:calc(11.5px*var(--ts));font-variant-numeric:tabular-nums;white-space:pre-wrap;min-height:1.5em;max-width:50ch}
 .scale{display:flex;align-items:center;gap:8px;margin-top:8px;color:var(--soft);font-size:calc(11px*var(--ts));font-variant-numeric:tabular-nums;white-space:nowrap;pointer-events:auto;cursor:help;width:max-content}
 .scale .rlab{color:var(--faint);letter-spacing:.1em;text-transform:uppercase;font-size:calc(10px*var(--ts))}
 .scale .bar{display:inline-block;height:5px;border:1px solid var(--soft);border-top:0;flex:none}
@@ -76,12 +76,12 @@ body.info-hidden .info{display:none}
 .lad-chip{display:none}
 
 /* idle: after a few quiet seconds the interface fades, leaving the object's name; any touch, key or mouse move brings it back */
-.brand,.lad-chip,.info-pill,.itools,.resume-i,.grip,.info .nav,.info .stop,.info .title,.info .acts,.info .type,.info .where,.info .fact,.info .readout,.info .scale,.info .progress{transition:opacity .25s}
-body.ui-idle .controls,body.ui-idle .ladder,body.ui-idle .lad-chip,body.ui-idle .brand,body.ui-idle .info-pill,body.ui-idle .daily,body.ui-idle .shiparrow,
+.brand,.lad-chip,.play-m,.info-pill,.itools,.resume-i,.grip,.info .nav,.info .stop,.info .title,.info .acts,.info .type,.info .where,.info .fact,.info .readout,.info .scale,.info .progress{transition:opacity .25s}
+body.ui-idle .controls,body.ui-idle .ladder,body.ui-idle .lad-chip,body.ui-idle .play-m,body.ui-idle .brand,body.ui-idle .info-pill,body.ui-idle .daily,body.ui-idle .shiparrow,
 body.ui-idle .itools,body.ui-idle .resume-i,body.ui-idle .grip,body.ui-idle .info .nav,body.ui-idle .info .acts,body.ui-idle .info .type,body.ui-idle .info .where,body.ui-idle .info .fact,body.ui-idle .info .readout,body.ui-idle .info .scale{opacity:0!important;transition:opacity 1s ease-in}
 /* on touch screens the first tap only wakes the interface, so faded controls let it through; a mouse wakes them on the way to a button */
 @media (pointer:coarse){
-  body.ui-idle .controls,body.ui-idle .ladder,body.ui-idle .lad-chip,body.ui-idle .info-pill,body.ui-idle .daily,body.ui-idle .shiparrow,body.ui-idle .itools,body.ui-idle .resume-i,body.ui-idle .grip,body.ui-idle .info .acts,body.ui-idle .info .nav{pointer-events:none!important}
+  body.ui-idle .controls,body.ui-idle .ladder,body.ui-idle .lad-chip,body.ui-idle .play-m,body.ui-idle .info-pill,body.ui-idle .daily,body.ui-idle .shiparrow,body.ui-idle .itools,body.ui-idle .resume-i,body.ui-idle .grip,body.ui-idle .info .acts,body.ui-idle .info .nav{pointer-events:none!important}
 }
 body.ui-idle .info .stop,body.ui-idle .info .title,body.ui-idle .info .progress{opacity:.5;transition:opacity 1s ease-in}
 body.ui-idle .info .progress.hintish{opacity:0}
@@ -116,6 +116,13 @@ body.ui-idle .caption{background:rgba(5,7,14,.4);border-color:transparent;border
 .seg.mini button{flex:0 0 auto;border:0;background:none;padding:4px 7px;font-size:calc(11px*var(--ts));border-radius:2px}
 .seg.mini .seg-l{align-self:center;padding:0 4px 0 7px;color:var(--faint);font-size:calc(10px*var(--ts));letter-spacing:.08em}
 .controls .seg.mini{order:10}
+.btn.play{order:8;display:inline-flex;align-items:center;gap:6px;color:var(--ink)}
+.btn.play b::before,.play-m b::before{content:"\275A\275A";font-size:.82em;letter-spacing:-.12em;font-weight:400}
+.btn.play.paused b::before,.play-m.paused b::before{content:"\25B6\FE0E";letter-spacing:0}
+.btn.play.paused{color:var(--cyan);border-color:rgba(127,220,255,.6);background:rgba(127,220,255,.1)}
+.play-m{display:none}
+.topr{position:fixed;right:calc(8px + env(safe-area-inset-right,0px));top:calc(6px + env(safe-area-inset-top,0px));z-index:6;display:flex;align-items:center;gap:6px;pointer-events:none}
+.topr > *{pointer-events:auto}
 .btn.resume{order:9;color:var(--void);background:#a8f0b0;border-color:#a8f0b0;font-weight:600;animation:shipPulse 2.4s ease-in-out infinite}
 .btn.resume:hover{color:var(--void);background:#c8ffd0}
 #btnShip.following{color:var(--void);background:var(--ship);border-color:var(--ship)}
@@ -294,7 +301,7 @@ body.ui-idle .caption{background:rgba(5,7,14,.4);border-color:transparent;border
 .d-acts{display:flex;gap:6px;margin-top:8px}
 /* screensaver: everything fades away */
 .info,.controls,.ladder,.labels,.strip,.caption,.daily,.atlas,.panel,.shipmark,.shiparrow{transition:opacity .25s}
-body.saver .info,body.saver .brand,body.saver .lad-chip,body.saver .info-pill,body.saver .controls,body.saver .ladder,body.saver .labels,body.saver .strip,body.saver .caption,body.saver .daily,body.saver .atlas,body.saver .panel,body.saver .shipmark,body.saver .shiparrow{opacity:0!important;pointer-events:none!important;transition:opacity 1.2s}
+body.saver .info,body.saver .brand,body.saver .topr,body.saver .info-pill,body.saver .controls,body.saver .ladder,body.saver .labels,body.saver .strip,body.saver .caption,body.saver .daily,body.saver .atlas,body.saver .panel,body.saver .shipmark,body.saver .shiparrow{opacity:0!important;pointer-events:none!important;transition:opacity 1.2s}
 body.saver #view{cursor:none}
 .saver-hud{position:fixed;left:calc(28px + env(safe-area-inset-left,0px));bottom:calc(26px + env(safe-area-inset-bottom,0px));max-width:min(520px,calc(100vw - 56px));color:var(--soft);z-index:5;pointer-events:none;text-shadow:0 0 12px #000,0 0 4px #000;opacity:.8}
 .sv-time{font-family:var(--disp);font-size:calc(34px*var(--ts));color:var(--ink);letter-spacing:.06em}
@@ -303,7 +310,7 @@ body.saver #view{cursor:none}
 .sv-np{margin-top:8px;font-size:calc(11px*var(--ts));color:var(--flare)}
 .btn.saver-go{width:100%;color:#a8f0b0;border-color:rgba(168,240,176,.5)}
 /* photo mode: the interface hides, a small bar stays */
-body.photo .info,body.photo .brand,body.photo .lad-chip,body.photo .info-pill,body.photo .controls,body.photo .ladder,body.photo .strip,body.photo .caption,body.photo .daily,body.photo .atlas,body.photo .panel,body.photo .shipmark,body.photo .shiparrow{opacity:0!important;pointer-events:none!important}
+body.photo .info,body.photo .brand,body.photo .topr,body.photo .info-pill,body.photo .controls,body.photo .ladder,body.photo .strip,body.photo .caption,body.photo .daily,body.photo .atlas,body.photo .panel,body.photo .shipmark,body.photo .shiparrow{opacity:0!important;pointer-events:none!important}
 body.photo:not(.photo-labels) .labels{opacity:0}
 .photo-bar{position:fixed;left:50%;bottom:calc(18px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);display:flex;gap:6px;align-items:center;flex-wrap:wrap;justify-content:center;padding:6px 8px;
   background:rgba(5,7,14,.82);border:1px solid var(--line);border-radius:4px;z-index:8;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);max-width:calc(100vw - 24px);box-sizing:border-box}
@@ -389,7 +396,11 @@ body.sky .info .acts,body.sky .ladder,body.sky .lad-chip,body.sky .progress{opac
   .chip.reset{margin-left:0}
   /* the scale ladder: folded behind a chip at the top right, opens over a dark scrim */
   .ladder{display:none}
-  .lad-chip{display:flex;align-items:center;gap:6px;position:fixed;right:calc(8px + env(safe-area-inset-right,0px));top:calc(6px + env(safe-area-inset-top,0px));z-index:6;max-width:62vw;
+  .controls #btnPlay{display:none}
+  .play-m{display:grid;place-items:center;width:32px;height:32px;padding:0;border-radius:50%;color:var(--ink);background:rgba(5,7,14,.62);border:1px solid var(--line);font-size:calc(12px*var(--ts));cursor:pointer;
+    -webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+  .play-m.paused{color:var(--cyan);border-color:rgba(127,220,255,.6)}
+  .lad-chip{display:flex;align-items:center;gap:6px;max-width:56vw;
     padding:5px 11px 5px 9px;color:var(--soft);background:rgba(5,7,14,.62);border:1px solid var(--line);border-radius:14px;font-size:calc(11px*var(--ts));font-variant-numeric:tabular-nums;cursor:pointer;
     -webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
   .lad-chip b{color:var(--flare);font-weight:400}

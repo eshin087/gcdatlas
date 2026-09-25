@@ -216,11 +216,16 @@ layout(location=1) in vec4 aC;
 uniform mat3 uCamRot; uniform vec2 uTan; uniform vec3 uRel; uniform mat3 uRot; uniform float uRad; uniform float uVis;
 uniform float uPixAng; uniform float uMode; uniform float uN; uniform float uSB; uniform float uSize; uniform float uOut; uniform float uT;
 uniform vec4 uQ0; uniform vec4 uQ1; uniform mat3 uM; uniform float uCap;
+uniform vec4 uHole;   // the black hole with the biggest shadow on screen: position (camera-relative) and shadow radius (2.6 r_s), w = 0 when none
 out vec3 vC;
+float pSize = 0.;     // optional, set by body(): the radius each point stands for (object units), so a sparse cloud still reads as a surface at any zoom
 ${body}
 void main(){
   vec3 p; float br; vec3 col; body(p, br, col);
-  vec3 v = (uRel + uRot*(p*uRad))*uCamRot;
+  vec3 w = uRel + uRot*(p*uRad);
+  vec3 v = w*uCamRot;
+  // points and lines are not depth-tested against volumes, so anything behind (or inside) a black hole's shadow is hidden here: the shadow stays pitch black
+  if(uHole.w > 0.){ float lw = length(w); if(lw > length(uHole.xyz) - uHole.w && dot(w, uHole.xyz) > 0. && length(cross(uHole.xyz, w))/lw < uHole.w) br = 0.; }
   gl_Position = vec4(v.x/uTan.x, v.y/uTan.y, 0., v.z);
   if(v.z <= 0.){ gl_PointSize = 1.; vC = vec3(0.); return; }
   br = max(br, 0.);
@@ -229,6 +234,7 @@ void main(){
   else if(uMode < 1.5){ size = uSize; b = min(uSB/(v.z*v.z), 3.); }
   else if(uMode < 2.5){ size = clamp(uSize*uRad/(v.z*uPixAng), 1.5, 9.); b = min(uSB/(v.z*v.z), 2.5); }
   else { size = uSize; b = uSB; }
+  if(pSize > 0.) size = clamp(pSize*uRad/(v.z*uPixAng), size, 14.);
   gl_PointSize = size; vC = col*br*b*uOut*uVis;
 }`; }
 const FS_POINT = `#version 300 es

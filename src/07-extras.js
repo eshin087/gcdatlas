@@ -222,7 +222,7 @@ const ship = (() => {
   return o;
 })();
 // fold effects, scan beams and the ship's beacon, drawn after everything else
-const foldRing = ringPS(96, [0.55, 0.9, 1]), beaconPS = makePS(1), beamPS = makePS(16);
+const foldRing = ringPS(96, [0.55, 0.9, 1]), beaconPS = makePS(1), beamPS = makePS(16), hitPS = makePS(8);
 beaconPS.c.set([0.6, 0.95, 1, 0], 0); beaconPS.upload('c');
 function camFacing(){ return [...cam.right, ...V.mul(cam.fwd, -1), ...cam.up]; }   // local xz plane faces the camera
 EXTRAS.push(() => {
@@ -248,15 +248,31 @@ EXTRAS.push(() => {
     if (ship.rpx < 3){ beaconPS.a.set([0, 0, 0, 1], 0); beaconPS.upload('a'); drawParticles(null, { ps:beaconPS, prog:'ptBasic', mode:3, sb:0.7 + 0.3*Math.sin(ship.t*5), size:2.4, rad:1, rel:() => ship.rel, rot:() => I3 }); }
     const s = S.t/S.T;
     if (s > 0.35 && s < 0.7){
-      const tr = S.target.rel, amp = Math.sin((s - 0.35)/0.35*Math.PI);
+      // the beams land where the ship can actually see: on the near side of a planet's or star's surface, at the edge of a black hole's shadow
+      // (the light falls in, so no glow), or inside the near half of a cloud. None passes through the body to its far side.
+      const tg = S.target, tr = tg.rel, amp = Math.sin((s - 0.35)/0.35*Math.PI);
+      const toShip = V.sub(ship.rel, tr), L = Math.max(V.len(toShip), 1e-30), sh = V.mul(toShip, 1/L);
+      const surfR = tg.holeR || (tg.solid ? tg.rad*tg.solid : 0), cloud = !surfR;
+      const thMax = cloud ? 0 : Math.acos(clamp(surfR/L, 0, 1))*0.82;   // the part of the surface in view from the ship
+      let nHit = 0;
       for (let k=0;k<8;k++){
-        const j = V.mul(V.norm([Math.sin(k*2.3 + ship.t), Math.cos(k*1.7 + ship.t*1.3), Math.sin(k*3.1)]), S.target.rad*(S.target.layer < 3 ? 0.35 : 0.7));
-        const a = V.sub(ship.rel, ship.rel), b = V.sub(V.add(tr, j), ship.rel);
+        const jk = V.norm([Math.sin(k*2.3 + ship.t), Math.cos(k*1.7 + ship.t*1.3), Math.sin(k*3.1 + 0.4)]);
+        let end;
+        if (cloud) end = V.add(tr, V.mul(V.norm(V.add(V.mul(sh, 0.7), V.mul(jk, 0.6))), tg.rad*0.45*(0.4 + 0.6*Math.abs(Math.sin(k*1.1 + ship.t*0.5)))));
+        else {
+          let pp = V.sub(jk, V.mul(sh, V.dot(jk, sh))); const pl = V.len(pp); pp = pl > 1e-6 ? V.mul(pp, 1/pl) : V.norm(V.cross(sh, [0, 1, 0]));
+          const th = thMax*(0.15 + 0.85*Math.abs(Math.sin(k*1.93 + ship.t*0.7)));
+          end = V.add(tr, V.mul(V.add(V.mul(sh, Math.cos(th)), V.mul(pp, Math.sin(th))), surfR));
+          if (!tg.holeR){ const h = V.sub(end, ship.rel); hitPS.a.set([h[0], h[1], h[2], 1], nHit*4); hitPS.c.set([0.55, 0.95, 1, 0], nHit*4); nHit++; }
+        }
+        const b = V.sub(end, ship.rel);
         beamPS.a.set([0, 0, 0, 1], k*8); beamPS.a.set([b[0], b[1], b[2], 0], k*8 + 4);
         beamPS.c.set([0.45, 0.9, 1, 0], k*8); beamPS.c.set([0.45, 0.9, 1, 0], k*8 + 4);
       }
       beamPS.upload('ac');
       drawParticles(null, { ps:beamPS, prog:'lnBasic', lines:true, mode:3, sb:0.35*amp*(0.6 + 0.4*Math.sin(ship.t*13)), size:1, rad:1, rel:() => ship.rel, rot:() => I3 });
+      // where a beam meets a surface it lights a small spot
+      if (nHit){ hitPS.count = nHit; hitPS.upload('ac'); drawParticles(null, { ps:hitPS, prog:'ptBasic', mode:3, sb:0.9*amp*(0.7 + 0.3*Math.sin(ship.t*17)), size:3, rad:1, rel:() => ship.rel, rot:() => I3 }); }
     }
   }
 });

@@ -1,6 +1,7 @@
 
 // ================================================================ black holes: Schwarzschild null geodesics (units r_s = 1), thin disk with Doppler beaming + gravitational redshift
 // uP0: disk inner edge, outer edge (r_s), temperature scale, brightness   uP1: x jet power, y disk thickness look, z tint (0 white-hot, 1 orange)
+// uP2: a bright companion star far behind (world direction from the hole, angular radius; w = 0 for none): its light is bent like the rest of the sky
 const FS_BLACKHOLE = COMMON + `
 void disk(vec3 q, float r, vec3 dir, inout vec3 col, inout float T){
   float per = 7.;
@@ -61,7 +62,12 @@ void main(){
   float b = length(cross(o, d));
   float w = smoothstep(11., 19.5, b);
   vec3 bg = vec3(0.);
-  if(!captured && T > 0.01) bg = starfield(normalize(mix(uRot*normalize(v), rd, w)));
+  if(!captured && T > 0.01){
+    vec3 dv = normalize(mix(uRot*normalize(v), rd, w));
+    bg = starfield(dv);
+    // (the star itself is 0.0033 rad across from the hole; uP2.w is its glow, as stars are drawn everywhere else, so its bent image spans a character)
+    if(uP2.w > 0.){ float a = sqrt(max(2.*(1. - dot(dv, uP2.xyz)), 0.)); bg += vec3(1., 0.9, 0.74)*(1.8*exp(-pow(a/(uP2.w*0.3), 2.)) + 0.55*exp(-pow(a/uP2.w, 2.))); }
+  }
   // the jets are in front of the hole, but only faintly where they cross its shadow, so the shadow stays black
   col += jc*(captured ? 0.12 : 1.);
   // photon ring: light that orbited the hole piles up in a razor-thin ring at the shadow's edge

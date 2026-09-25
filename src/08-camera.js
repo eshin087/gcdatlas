@@ -45,7 +45,7 @@ function viewParams(o, vi){ return viewParamsV(o, o.views[vi]); }
 function viewParamsV(o, v){
   let d = [0, 0.3, 1];
   if (v.d) d = v.d;
-  if (v.dirFn) d = M3.applyT(o.R0, v.dirFn());
+  if (v.dirFn || v.track) d = M3.applyT(o.R0, (v.track || v.dirFn)());
   d = V.norm(d);
   let off = [0,0,0], offFn = null;
   if (typeof v.off === 'function') offFn = () => V.mul(M3.apply(o.R0, v.off()), o.rad);
@@ -79,7 +79,8 @@ function startFlight(o, vp, onDone){
   // progress table: eased at both ends, and for scenic trips slowed right at the widest point so the big picture can sink in
   let sPeak = 0, wp = -1; for (let i=0;i<=48;i++){ const w = path.w(path.S*i/48); if (w > wp){ wp = w; sPeak = i/48; } }
   const tbl = [0]; let acc = 0;
-  for (let i=1;i<=64;i++){ const x = (i - 0.5)/64, ease = Math.sin(Math.PI*x)*0.85 + 0.15, hover = scenic ? 1 - 0.8*Math.exp(-Math.pow((x - sPeak)/0.07, 2)) : 1; acc += 1/(ease*hover); tbl.push(acc); }
+  // (the floor falls from 0.15 at departure to 0.025 on arrival: the camera glides in and settles, rather than arriving at speed and stopping dead)
+  for (let i=1;i<=64;i++){ const x = (i - 0.5)/64, ease = Math.sin(Math.PI*x)*0.85 + 0.15*(1 - x) + 0.025*x, hover = scenic ? 1 - 0.8*Math.exp(-Math.pow((x - sPeak)/0.07, 2)) : 1; acc += 1/(ease*hover); tbl.push(acc); }
   const prog = tbl.map(v => v/acc);   // prog[i] = time fraction at which s/S = i/64
   // travel speed: cinematic (slow and scenic), quick (default), warp (near-instant, same path and effects compressed)
   let dur = clamp(1.6 + path.S*0.42, 2.4, 13) + (scenic ? 3 : 0);
@@ -89,7 +90,7 @@ function startFlight(o, vp, onDone){
   // start compiling the destination's shaders now, so it is ready to draw on arrival
   if (o.prog) progReady(o.prog); for (const sp of o.particles || []) if (P[sp.prog]) progReady(P[sp.prog]);
   music.whoosh(dur);
-  flight = { t:0, dur, path, A, B, dir0:V.norm(V.sub(cam.rel, A)), dir1:dirEnd, prog,
+  flight = { t:0, dur, path, A, B, L0:V.len(V.sub(B, A)), dir0:V.norm(V.sub(cam.rel, A)), dir1:dirEnd, prog,
     up0:cam.up.slice(), up1:M3.apply(o.R0, [0,1,0]), obj:o, vp, onDone, switched:false, spin:scenic ? 0 : (rnd() < 0.5 ? -1 : 1)*0.5, scenic, dirMid, upMid };
   tween = null;
 }
@@ -98,12 +99,14 @@ function updateFlight(dt){
   const x = clamp(f.t/f.dur, 0, 1);
   let j = 0; while (j < 63 && f.prog[j + 1] < x) j++;
   const e = clamp((j + (x - f.prog[j])/Math.max(f.prog[j + 1] - f.prog[j], 1e-9))/64, 0, 1), s = f.path.S*e;
-  const AB = V.sub(f.B, f.A), L = V.len(AB);
-  const tgt = L > 0 ? V.add(f.A, V.mul(AB, clamp(f.path.u(s)/L, 0, 1))) : f.A.slice();
+  // aim at where the destination is now, not where it was at take-off: planets and moons keep moving during the flight,
+  // and aiming at a stale point meant closing in on empty space and then jumping to the real object in the last frame
+  const Bnow = V.add(frel(f.obj), f.vp.offFn ? f.vp.offFn() : (f.vp.off || [0, 0, 0]));
+  const tgt = V.add(f.A, V.mul(V.sub(Bnow, f.A), f.L0 > 0 ? clamp(f.path.u(s)/f.L0, 0, 1) : 1));
   const w = x >= 1 ? f.vp.dist : f.path.w(s);
   if (!f.switched && x > 0.5){
     const D = frel(f.obj);
-    f.A = V.sub(f.A, D); f.B = V.sub(f.B, D); tgt[0] -= D[0]; tgt[1] -= D[1]; tgt[2] -= D[2];
+    f.A = V.sub(f.A, D); tgt[0] -= D[0]; tgt[1] -= D[1]; tgt[2] -= D[2];
     cam.focus = f.obj.index; f.switched = true;
   }
   const k = smooth(0.15, 0.85, x);
@@ -141,7 +144,7 @@ const TOUR = [];   // filled after all objects exist (list of object indices)
 const TOUR_KEYS = ['earth', 'moon', 'sun', 'jupiter', 'saturn', 'solarsystem', 'oort', 'alphacen', 'betelgeuse', 'hltau', 'catseye', 'pillars', 'crab', 'crabpulsar', 'etacar', 'rsoph',
   'omegacen', 'galcentre', 'sgra', 'magnetar', 'milkyway', 'sn1987a', 'andromeda', 'm51', 'antennae', 'm87', 'gw170817', '3c273', 'ton618', 'cosmicweb', 'universe'];
 function tourGo(i, instant){
-  const o = OBJ[i]; tour.obj = i; tour.view = 0; tour.t = 0; tour.last = null;
+  const o = OBJ[i]; tour.obj = i; tour.view = 0; tour.t = 0; tour.last = null; show.on = show.pending = false; motion.last = 'tour';
   o.tourReset && o.tourReset();
   const vp = viewParams(o, 0);
   setInfo(i);
@@ -160,17 +163,70 @@ function updateTour(dt){
     const v = o.views[tour.view], hold = holdOf(v);
     tour.t += dt;
     if (v.to) playMove(o, v, clamp(tour.t/hold, 0, 1));
+    else if (v.track) trackView(o, v, dt);
     else if (!reduceMotion) orbit.yaw += v.drift*dt;
     if (tour.t > hold){
       if (tour.view < o.views.length - 1){
         tour.phase = 'swing'; tour.t = 0;
-        startTween(viewParams(o, tour.view + 1), reduceMotion ? 0.6 : (SET.travel === 'warp' ? 1.4 : SET.travel === 'quick' ? 2.6 : 3.4));
+        startTween(viewParams(o, tour.view + 1), swingDur());
         tween.onDone = () => { tour.view++; tour.phase = 'hold'; tour.t = 0; };
       } else tourGo(tourNext(1));
     }
   }
 }
 const holdOf = v => v.hold*(v.to ? Math.max(dwellK(), 0.75) : dwellK());
+// a view with track(): while it holds, the camera keeps turning toward a moving direction (world frame) instead of drifting
+function trackView(o, v, dt){
+  const d = M3.applyT(o.R0, V.norm(v.track())), y = Math.atan2(d[0], d[2]), p = Math.asin(clamp(d[1], -0.999, 0.999));
+  const k = 1 - Math.exp(-dt*2.5); let dy = y - orbit.yaw; dy = Math.atan2(Math.sin(dy), Math.cos(dy));
+  orbit.yaw += dy*k; orbit.pitch += (p - orbit.pitch)*k;
+}
+const swingDur = () => reduceMotion ? 0.6 : (SET.travel === 'warp' ? 1.4 : SET.travel === 'quick' ? 2.6 : 3.4);
+// ---------------------------------------------------------------- the angle loop: an object you pick yourself plays its tour angles, round and round, until you take the camera
+// (pending: the loop starts when the flight there lands). motion.last remembers what play should bring back: the tour or the loop.
+const show = { on:false, pending:false, obj:-1, view:0, t:0, phase:'hold' };
+const motion = { last:'tour' };
+function startShow(i, view = 0){
+  const o = OBJ[i]; if (!o) return;
+  show.on = true; show.pending = false; show.obj = i; show.view = clamp(view, 0, o.views.length - 1); show.t = 0; show.phase = 'hold'; motion.last = 'show';
+  updateModeUI();
+}
+function updateShow(dt){
+  const o = OBJ[show.obj];
+  if (!o || orbit.lock !== show.obj){ show.on = false; updateModeUI(); return; }
+  if (show.phase !== 'hold'){ if (!tween){ show.phase = 'hold'; show.t = 0; } return; }   // gliding between angles: the tween moves the camera
+  const v = o.views[show.view], hold = holdOf(v);
+  show.t += dt;
+  if (v.to) playMove(o, v, clamp(show.t/hold, 0, 1));
+  else if (v.track) trackView(o, v, dt);
+  else if (!reduceMotion) orbit.yaw += v.drift*dt;
+  if (show.t > hold && o.views.length > 1){
+    const next = (show.view + 1) % o.views.length;
+    show.phase = 'swing'; show.t = 0;
+    startTween(viewParams(o, next), swingDur());
+    tween.onDone = () => { show.view = next; show.phase = 'hold'; show.t = 0; };
+  }
+}
+// carry on from wherever the camera is: glide back into the current angle, then keep looping
+function resumeShow(){
+  const i = orbit.lock, o = OBJ[i]; if (!o) return;
+  const view = show.obj === i ? show.view : 0;
+  show.on = true; show.pending = false; show.obj = i; show.view = view; show.phase = 'swing'; show.t = 0; motion.last = 'show';
+  if (flight) finishFlightHere();
+  startTween(viewParams(o, view), swingDur()*0.8);
+  tween.onDone = () => { show.phase = 'hold'; show.t = 0; };
+  updateModeUI();
+}
+function pauseShow(){ if (show.on || show.pending){ show.on = show.pending = false; motion.last = 'show'; if (show.phase === 'swing') tween = null; } }
+const isPlaying = () => tour.on || show.on || show.pending || !!flyMove;
+// the play / pause control (and the space bar): pause whatever moves the camera; play brings back the last thing that did
+function togglePlay(){
+  if (tour.on){ stopTour(false); motion.last = 'tour'; toast('paused · press play (or space) to carry on with the tour'); }
+  else if (show.on || show.pending || flyMove){ pauseShow(); flyMove = null; tween = null; toast('paused · the camera is yours · press play to carry on'); }
+  else if (motion.last === 'show' && orbit.lock >= 0 && !cmp) resumeShow();
+  else setTour(true);
+  updateModeUI();
+}
 // a camera move: glide from the view's own framing to its 'to' framing, easing in and out, distance changing smoothly in log space
 function playMove(o, v, u){
   const a = viewParamsV(o, v), b = viewParamsV(o, Object.assign({ hold:1, drift:0 }, v.to));
@@ -184,6 +240,7 @@ function playMove(o, v, u){
 }
 function setTour(on){
   tour.on = on;
+  if (on){ show.on = show.pending = false; motion.last = 'tour'; }
   $('#btnTour').setAttribute('aria-pressed', String(on));
   if (on){
     let i = orbit.lock >= 0 ? orbit.lock : nearestObject();
@@ -199,7 +256,7 @@ function stopTour(msg){
   tour.on = false; tween = null; tour.last = tour.obj;
   if (flight) finishFlightHere();
   $('#btnTour').setAttribute('aria-pressed', 'false');
-  if (msg) toast('tour paused · tap resume tour (or press space) to pick up where it left off');
+  if (msg) toast('tour paused · press play (or space) to pick up where it left off');
   updateModeUI();
 }
 // abandon a flight mid-way, keeping the camera where it is
@@ -214,15 +271,16 @@ function syncOrbitFromCam(){
   const d = V.sub(cam.rel, orbit.target); orbit.dist = orbit.distT = Math.max(V.len(d), 1e-30);
   const n = M3.applyT(orbit.frame, V.norm(d)); orbit.yaw = Math.atan2(n[0], n[2]); orbit.pitch = Math.asin(clamp(n[1], -0.999, 0.999));
 }
-function lockOn(i, viewIdx = 0){
-  stopTour(false); orbit.offFn = null;
-  const o = OBJ[i];
-  const vp = viewParams(o, Math.min(viewIdx, o.views.length - 1));
+function lockOn(i, viewIdx = 0, loop = true){
+  stopTour(false); orbit.offFn = null; show.on = false;
+  const o = OBJ[i], vi = Math.min(viewIdx, o.views.length - 1);
+  const vp = viewParams(o, vi);
   setInfo(i);
-  startFlight(o, vp, null);
+  show.pending = loop; if (loop) motion.last = 'show';
+  startFlight(o, vp, loop ? () => { if (show.pending) startShow(i, vi); } : null);
   updateModeUI();
 }
-function unlock(){ if (orbit.lock < 0 && !tour.on) return; stopTour(false); if (flight) finishFlightHere(); orbit.lock = -1; orbit.offFn = null; updateModeUI(); }
+function unlock(){ pauseShow(); if (orbit.lock < 0 && !tour.on) return; stopTour(false); if (flight) finishFlightHere(); orbit.lock = -1; orbit.offFn = null; updateModeUI(); }
 function nearestObject(){ let b = 0, bd = 1e300; OBJ.forEach((o, i) => { if (o.layer < 2 || o.noPick || o.marker) return; const d = o.dist/o.rad; if (d < bd){ bd = d; b = i; } }); return b; }
 
 // ---------------------------------------------------------------- input
@@ -268,7 +326,8 @@ canvas.addEventListener('wheel', e => { e.preventDefault(); beginManual(); zoomB
 
 function beginManual(){
   manualAt = performance.now();
-  if (tour.on) stopTour(true);
+  if (tour.on){ stopTour(true); motion.last = 'tour'; }
+  if (show.on || show.pending){ pauseShow(); updateModeUI(); }
   if (flight) finishFlightHere();
   tween = null; flyMove = null;
   hideHint();
@@ -307,7 +366,7 @@ addEventListener('keydown', e => {
     if (!$('#atlas').hidden){ toggleAtlas(false); return; }
     unlock(); return;
   }
-  if (k === ' '){ e.preventDefault(); setTour(!tour.on); return; }
+  if (k === ' '){ e.preventDefault(); togglePlay(); return; }
   if (k === '/' || k === 'o'){ e.preventDefault(); focusSearch(); return; }
   if (k === 'y'){ setOpt('travel', cycle(['quick', 'warp', 'cinematic'], SET.travel)); return; }
   if (k === 'm'){ setOpt('sound', !SET.sound); return; }

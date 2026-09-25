@@ -94,6 +94,8 @@ void main(){
       float t0 = max(hc.x, 0.), dt = (hc.y - t0)/14.; vec3 acc = vec3(0.);
       for(int i=0;i<14;i++){ vec3 p = o + d*(t0 + dt*(float(i) + 0.5)), q = p - c; float s = length(q);
         float sh = exp(-pow((s - R)/(0.12*R), 2.))*smoothstep(-0.6, 0.2, dot(q/s, cd))*(0.5 + fbm3(p*18./Rs));
+        // the Sun is only drawn inside its bounding sphere (radius 1 here): the cloud thins out and fades before it gets there, instead of being cut off
+        sh *= smoothstep(0.97, 0.7, length(p));
         acc += vec3(0.9, 0.92, 1.)*sh; }
       col += acc*dt/R*1.2*exp(-uP3.w*0.6);
     }
@@ -122,7 +124,7 @@ function addStar(def){
 // ---------------------------------------------------------------- the Sun
 const sun = (() => {
   const R = RSUN*KM, bound = 4;
-  const st = { flareDir:[0,1,0], flare:0, cmeDir:[0,1,0], cme:0, nextFlare:6, nextCme:14 };
+  const st = { flareDir:[0,1,0], flare:0, cmeDir:[0,1,0], cmeWorld:[0,1,0], cme:0, nextFlare:6, nextCme:14 };
   const o = addObj({ key:'sun', name:'the Sun', label:'Sun', chip:'Sun', type:'G2V main-sequence star · our star', group:'solar', sortKey:-1,
     fact:'A million Earths would fit inside. Its visible surface boils with convection cells, dark sunspots and looping prominences of glowing hydrogen.',
     pos:[0,0,0], rad:R*bound, solid:1/bound, R0:poleFrame(286.13, 63.87), prog:P.star, minZoom:0.27, pxMin:4, farColor:blackbodyJS(5772), farLum:1.2, labelRange:3e5, distEarth:'8.3 light-minutes',
@@ -132,10 +134,12 @@ const sun = (() => {
       this.rot = M3.mul(this.R0, M3.rotY(-this.t*0.05));
       st.nextFlare -= dt; st.nextCme -= dt;
       if (st.nextFlare < 0){ st.nextFlare = 8 + rnd()*10; const a = rnd()*6.283, la = (rnd() < 0.5 ? 1 : -1)*(0.2 + 0.2*rnd()); st.flareDir = V.norm([Math.cos(a), la, Math.sin(a)]); st.flareT = 0; }
-      if (st.nextCme < 0){ st.nextCme = 16 + rnd()*16; const a = rnd()*6.283; st.cmeDir = V.norm([Math.cos(a), (rnd() - 0.5)*0.9, Math.sin(a)]); st.cmeT = 0; }
+      if (st.nextCme < 0){ st.nextCme = 16 + rnd()*16; const a = rnd()*6.283; st.cmeWorld = M3.apply(this.rot, V.norm([Math.cos(a), (rnd() - 0.5)*0.9, Math.sin(a)])); st.cmeT = 0; }
+      // an ejection leaves in a straight line: it keeps its direction in space while the Sun turns underneath (the shader works in the Sun's turning frame)
+      st.cmeDir = M3.applyT(this.rot, st.cmeWorld);
       st.flareT = (st.flareT ?? 99) + dt; st.cmeT = (st.cmeT ?? 99) + dt;
       st.flare = st.flareT < 0.4 ? st.flareT/0.4 : Math.exp(-(st.flareT - 0.4)/1.8);
-      st.cme = st.cmeT < 14 ? 0.15 + st.cmeT*0.22 : 0;
+      st.cme = st.cmeT < 14 ? 0.15 + st.cmeT*0.18 : 0;
     },
     setU(pr){
       gl.uniform4f(pr.u.uP0, 5772, 40, 0.75, 0.22);
@@ -344,10 +348,11 @@ const solarSystem = (() => {
   const o = addObj({ key:'solarsystem', name:'the Solar System', label:'Solar System', type:'our planetary system · 8 planets, 5 dwarf planets, millions of small bodies', group:'solar', sortKey:-2, layer:2,
     fact:'Planets shown where they are today, on their true orbits. The asteroid belt hides gaps carved by Jupiter; two swarms of Trojans share its orbit.',
     pos:[0,0,0], rad:50*AU_LY, R0:ECL, minZoom:0.002, pxMin:3, noImpostor:true, labelRange:3e3, farLum:0, distEarth:'you are inside it', atlasDist:'here',
-    views:[{d:[0.3, 0.55, 1], k:0.28, hold:9, drift:0.03}, {d:[0.2, 0.25, 1], k:1.5, hold:8, drift:0.02}, {d:[0.5, 1, 0.2], k:0.07, hold:8, drift:0.03}],
+    // all eight orbits (Neptune's fills the screen), then out to Saturn, then the inner planets and the asteroid belt from above
+    views:[{d:[0.35, 0.62, 1], k:1.0, hold:10, drift:0.025}, {d:[0.3, 0.45, 1], k:0.3, hold:9, drift:0.03}, {d:[0.5, 1, 0.2], k:0.09, hold:8, drift:0.03}],
     particleVis:rpx => smooth(4, 20, rpx),
     particles:[
-      {ps, prog:'lnBasic', lines:true, mode:3, sb:0.22, size:1, rad:AU_LY, rot:() => I3, vis:zoomVis(2.5e-5, 1.2e-4, 0.02, 0.2)},
+      {ps, prog:'lnBasic', lines:true, mode:3, sb:0.4, size:1, rad:AU_LY, rot:() => I3, vis:zoomVis(2.5e-5, 1.2e-4, 0.02, 0.2)},
       {ps:belt, prog:'ptKepler', mode:3, sb:0.35, size:1.6, rad:AU_LY, rot:() => ECL, q0:() => [jdNow() - JD_NOW, 0, 0, 0], vis:zoomVis(3e-5, 1.5e-4, 0.03, 0.4)},
     ],
     readout:() => `Neptune orbits 30 AU out · light takes 4 hours to get there\nVoyager 1, our farthest probe, is ~171 AU away after 49 years` });
