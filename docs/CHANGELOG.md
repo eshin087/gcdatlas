@@ -4,6 +4,14 @@ All notable changes, newest first. Dates are UTC.
 
 ## Unreleased
 
+## 0.7.2 · 2026-09-25
+
+**Back to the subtle look**
+- Black holes are shown by their own physics again: light bending around them, the photon ring, and the colour and brightness shifts of the disk (Doppler beaming and gravitational redshift). The blue gravity grids and their settings switch are gone.
+- GW150914 is two dark shadows spiralling together, seen only through the starlight they bend, without the grid. Gaia BH1's lensing is no longer boosted.
+- The tour's angle progress is the ASCII bar again: `angle 1/4  [#####-------------]`.
+- Kept from 0.7: pure-black shadows (no stray glow or dots inside) and zooming in to 1.06 Schwarzschild radii.
+
 ## 0.7.1 · 2026-09-25
 
 **Phones**

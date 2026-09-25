@@ -60,7 +60,7 @@ addObj({
 
 Views: `d` direction in the object frame, `k` distance in bounding radii, `off` look-at offset, `hold` seconds, `drift` orbit speed. A view with `to:{...}` is a camera move (flyby) played over its hold; `offW:'dist'` keeps the subject in frame on long pull-backs.
 
-Helpers: `addStar`, `namedStar`, `addBody` (planets and moons with IAU rotation), `addGalaxy` (parametric spiral/elliptical/ring), `addProbe` (spacecraft models), `addMarker` (labels only), `addGravityWell` (Flamm's paraboloid grid), `clusterPS`, `makeSpikes`, `orbitLine`.
+Helpers: `addStar`, `namedStar`, `addBody` (planets and moons with IAU rotation), `addGalaxy` (parametric spiral/elliptical/ring), `addProbe` (spacecraft models), `addMarker` (labels only), `clusterPS`, `makeSpikes`, `orbitLine`.
 
 ## 6. Camera, flights, tours
 
