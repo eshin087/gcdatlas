@@ -1,0 +1,69 @@
+<canvas id="view" tabindex="0" aria-label="Animated ASCII universe. Drag to orbit, scroll or pinch to zoom, tap an object to lock the camera on it."></canvas>
+<div id="labels" class="labels"></div>
+
+<section class="info" aria-live="polite">
+  <div class="brand">gcdatlas</div>
+  <div class="stop"><span id="stopNum">01</span> / <span id="stopCount">11</span> · <span id="mode">tour</span></div>
+  <div class="title">
+    <h1 id="objName">earth</h1>
+    <button class="nav" id="prevObj" aria-label="Previous object">&lsaquo;</button><button class="nav" id="nextObj" aria-label="Next object">&rsaquo;</button>
+  </div>
+  <div id="objType" class="type"></div>
+  <div id="objDist" class="where"></div>
+  <p id="objFact" class="fact"></p>
+  <div id="readout" class="readout"></div>
+  <div class="scale" aria-hidden="true"><span id="scaleBar" class="bar"></span><span id="scaleTxt"></span></div>
+  <div id="progress" class="progress"></div>
+</section>
+
+<nav class="controls" aria-label="View controls">
+  <button class="btn primary" id="btnAtlas" aria-expanded="false" aria-controls="atlas">atlas</button>
+  <button class="btn" id="btnTour" aria-pressed="true">tour</button>
+  <button class="btn" id="btnFree" aria-pressed="false">free cam</button>
+  <button class="btn" id="btnSpeed">time 1x</button>
+  <button class="btn" id="btnDetail">detail fine</button>
+  <button class="btn" id="btnGlow" aria-pressed="true">glow</button>
+  <button class="btn" id="btnLabels" aria-pressed="true">labels</button>
+  <button class="btn" id="btnHelp" aria-label="Controls help">?</button>
+</nav>
+
+<aside id="atlas" class="atlas" aria-label="Universe atlas" hidden>
+  <div class="atlas-head">
+    <input id="atlasSearch" type="search" placeholder="search the universe" autocomplete="off" spellcheck="false" aria-label="Search objects">
+    <button class="btn" id="atlasClose" aria-label="Close atlas">close</button>
+  </div>
+  <div id="atlasList" class="atlas-list"></div>
+  <div class="atlas-foot">real positions and sizes · distances from Earth</div>
+</aside>
+
+<div id="ladder" class="ladder" aria-label="Scale">
+  <div id="ladMark" class="ladmark"><span id="ladTxt"></span></div>
+</div>
+
+<div class="strip">
+  <div id="toast" class="toast" role="status"></div>
+  <div id="hint" class="hint">drag to orbit · scroll or pinch to zoom from a planet out to the whole universe · tap anything to fly there · press / for the atlas</div>
+</div>
+
+<div id="help" class="help" hidden>
+  <div class="help-card" role="dialog" aria-modal="true" aria-labelledby="helpTitle">
+    <h2 id="helpTitle">controls</h2>
+    <p>Every frame is drawn only with printable ASCII characters. Denser glyphs mean more light; colour comes from the physics (blackbody temperature, Doppler shift, emission lines).</p>
+    <dl>
+      <dt>drag</dt><dd>orbit the camera</dd>
+      <dt>scroll / pinch / + -</dt><dd>zoom, all the way from a moon to the observable universe</dd>
+      <dt>right-drag / shift-drag</dt><dd>pan (unlocks the camera)</dd>
+      <dt>click or tap</dt><dd>fly to an object and lock onto it</dd>
+      <dt>/ or atlas</dt><dd>search every object in the atlas</dd>
+      <dt>scale ladder</dt><dd>jump to planet, star, galaxy or cosmic scale</dd>
+      <dt>[ ] or ‹ ›</dt><dd>previous / next tour stop</dd>
+      <dt>W A S D · R F</dt><dd>fly freely</dd>
+      <dt>space</dt><dd>start or pause the guided tour</dd>
+      <dt>esc</dt><dd>unlock (free camera)</dd>
+      <dt>T · V · G · L</dt><dd>time speed · detail · glow · labels</dd>
+    </dl>
+    <p class="note">Everything sits at its real position and real size: the planets where they are today, 1,982 naked-eye stars at their measured distances, the Milky Way, its neighbours and the cosmic web out to the edge of the observable universe. Brightness is compressed so faint things stay visible, and fast processes (orbits, explosions, mergers) are sped up. The few objects too small to see next to their surroundings (a quasar's engine, a kilonova) are drawn magnified, and the scale bar shows their true size. The Halo, the ring ship that wanders between wonders, is the one invented thing here. Simulations: Schwarzschild light bending, relativistic Doppler beaming, Keplerian and flat rotation curves, restricted N-body galaxy collision, Roche-lobe mass transfer, light-echo geometry, gravitational-wave inspiral.</p>
+    <p><button class="btn" id="helpClose">close</button></p>
+  </div>
+</div>
+<div id="nogl" class="nogl" hidden>This needs WebGL 2, which this browser or device has turned off.</div>
