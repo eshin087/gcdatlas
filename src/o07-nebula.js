@@ -16,6 +16,8 @@ float pillar(vec3 p, vec2 c, float top, float rb, float lean, float n){
   }
   return s + (n - 0.5)*0.1;
 }
+// a smaller column without the globules, for the lesser trunks
+float mini(vec3 p, vec2 c, float top, float rb){ float rad = rb*(0.45 + 0.55*smoothstep(top, -1., p.y)); return min(max(length(p.xz - c) - rad, p.y - top), length(p - vec3(c.x, top, c.y)) - rb*0.6); }
 void main(){
   vec3 o, d; localRay(o, d);
   vec2 h = sphIsect(o, d, vec3(0.), 1.);
@@ -32,13 +34,19 @@ void main(){
     float r = length(p);
     float n1 = mix(fbm3(p*7. + 5.), ridge(p*11. + 2.), 0.45);
     float sd = min(pillar(p, vec2(-0.32, 0.), 0.42, 0.17, 0.035, n1), min(pillar(p, vec2(0.06, -0.12), 0.1, 0.13, -0.03, n1), pillar(p, vec2(0.4, 0.06), -0.08, 0.1, 0.02, n1)));
+    sd = min(sd, min(mini(p, vec2(-0.68, -0.22), -0.42, 0.07), min(mini(p, vec2(0.72, -0.18), -0.36, 0.06), mini(p, vec2(-0.08, -0.4), -0.5, 0.055))) + (n1 - 0.5)*0.1);
+    // the dark cloud the columns grow out of, thinning upward into wisps
+    float edgeN = fbm3(p*2.4 + 31.);
+    float base = smoothstep(-0.5, -0.82, p.y + 0.25*(edgeN - 0.5))*smoothstep(1., 0.6, r);
+    sd = min(sd, mix(0.2, -0.05, base));
     float dust = smoothstep(0.012, -0.03, sd);
     float face = clamp(0.35 + 0.55*(p.y + 0.9) + 0.4*p.z, 0., 1.5);
     float rim = exp(-pow((sd - 0.008)/0.018, 2.))*face;
     float evap = sd > 0. && sd < 0.16 ? exp(-sd/0.045)*smoothstep(0.35, 0.8, fbm3(p*9. - Ld*tm*0.06))*face : 0.;
     float wall = smoothstep(0.05, -0.35, p.z)*smoothstep(-1., -0.55, p.z);
     float g0 = fbm(p*2.3 + (vec3(fbm3(p*1.3), fbm3(p*1.3 + 4.), fbm3(p*1.3 + 8.)) - 0.5)*1.8 + vec3(0., 0., tm*0.008));
-    float gas = smoothstep(1., 0.6, r)*(0.15 + g0*g0*g0*2.2)*(0.03 + 6.*wall);
+    float soft = smoothstep(1., 0.3, r + 0.3*(edgeN - 0.5));   // a ragged, gradual edge that hands over to the Eagle Nebula around it
+    float gas = soft*(0.15 + g0*g0*g0*2.2)*(0.03 + 6.*wall) + soft*0.25*g0*g0;
     float fore = smoothstep(0.57, 0.74, fbm3(p*3. + 2.))*smoothstep(-0.15, -0.95, p.y)*0.7;
     vec3 gc = mix(vec3(0.18, 0.5, 0.85), vec3(0.42, 0.86, 0.48), fbm3(p*1.6 + 9.));
     vec3 em = gc*gas*1.2 + vec3(1., 0.64, 0.28)*rim*7. + vec3(1., 0.75, 0.45)*evap*2.2;

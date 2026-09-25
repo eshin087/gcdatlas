@@ -7,11 +7,24 @@ const RSUN = 695700;
 const IS_SMALL = Math.min(innerWidth, innerHeight) < 600;
 // user settings, remembered between visits when the browser allows it
 const SET = (() => {
-  const d = { detail:1, travel:'quick', glow:true, labels:true, twinkle:true, shipFinder:true, sound:true, volume:0.55 };
+  const d = { detail:1, travel:'quick', glow:true, labels:true, twinkle:true, shipFinder:true, gravity:true, sound:true, volume:0.55, dwell:'normal', textSize:1, musicStyle:'mix', saverIdle:0 };
   try { const s = JSON.parse(localStorage.getItem('gcdatlas.settings') || '{}'); for (const k in d) if (k in s && typeof s[k] === typeof d[k]) d[k] = s[k]; } catch (e) {}
   return d;
 })();
+// feature flags: experiments can ship switched off, or be switched off without touching the code that uses them.
+// Override per visitor with ?flags=name,-other in the URL (remembered) or localStorage 'gcdatlas.flags'. See docs/FEATURE_FLAGS.md.
+const FLAGS = (() => {
+  const f = { live:true, launches:true, planes:true, backyard:true, earthStory:true, social:false };
+  try { Object.assign(f, JSON.parse(localStorage.getItem('gcdatlas.flags') || '{}')); } catch (e) {}
+  const q = new URLSearchParams(location.search).get('flags');
+  if (q){ for (const s of q.split(',')){ const k = s.replace(/^[-+]/, ''); if (k in f) f[k] = !s.startsWith('-'); } try { localStorage.setItem('gcdatlas.flags', JSON.stringify(f)); } catch (e) {} }
+  return f;
+})();
+// shared state for two special modes: looking up from your own backyard, and Earth's story through deep time
+const SKYV = { on:false, site:null };
+const EARTH_ERA = { era:0, lights:1 };
 function saveSet(){ try { localStorage.setItem('gcdatlas.settings', JSON.stringify(SET)); } catch (e) {} }
+const dwellK = () => SET.dwell === 'short' ? 0.45 : SET.dwell === 'long' ? 1.7 : 1;   // how long a tour lingers on each view
 let GT = 0;   // global clock in seconds (drives twinkle, shimmer and other ambient motion)
 const twinkleAmt = () => SET.twinkle ? (reduceMotion ? 0.35 : 1) : 0;
 const QUALITY = IS_SMALL ? 0.55 : 1;

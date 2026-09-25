@@ -4,7 +4,7 @@ const DETAIL = [{name:'ultra', w:4}, {name:'fine', w:5}, {name:'normal', w:6.5},
 let detailIdx = clamp(SET.detail | 0, 0, DETAIL.length - 1), glowOn = SET.glow, labelsOn = SET.labels;
 let dpr = 1, cellW = 6, cellH = 11, cols = 1, rows = 1, sceneW = 2, sceneH = 2;
 let tanY = Math.tan(cam.fovY/2), tanX = tanY, viewWcss = 1, viewHcss = 1, canvasHcss = 1;
-let RT = null, viewFit = 1, LODK = 1;   // LODK: ray-march step budget, lowered automatically on slow devices
+let RT = null, viewFit = 1, LODK = 1, afterFrame = null;   // afterFrame: run once right after the next frame is drawn   // LODK: ray-march step budget, lowered automatically on slow devices
 function freeRT(){ if (!RT) return; for (const k of ['sceneTex','cellTex','glowA','glowB']) gl.deleteTexture(RT[k]); for (const k of ['sceneFBO','cellFBO','glowFA','glowFB']) gl.deleteFramebuffer(RT[k]); }
 function resize(){
   dpr = Math.min(devicePixelRatio || 1, 2);
@@ -157,6 +157,8 @@ function render(){
     if (vis > 0.003 && o.prog && !progReady(o.prog)) vis = 0;
     o.vis = vis;
     if (vis > 0.003){
+      // farther glowing dots go down first, so a nearer opaque object (a black hole's shadow) covers them
+      if (o.prog && ni){ imp.count = ni; imp.upload('ac'); drawParticles(null, impSpec); ni = 0; }
       if (o.prog) o.onScreen = drawVolume(o, o.prog, o.rel, o.rad, o.setU && (pr => o.setU(pr)), o.rot, vis);
       if (o.drawBefore) o.drawBefore(vis);
     }
@@ -166,7 +168,8 @@ function render(){
     if (vis > 0.003 && o.drawAfter) o.drawAfter(vis);
     // impostor dot
     if (!o.noImpostor && vis < 0.999 && ni < imp.n){
-      const b = o.farLum*(1 - vis)*clamp(Math.pow(rpx/1.2, 0.33), 0, 1.2);
+      // (a dot only stands in for something small: once an object spans the screen, no dot at its centre)
+      const b = o.farLum*(1 - vis)*clamp(Math.pow(rpx/1.2, 0.33), 0, 1.2)*(1 - smooth(40, 120, rpx));
       if (b > 0.015 && V.dot(o.rel, cam.fwd) > 0){ imp.a.set([o.rel[0], o.rel[1], o.rel[2], b], ni*4); imp.c.set([o.farColor[0], o.farColor[1], o.farColor[2], 0], ni*4); ni++; }
     }
   }
@@ -199,11 +202,15 @@ function render(){
   gl.uniform2f(pr.u.uCell, cellW, cellH); gl.uniform2f(pr.u.uGrid, cols, rows); gl.uniform1f(pr.u.uAtlasN, atlas.count);
   gl.uniform1f(pr.u.uGlowAmt, glowOn ? 0.16 : 0); gl.uniform3f(pr.u.uBg, 0.012, 0.014, 0.026); gl.uniform4f(pr.u.uRect, -1, -1, 1, 1);
   drawQuad();
+  if (afterFrame){ const f = afterFrame; afterFrame = null; try { f(); } catch (e) { console.warn(e); } }
 }
 
 // ================================================================ HUD
 let infoObj = 0, toastTimer = 0, roTimer = 0, hintHidden = false;
 const infoEl = $('.info'), atlasEl = $('#atlas'), settingsEl = $('#settings'), ladderEl = $('#ladder'), controlsEl = $('.controls');
+// panels and the ladder sit just below the toolbar, however many rows it wraps onto
+const syncCtl = () => { const b = controlsEl.getBoundingClientRect(); document.documentElement.style.setProperty('--ctl-b', (innerWidth <= 680 ? 54 : Math.round(b.bottom)) + 'px'); };
+if (typeof ResizeObserver !== 'undefined') new ResizeObserver(syncCtl).observe(controlsEl); syncCtl();
 function projectCSS(rel){
   const z = V.dot(rel, cam.fwd); if (z <= 0) return null;
   const x = V.dot(rel, cam.right)/(z*tanX), y = V.dot(rel, cam.up)/(z*tanY);
@@ -212,17 +219,32 @@ function projectCSS(rel){
 function toast(msg){ const t = $('#toast'); t.textContent = msg; t.classList.add('on'); clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove('on'), 2600); }
 function hideHint(){ if (hintHidden) return; hintHidden = true; $('#hint').style.opacity = '0'; }
 const distFromEarth = o => o.distEarth || fmtDist(V.len(V.sub(o.pos, earth.pos))) + ' from Earth';
+const readoutEl = $('#readout'); let roLast = '';
+function setReadout(t){
+  if (t === roLast) return; roLast = t;
+  const one = innerWidth > 680 ? t.replace(/\n+/g, '  ·  ') : t;
+  readoutEl.textContent = one; readoutEl.title = t.replace(/\n+/g, ' · ');
+  if (innerWidth <= 680){ readoutEl.style.fontSize = ''; return; }
+  // shrink a step or two if the line is too long for the space beside the panel
+  readoutEl.style.fontSize = '';
+  for (let k = 0; k < 3 && readoutEl.scrollWidth > readoutEl.clientWidth + 1; k++) readoutEl.style.fontSize = `calc(${(11.5 - 0.6*(k + 1)).toFixed(1)}px*var(--ts))`;
+}
 function setInfo(i){
   infoObj = i; const o = OBJ[i];
   $('#objName').textContent = o.name; $('#objType').textContent = o.type; $('#objFact').textContent = o.fact || '';
   const k = TOUR.indexOf(i);
   $('#stopNum').textContent = k >= 0 ? String(k + 1).padStart(2, '0') : '--';
   $('#objDist').textContent = o.key === 'earth' ? 'you are here' : (o.distEarth ? o.distEarth + (/away|here|around|from|edge|centre/.test(o.distEarth) ? '' : ' away') : distFromEarth(o));
-  $('#readout').textContent = o.readout ? o.readout() : '';
+  setReadout(o.readout ? o.readout() : '');
+  $('#btnFlyby').hidden = !o.flyby;
   atlasMark(i);
 }
 function updateModeUI(){
-  $('#mode').textContent = cmp ? 'size compare' : tour.on ? tourName() : (orbit.lock >= 0 || flight ? 'locked on' : 'free camera');
+  const m = cmp ? 'size compare' : tour.on ? tourName() : (orbit.lock >= 0 || flight ? 'locked on' : 'free camera'), me = $('#mode');
+  if (me.textContent !== m){ me.textContent = m; me.className = 'mode ' + (tour.on ? 'm-tour' : m === 'free camera' ? 'm-free' : 'm-lock'); }
+  $('#btnTours').classList.toggle('touring', tour.on);
+  $('#btnResume').hidden = tour.on || tour.last == null || !!cmp;
+  const sh = typeof ship !== 'undefined' && orbit.lock === ship.index; $('#btnShip').classList.toggle('following', sh); $('#btnShip').textContent = sh ? 'following ship' : 'ship';
   $('#btnFree').setAttribute('aria-pressed', String(!tour.on && orbit.lock < 0 && !flight));
   $('#btnTour').setAttribute('aria-pressed', String(tour.on)); $('#btnTour').textContent = tour.on ? 'pause tour' : 'resume ' + tourName();
   if (typeof tourRows !== 'undefined') tourRows.forEach(r => r.b.setAttribute('aria-current', String(tour.on && r.id === TOUR_ID)));
@@ -297,16 +319,18 @@ function updateHUD(dt){
   roTimer -= dt;
   if (roTimer <= 0){
     roTimer = 0.15;
-    const o = OBJ[infoObj]; $('#readout').textContent = o.readout ? o.readout() : '';
-    let p = '';
+    const o = OBJ[infoObj]; setReadout(o.readout ? o.readout() : '');
+    let p = '', f = -1;
     if (tour.on){
       const obj = OBJ[tour.obj];
       if (tour.phase === 'fly') p = 'en route ' + '>'.repeat(1 + Math.floor(performance.now()/250) % 3);
-      else { const v = obj.views[tour.view], n = obj.views.length, f = tour.phase === 'swing' ? 1 : clamp(tour.t/v.hold, 0, 1), k = Math.round(f*18);
-        p = `angle ${tour.view + 1}/${n}  [${'#'.repeat(k)}${'-'.repeat(18 - k)}]`; }
+      else { const v = obj.views[tour.view], n = obj.views.length; f = tour.phase === 'swing' ? 1 : clamp(tour.t/holdOf(v), 0, 1); p = `angle ${tour.view + 1}/${n}`; }
     } else if (orbit.lock >= 0 || flight) p = 'drag to orbit · scroll out to the edge of the universe';
-    else p = 'W A S D to fly · tap an object to lock on';
-    $('#progress').textContent = p;
+    else p = 'free camera · W A S D to fly · tap an object to lock on';
+    const pl = $('#progLabel'), pb = $('#progBar');
+    if (pl.textContent !== p) pl.textContent = p;
+    pb.hidden = f < 0; if (f >= 0) pb.firstChild.style.width = (f*100).toFixed(1) + '%';
+    updateTourTrack();
     updateScale();
   }
   updateLadder();
@@ -407,6 +431,7 @@ ladMark.addEventListener('keydown', e => {
   if (e.key === 'ArrowUp' || e.key === 'ArrowDown'){ e.preventDefault(); e.stopPropagation(); beginManual(); zoomBy(e.key === 'ArrowUp' ? 1.9 : 1/1.9); }
 });
 function updateLadder(){
+  if (ttShown) return;
   const eff = Math.max(orbit.dist, 1e-30)*kmPerLy()/LY;
   const shown = ladDrag && ladDrag.near ? ladDrag.near.d : eff;
   ladMark.style.top = ((1 - ladFrac(shown))*100).toFixed(2) + '%';
@@ -415,6 +440,44 @@ function updateLadder(){
   for (const m of LADDER){ const here = !ladDrag && m.key === key && Math.abs(Math.log10(eff/m.d)) < 0.35; if (here) hereM = m; if (m.el._here !== here){ m.el._here = here; m.el.classList.toggle('here', here); } }
   const txt = (hereM ? hereM.name + ' · ' : '') + fmtLen(viewWidth(shown)*LY, 2);
   if (ladTxt.textContent !== txt){ ladTxt.textContent = txt; ladMark.setAttribute('aria-valuetext', 'view ' + txt + ' wide'); }
+}
+
+// ---------------------------------------------------------------- while a tour plays, the ladder becomes the tour's track: every stop, where you are, how much is left
+const tourTrack = document.createElement('div'); tourTrack.className = 'tour-track'; tourTrack.hidden = true; ladderEl.appendChild(tourTrack);
+const ttFill = document.createElement('div'); ttFill.className = 'tt-fill'; tourTrack.appendChild(ttFill);
+let ttId = null, ttTicks = [], ttShown = false;
+function buildTourTrack(){
+  ttTicks.forEach(t => t.remove()); ttTicks = []; ttId = TOUR_ID + ':' + TOUR.length;
+  const n = TOUR.length;
+  TOUR.forEach((oi, k) => {
+    const b = document.createElement('button'); b.className = 'tick tt'; b.textContent = OBJ[oi].label || OBJ[oi].name;
+    b.style.top = ((1 - (n > 1 ? k/(n - 1) : 0))*100).toFixed(2) + '%';
+    b.title = `stop ${k + 1} of ${n} · ${OBJ[oi].name}`;
+    b.addEventListener('click', e => { e.stopPropagation(); hideHint(); tween = null; if (flight) finishFlightHere(); if (!tour.on){ tour.on = true; } tourGo(oi); updateModeUI(); });
+    b.addEventListener('pointerdown', e => e.stopPropagation());
+    tourTrack.appendChild(b); ttTicks.push(b);
+  });
+}
+function updateTourTrack(){
+  const on = tour.on && TOUR.length > 1;
+  if (on !== ttShown){ ttShown = on; ladderEl.classList.toggle('touring', on); tourTrack.hidden = !on; $('#ladCap').textContent = on ? 'tour' : 'view width'; }
+  if (!on) return;
+  if (ttId !== TOUR_ID + ':' + TOUR.length) buildTourTrack();
+  const n = TOUR.length, k = Math.max(TOUR.indexOf(tour.obj), 0), o = OBJ[tour.obj];
+  // progress through this stop's angles, so the fill creeps toward the next stop
+  const sub = tour.phase === 'fly' ? 0 : (tour.view + (tour.phase === 'swing' ? 1 : clamp(tour.t/holdOf(o.views[tour.view]), 0, 1)))/o.views.length;
+  const f = (k + sub*0.999)/Math.max(n - 1, 1);
+  ttFill.style.height = (clamp(f, 0, 1)*100).toFixed(2) + '%';
+  $('#ladCap').textContent = `tour ${k + 1} / ${n}`;
+  // with many stops only some names fit: always the current one, its neighbours, the ends, and an even spread
+  const H = ladderEl.getBoundingClientRect().height, gap = H/Math.max(n - 1, 1), every = Math.max(1, Math.ceil(17/Math.max(gap, 1)));
+  ttTicks.forEach((b, j) => {
+    const cls = 'tick tt' + (j < k ? ' done' : j === k ? ' here' : '') + ((j === k || Math.abs(j - k) === 1 || j === 0 || j === n - 1 || j % every === 0) ? '' : ' mute');
+    if (b.className !== cls) b.className = cls;
+  });
+  ladMark.style.top = ((1 - clamp(f, 0, 1))*100).toFixed(2) + '%';
+  const txt = o.label || o.name;
+  if (ladTxt.textContent !== txt){ ladTxt.textContent = txt; ladMark.setAttribute('aria-valuetext', 'tour stop ' + (k + 1) + ' of ' + n); }
 }
 
 // ---------------------------------------------------------------- ship finder: brackets around the Halo, or an arrow at the screen edge pointing to it
@@ -461,12 +524,12 @@ shipArrowEl.addEventListener('click', followShip);
 
 // ---------------------------------------------------------------- settings
 function syncSettingsUI(){
-  const v = { detail:String(detailIdx), travel:SET.travel, time:String(timeScale) };
-  settingsEl.querySelectorAll('.seg').forEach(seg => { const k = seg.dataset.key; seg.querySelectorAll('button').forEach(b => b.setAttribute('aria-checked', String(b.dataset.v === v[k]))); });
+  const v = { detail:String(detailIdx), travel:SET.travel, time:String(timeScale), dwell:SET.dwell, musicStyle:SET.musicStyle, saverIdle:String(SET.saverIdle) };
+  document.querySelectorAll('.seg[data-key]').forEach(seg => { const k = seg.dataset.key; seg.querySelectorAll('button').forEach(b => b.setAttribute('aria-checked', String(b.dataset.v === v[k]))); });
   settingsEl.querySelectorAll('.tog button').forEach(b => b.setAttribute('aria-pressed', String(!!SET[b.dataset.key])));
   $('#volume').value = SET.volume;
   $('#btnSound').setAttribute('aria-pressed', String(SET.sound)); $('#btnSound').textContent = SET.sound ? 'sound' : 'sound off';
-  $('#btnShip').setAttribute('aria-pressed', String(SET.shipFinder));
+  $('#textSize').value = SET.textSize; $('#tsTxt').textContent = Math.round(SET.textSize*100) + '%';
   $('#detailInfo').textContent = `${cols} x ${rows} characters`;
 }
 function setOpt(key, v, quiet){
@@ -477,15 +540,23 @@ function setOpt(key, v, quiet){
     case 'glow': SET.glow = glowOn = !!v; break;
     case 'labels': SET.labels = labelsOn = !!v; break;
     case 'twinkle': SET.twinkle = !!v; break;
+    case 'gravity': SET.gravity = !!v; if (!quiet) toast(v ? 'gravity grids on · the shape of space around black holes' : 'gravity grids off'); break;
     case 'shipFinder': SET.shipFinder = !!v; if (!quiet) toast(v ? 'ship finder on · the Halo is bracketed in blue' : 'ship finder off'); break;
     case 'sound': SET.sound = !!v; music.set(SET.sound); if (!quiet) toast(v ? 'music on' : 'music off'); break;
     case 'volume': SET.volume = clamp(+v, 0, 1); music.volume(); break;
+    case 'musicStyle': SET.musicStyle = v; music.styleChanged(); if (!quiet) toast('music: ' + (v === 'mix' ? 'rotating mix of lofi, chill house and ambient' : v === 'house' ? 'chill house' : v)); break;
+    case 'saverIdle': SET.saverIdle = +v || 0; if (!quiet) toast(SET.saverIdle ? `screensaver starts after ${SET.saverIdle} minutes without input` : 'screensaver only when you ask (Z)'); break;
+    case 'dwell': SET.dwell = v; if (!quiet) toast('tour stops: ' + v + (v === 'short' ? ' · quicker tour' : v === 'long' ? ' · lingers on each view' : '')); break;
+    case 'textSize': SET.textSize = clamp(+v, 0.85, 1.6); applyTextSize(); break;
   }
   saveSet(); syncSettingsUI();
 }
 const cycle = (list, cur) => list[(list.indexOf(cur) + 1) % list.length];
 let toggleSettings = on => { settingsEl.hidden = !on; $('#btnSettings').setAttribute('aria-expanded', String(on)); if (on) syncSettingsUI(); };
-settingsEl.querySelectorAll('.seg button').forEach(b => b.addEventListener('click', () => setOpt(b.parentElement.dataset.key, b.dataset.v)));
+document.querySelectorAll('.seg[data-key] button').forEach(b => b.addEventListener('click', () => setOpt(b.parentElement.dataset.key, b.dataset.v)));
+function applyTextSize(){ document.documentElement.style.setProperty('--ts', String(SET.textSize)); roLast = ''; }
+applyTextSize();
+$('#textSize').addEventListener('input', e => { setOpt('textSize', e.target.value, true); });
 settingsEl.querySelectorAll('.tog button').forEach(b => b.addEventListener('click', () => setOpt(b.dataset.key, !SET[b.dataset.key])));
 $('#volume').addEventListener('input', e => setOpt('volume', e.target.value, true));
 $('#btnSettings').addEventListener('click', () => toggleSettings(settingsEl.hidden));
@@ -494,30 +565,73 @@ $('#settingsClose').addEventListener('click', () => toggleSettings(false));
 // ---------------------------------------------------------------- atlas and search
 const atlasList = $('#atlasList'), searchEl = $('#search'), atlasSearch = $('#atlasSearch');
 const GROUPS = [['solar', 'Solar System'], ['stars', 'Stars & stellar remnants'], ['nebulae', 'Nebulae & star clusters'], ['galaxies', 'Galaxies & black holes'], ['cosmic', 'The large-scale universe'], ['travel', 'Travellers']];
-const atlasRows = [];
-GROUPS.forEach(([g, title]) => {
-  const items = OBJ.filter(o => o.group === g && o.atlas !== false && !o.marker);
-  if (!items.length) return;
-  const h = document.createElement('div'); h.className = 'agroup'; h.textContent = title; atlasList.appendChild(h);
-  items.sort((a, b) => (a.sortKey ?? V.len(a.pos)) - (b.sortKey ?? V.len(b.pos)));
-  items.forEach(o => {
-    const b = document.createElement('button'); b.className = 'arow'; b.setAttribute('role', 'option'); b.setAttribute('aria-selected', 'false');
-    b.innerHTML = `<span class="an"></span><span class="ad"></span>`;
-    b.querySelector('.an').textContent = o.name;
-    b.querySelector('.ad').textContent = o.key === 'earth' ? 'home' : (o.atlasDist || (o.distEarth && o.distEarth.length < 14 ? o.distEarth : fmtDist(V.len(V.sub(o.pos, earth.pos)))));
-    b.title = o.type;
-    b.addEventListener('click', () => goTo(o.index));
-    atlasList.appendChild(b); atlasRows.push({ b, o, h, text:(o.name + ' ' + (o.label || '') + ' ' + o.type + ' ' + (o.aka || '')).toLowerCase() });
-  });
+// categories for the atlas filter (black holes get their own, whatever group they are listed under)
+const CATS = [['all', 'all'], ['solar', 'solar system'], ['stars', 'stars'], ['bh', 'black holes'], ['nebulae', 'nebulae'], ['galaxies', 'galaxies'], ['cosmic', 'large-scale'], ['travel', 'spacecraft']];
+const catOf = o => (o.prog === P.blackhole || o.isBH) ? 'bh' : o.group;
+// true size (radius in light-years): a black hole's event horizon, a star's surface, otherwise the object's extent
+const atlasSize = o => o.prog === P.blackhole ? o.rad/20 : (o.sizeR || (o.starR ? o.starR*o.rad : o.rad*(o.solid || 0.6)));
+const earthDist = o => o.key === 'earth' ? 0 : V.len(V.sub(o.pos, earth.pos));
+const SEEN = new Set((() => { try { return JSON.parse(localStorage.getItem('gcdatlas.seen') || '[]'); } catch (e) { return []; } })());
+const catMatch = r => ATL.cat === 'all' || (ATL.cat === 'unseen' ? !SEEN.has(r.o.key) : r.cat === ATL.cat);
+const ATL_DEF = { sort:'distance', dir:1, cat:'all' };
+const ATL = Object.assign({}, ATL_DEF, (() => { try { return JSON.parse(localStorage.getItem('gcdatlas.atlas') || '{}'); } catch (e) { return {}; } })());
+const saveAtl = () => { try { localStorage.setItem('gcdatlas.atlas', JSON.stringify(ATL)); } catch (e) {} };
+const atlasRows = [], groupHeads = {};
+GROUPS.forEach(([g, title]) => { const h = document.createElement('div'); h.className = 'agroup'; h.textContent = title; groupHeads[g] = h; });
+OBJ.filter(o => o.atlas !== false && !o.marker && GROUPS.some(([g]) => g === o.group)).forEach(o => {
+  const b = document.createElement('button'); b.className = 'arow'; b.setAttribute('role', 'option'); b.setAttribute('aria-selected', 'false');
+  b.innerHTML = `<span class="an"></span><span class="ad"></span>`;
+  b.querySelector('.an').textContent = o.name;
+  b.title = o.type;
+  b.addEventListener('click', () => goTo(o.index));
+  const dtxt = o.key === 'earth' ? 'home' : (o.atlasDist || (o.distEarth && o.distEarth.length < 14 ? o.distEarth : fmtDist(V.len(V.sub(o.pos, earth.pos)))));
+  atlasRows.push({ b, o, cat:catOf(o), dtxt, stxt:fmtLen(2*atlasSize(o)*LY, 2) + ' across', text:(o.name + ' ' + (o.label || '') + ' ' + o.type + ' ' + (o.aka || '')).toLowerCase() });
 });
-const atlasEmpty = document.createElement('div'); atlasEmpty.className = 'atlas-empty'; atlasEmpty.textContent = 'nothing found yet · try a planet, star, nebula or galaxy'; atlasEmpty.hidden = true; atlasList.appendChild(atlasEmpty);
+const atlasEmpty = document.createElement('div'); atlasEmpty.className = 'atlas-empty'; atlasEmpty.textContent = 'nothing found yet · try a planet, star, nebula or galaxy';
+// the tools: sort (distance, size, name, either direction), a category filter, and reset
+const sortBtns = [...document.querySelectorAll('#atlasSort [data-sort]')], dirBtn = $('#atlasDir'), catRow = $('#atlasCats');
+const catBtns = CATS.map(([id, name]) => {
+  const n = id === 'all' ? atlasRows.length : atlasRows.filter(r => r.cat === id).length; if (!n) return null;
+  const b = document.createElement('button'); b.className = 'chip'; b.dataset.cat = id; b.textContent = name; b.title = n + (n === 1 ? ' object' : ' objects');
+  b.addEventListener('click', () => { ATL.cat = id; saveAtl(); renderAtlas(); });
+  catRow.appendChild(b); return b;
+}).filter(Boolean);
+sortBtns.forEach(b => b.addEventListener('click', () => { if (ATL.sort === b.dataset.sort) ATL.dir = -ATL.dir; else { ATL.sort = b.dataset.sort; ATL.dir = b.dataset.sort === 'size' ? -1 : 1; } saveAtl(); renderAtlas(); }));
+dirBtn.addEventListener('click', () => { ATL.dir = -ATL.dir; saveAtl(); renderAtlas(); });
+$('#atlasReset').addEventListener('click', () => { Object.assign(ATL, ATL_DEF); saveAtl(); searchEl.value = atlasSearch.value = ''; renderAtlas(); toast('atlas reset'); });
+function renderAtlas(){
+  const dirWords = { distance:['nearest first', 'farthest first'], size:['smallest first', 'biggest first'], name:['A to Z', 'Z to A'] }[ATL.sort];
+  sortBtns.forEach(b => b.setAttribute('aria-pressed', String(b.dataset.sort === ATL.sort)));
+  dirBtn.innerHTML = (ATL.dir > 0 ? '&darr; ' : '&uarr; ') + dirWords[ATL.dir > 0 ? 0 : 1];
+  catBtns.forEach(b => b.setAttribute('aria-pressed', String(b.dataset.cat === ATL.cat)));
+  const isDefault = ATL.sort === ATL_DEF.sort && ATL.dir === ATL_DEF.dir && ATL.cat === ATL_DEF.cat;
+  $('#atlasReset').hidden = isDefault && !searchEl.value;
+  const rows = atlasRows.filter(catMatch);
+  const key = ATL.sort === 'size' ? r => atlasSize(r.o) : ATL.sort === 'name' ? null : r => earthDist(r.o);
+  if (key) rows.sort((a, b) => (key(a) - key(b))*ATL.dir); else rows.sort((a, b) => a.o.name.replace(/^the /i, '').localeCompare(b.o.name.replace(/^the /i, ''))*ATL.dir);
+  atlasList.textContent = '';
+  if (isDefault){
+    // the default view keeps the familiar grouping, nearest first within each group
+    GROUPS.forEach(([g]) => { const gr = atlasRows.filter(r => r.o.group === g); if (!gr.length) return;
+      gr.sort((a, b) => (a.o.sortKey ?? V.len(a.o.pos)) - (b.o.sortKey ?? V.len(b.o.pos)));
+      atlasList.appendChild(groupHeads[g]); gr.forEach(r => { r.h = groupHeads[g]; atlasList.appendChild(r.b); }); });
+  } else {
+    const h = groupHeads._flat || (groupHeads._flat = Object.assign(document.createElement('div'), { className:'agroup' }));
+    h.textContent = (ATL.cat === 'all' ? 'everything' : (CATS.find(c => c[0] === ATL.cat) || [0, 'not seen yet'])[1]) + ' · by ' + ATL.sort + ' · ' + dirWords[ATL.dir > 0 ? 0 : 1];
+    atlasList.appendChild(h); rows.forEach(r => { r.h = h; atlasList.appendChild(r.b); });
+  }
+  atlasRows.forEach(r => { r.shown = catMatch(r); r.b.classList.toggle('seen', SEEN.has(r.o.key)); r.b.querySelector('.ad').textContent = ATL.sort === 'size' ? r.stxt : r.dtxt; });
+  atlasList.appendChild(atlasEmpty);
+  filterAtlas(searchEl.value);
+  atlasMark(infoObj);
+}
 let kbRow = -1;
 function atlasMark(i){
   let cur = null;
   atlasRows.forEach(r => { const on = r.o.index === i; r.b.setAttribute('aria-selected', String(on)); if (on) cur = r; });
-  if (cur && !atlasEl.hidden){ const lr = atlasList.getBoundingClientRect(), br = cur.b.getBoundingClientRect(); if (br.top < lr.top || br.bottom > lr.bottom) cur.b.scrollIntoView({ block:'nearest' }); }
+  if (cur && !atlasEl.hidden && !cur.b.hidden && cur.b.isConnected){ const lr = atlasList.getBoundingClientRect(), br = cur.b.getBoundingClientRect(); if (br.top < lr.top || br.bottom > lr.bottom) cur.b.scrollIntoView({ block:'nearest' }); }
 }
-function visibleRows(){ return atlasRows.filter(r => !r.b.hidden); }
+function visibleRows(){ return [...atlasList.querySelectorAll('.arow')].filter(b => !b.hidden).map(b => atlasRows.find(r => r.b === b)); }
 function setKb(k){
   const vis = visibleRows(); atlasRows.forEach(r => r.b.classList.remove('kb'));
   kbRow = vis.length ? clamp(k, 0, vis.length - 1) : -1;
@@ -525,18 +639,20 @@ function setKb(k){
 }
 function toggleAtlas(on){
   atlasEl.hidden = !on; document.body.classList.toggle('atlas-open', on); $('#btnAtlas').setAttribute('aria-expanded', String(on));
-  if (on){ filterAtlas(searchEl.value); const cur = atlasRows.find(r => r.o.index === infoObj); if (cur && !searchEl.value) cur.b.scrollIntoView({ block:'center' }); }
+  if (on){ filterAtlas(searchEl.value); const cur = atlasRows.find(r => r.o.index === infoObj); if (cur && !searchEl.value && !cur.b.hidden) cur.b.scrollIntoView({ block:'center' }); }
   else { atlasRows.forEach(r => r.b.classList.remove('kb')); kbRow = -1; }
 }
 function filterAtlas(q){
   q = q.trim().toLowerCase();
   let n = 0;
-  atlasRows.forEach(r => { const hide = !!q && !q.split(/\s+/).every(w => r.text.includes(w)); r.b.hidden = hide; if (!hide) n++; });
+  atlasRows.forEach(r => { const hide = !r.shown || (!!q && !q.split(/\s+/).every(w => r.text.includes(w))); r.b.hidden = hide; if (!hide) n++; });
   atlasList.querySelectorAll('.agroup').forEach(h => { let x = h.nextElementSibling, any = false; while (x && !x.classList.contains('agroup')){ if (x.classList.contains('arow') && !x.hidden) any = true; x = x.nextElementSibling; } h.hidden = !any; });
   atlasEmpty.hidden = n > 0;
-  $('#atlasCount').textContent = q ? `${n} found` : `${atlasRows.length} places`;
+  $('#atlasCount').textContent = q || ATL.cat !== 'all' ? `${n} of ${atlasRows.length}` : `${atlasRows.length} places`;
+  $('#atlasReset').hidden = ATL.sort === ATL_DEF.sort && ATL.dir === ATL_DEF.dir && ATL.cat === ATL_DEF.cat && !q;
   setKb(q ? 0 : -1);
 }
+renderAtlas();
 function onSearchInput(e){
   const v = e.target.value; if (e.target === searchEl) atlasSearch.value = v; else searchEl.value = v;
   if (atlasEl.hidden) toggleAtlas(true);
@@ -559,7 +675,20 @@ $('#prevObj').addEventListener('click', () => { hideHint(); stepObject(-1); });
 $('#nextObj').addEventListener('click', () => { hideHint(); stepObject(1); });
 $('#btnTour').addEventListener('click', () => { hideHint(); setTour(!tour.on); });
 $('#btnFree').addEventListener('click', () => { hideHint(); unlock(); toast('free camera · W A S D to fly, drag to look around'); });
-$('#btnShip').addEventListener('click', () => setOpt('shipFinder', !SET.shipFinder));
+$('#btnShip').addEventListener('click', () => { if (typeof ship !== 'undefined' && orbit.lock === ship.index && !flight){ toast('already following the Halo'); return; } followShip(); });
+function playFlyby(o){
+  hideHint(); if (cmp) endCompare(false);
+  stopTour(false); tween = null; flyMove = null;
+  setInfo(o.index);
+  startFlight(o, viewParamsV(o, o.flyby), () => { flyMove = { o, v:o.flyby, t:0 }; });
+  updateModeUI(); toast('flyby · ' + o.flyby.flyby);
+}
+$('#btnFlyby').addEventListener('click', () => { const o = OBJ[infoObj]; if (o.flyby) playFlyby(o); });
+music.onTrack = tr => { $('#nowPlaying').textContent = tr.name; if (SET.sound) toast('\u266a ' + tr.name); };
+$('#npSkip').addEventListener('click', () => { music.skip(); if (!SET.sound) toast('music is off · turn it on to hear the next track'); });
+$('#btnResume').addEventListener('click', () => { hideHint(); if (cmp) endCompare(false); setTour(true); });
+$('#tourPrev').addEventListener('click', () => { hideHint(); stepObject(-1); });
+$('#tourNext').addEventListener('click', () => { hideHint(); stepObject(1); });
 $('#btnSound').addEventListener('click', () => setOpt('sound', !SET.sound));
 $('#btnHelp').addEventListener('click', () => toggleHelp(true));
 $('#helpClose').addEventListener('click', () => toggleHelp(false));
@@ -766,6 +895,7 @@ function tick(dt){
   else {
     if (tween) updateTween(dt);
     if (tour.on) updateTour(dt);
+    else if (flyMove){ if (!flyMove.frozen) flyMove.t += dt; const h = flyMove.v.hold; playMove(flyMove.o, flyMove.v, clamp(flyMove.t/h, 0, 1)); if (flyMove.t >= h) flyMove = null; }
     updateKeys(dt);
     if (!tween) orbit.dist = Math.exp(Math.log(orbit.dist) + (Math.log(orbit.distT) - Math.log(orbit.dist))*(1 - Math.exp(-dt*7)));
     riseAboveDisk(dt);
@@ -813,9 +943,8 @@ tick(0);
 if (!applyHash()) tourGo(TOUR[0], true);
 tick(0);
 updateModeUI(); syncTimeUI();
-window.__cosmos = { startTour, startCompare, endCompare, setDeep, viewHash, applyHash, get cmp(){ return cmp; }, get ssRate(){ return ssRate; }, dbg:{ imp, impSpec, get cols(){ return cols; }, get sceneH(){ return sceneH; }, get LODK(){ return LODK; }, PROGS }, OBJ, BYKEY, tourGo, lockOn, setTour, cam, orbit, tour, TOUR, SET, setOpt, music, LADDER, goLadder,
+window.__cosmos = { startTour, playFlyby, setMove(o, v, f){ flight = null; tween = null; tourGo(o.index, true); tour.on = false; flyMove = { o, v, t:f*v.hold, frozen:true }; },  get flyMove(){ return flyMove; }, startCompare, endCompare, setDeep, viewHash, applyHash, get cmp(){ return cmp; }, get ssRate(){ return ssRate; }, dbg:{ imp, impSpec, get cols(){ return cols; }, get sceneH(){ return sceneH; }, get LODK(){ return LODK; }, PROGS }, OBJ, BYKEY, tourGo, lockOn, setTour, cam, orbit, tour, TOUR, SET, setOpt, music, LADDER, goLadder,
   setDetail:i => setOpt('detail', i, true), render, zoomTo, tick, flightDur:() => flight ? flight.dur : 0, hud:() => { roTimer = 0; updateHUD(0.2); },
   simulate:(sec) => { for (let k=0; k<sec*30; k++) tick(1/30); return { obj:tour.obj, view:tour.view, phase:tour.phase, lock:orbit.lock }; },
   view:(i, v) => { if (typeof i === 'string') i = BYKEY[i].index; const o = OBJ[i], vp = viewParams(o, v); flight = null; tween = null; cam.focus = i; orbit.lock = i; orbit.frame = o.R0; orbit.yaw = vp.yaw; orbit.pitch = vp.pitch; orbit.dist = orbit.distT = vp.dist; orbit.off = vp.off; orbit.offFn = vp.offFn; orbit.target = V.add(frel(o), vp.off); setInfo(i); applyOrbit(); tick(0); } };
 requestAnimationFrame(frame);
-})();

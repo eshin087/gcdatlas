@@ -129,7 +129,7 @@ void main(){
   vec3 d = rayDir();
   vec3 col = starfield(d)*uSky.x;
   col += (galaxyCell(d, 60., 3.) + galaxyCell(d, 110., 8.)*0.6)*uSky.y;
-  outCol(col, 1.);
+  outCol(col, 0.);
 }`;
 
 // per-cell glyph selection: tone map, pick density glyph or an edge glyph
@@ -173,6 +173,8 @@ void main(){
   vec3 col = t/max(mx, 1e-4)*(0.34 + 0.66*sqrt(mx));
   col = mix(col, vec3(1.), smoothstep(0.8, 1., v)*0.35);
   o = vec4(col, g/255.);
+  // an opaque, unlit cell (a black hole's shadow, a planet's night side) is marked void: no glyph and no glow bleeding into it
+  if(v < th && texture(uScene, (c + .5)/uGrid).a > 0.985) o = vec4(0., 0., 0., 1.);
 }`;
 
 // separable blur for the phosphor glow (first pass tone-maps the scene)
@@ -201,6 +203,7 @@ void main(){
   vec2 cf = gl_FragCoord.xy/uCell; vec2 ci = floor(cf); vec2 lc = cf - ci;
   vec4 cd = texelFetch(uCellT, ivec2(ci), 0);
   float gi = floor(cd.a*255. + .5);
+  if(gi > 254.5){ o = vec4(uBg, 1.); return; }
   float m = texture(uAtlas, vec2((gi + lc.x)/uAtlasN, 1. - lc.y)).a;
   vec3 glow = texture(uGlowT, cf/uGrid).rgb*uGlowAmt;
   o = vec4(uBg + glow*(1. - 0.6*m) + cd.rgb*m, 1.);

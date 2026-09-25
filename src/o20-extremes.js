@@ -5,7 +5,7 @@ const ton618 = (() => {
   const pos = radec(hms(12,28,24.9), dms(31,28,38), 18.2e9);
   const o = addObj({ key:'ton618', name:'TON 618', label:'TON 618', type:'hyperluminous quasar · one of the most massive black holes known', group:'galaxies', sortKey:18.2e9,
     fact:'A black hole of about 40 billion Suns powering a quasar 140 trillion times brighter than the Sun. Its event horizon would swallow the Solar System out to 50 times Neptune\'s distance.',
-    pos, rad:rs*RB, R0:facingEarth(pos, V.norm([0.3, 0.9, 0.2]), 0), prog:P.blackhole, minZoom:0.18, pxMin:6, farColor:[0.75, 0.85, 1], farLum:1.2, labelRange:6e10, aka:'ton 618 quasar biggest black hole',
+    pos, rad:rs*RB, R0:facingEarth(pos, V.norm([0.3, 0.9, 0.2]), 0), prog:P.blackhole, minZoom:0.053, pxMin:6, farColor:[0.75, 0.85, 1], farLum:1.2, labelRange:6e10, aka:'ton 618 quasar biggest black hole',
     distEarth:'light left it 10.8 billion years ago · now ~18 billion ly',
     setU(pr){ gl.uniform4f(pr.u.uP0, 3, 15, 1.7, 1.6); gl.uniform4f(pr.u.uP1, 0.8, 0, 0, 0); },
     views:[{d:[0, 0.22, 1], k:1.5, hold:9, drift:0.03}, {d:[0.3, 0.9, 0.3], k:3.2, hold:9, drift:0.02}] });

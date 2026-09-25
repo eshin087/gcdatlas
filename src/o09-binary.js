@@ -37,8 +37,10 @@ void main(){
       float spots = smoothstep(0.62, 0.72, fbm3(sp*5. + 9.));
       vec3 toWD = normalize(X2 - p);
       float irr = max(dot(n, toWD), 0.);
-      dcol = blackbody(3500.*gd + 700.*irr*uP1.w)*(0.28 + 0.72*mu)*pow(g/uP1.x, 0.32)*cells*(1. - 0.6*spots)*1.7;
-      dcol += vec3(0.85, 0.9, 1.)*irr*flash*0.12*(0.4 + 0.6*mu);
+      vec3 giant = mix(vec3(0.95, 0.16, 0.05), vec3(1., 0.6, 0.26), pow(mu, 0.7)*gd*0.95);
+      dcol = giant*(0.22 + 0.78*pow(mu, 0.8))*pow(g/uP1.x, 0.3)*cells*(1. - 0.55*spots)*2.4;
+      dcol += vec3(1., 0.72, 0.4)*irr*0.35*(0.3 + 0.7*mu);                       // the disk's glow on the facing side
+      dcol += vec3(0.85, 0.9, 1.)*irr*flash*0.16*(0.4 + 0.6*mu);
     }
   }
   // accretion disk around the white dwarf (continuous light; particles add the clumps)
@@ -53,17 +55,22 @@ void main(){
         float spiral = 1. + 0.5*cos(2.*ph + 4.5*log(rq) - uTime*0.4);
         float temp = 18000.*pow(max(rq, 0.01)/0.01, -0.6);
         float nn = noise(vec3(rot2(uTime*1.5/(rq*20. + 0.5))*rel*50., uTime*0.2));
-        kcol = blackbody(temp)*pow(0.03/max(rq, 0.01), 1.1)*spiral*(0.5 + 0.8*nn)*1.1*(1. - 0.85*disrupt);
+        kcol = blackbody(temp)*pow(0.03/max(rq, 0.01), 1.1)*spiral*(0.5 + 0.8*nn)*1.8*(1. - 0.85*disrupt);
         vec2 hs = Rd*vec2(cos(uP1.y), sin(uP1.y));
         kcol += vec3(1., 0.85, 0.7)*exp(-dot(rel - hs, rel - hs)/0.0012)*(2.2 + 1.2*sin(uTime*7.))*(1. - disrupt);
         ka = smoothstep(Rd, Rd*0.75, rq)*0.8*(1. - disrupt);
       }
     }
   }
+  float bg1 = length(cross(X1 - o, d)), front1 = dot(X1 - o, d);
+  float Rg = xL1 - X1.x;
+  vec3 halo = vec3(1., 0.25, 0.1)*(exp(-pow(max(bg1 - Rg*0.92, 0.)/0.07, 1.3))*0.55 + exp(-max(bg1 - Rg, 0.)/0.55)*0.07);
+  halo *= ts < 1e8 ? 0.35 : 1.;
   if(ts < 1e8 && ts < tdisk){ col = dcol; alpha = 1.; }
   else { col = kcol + (1. - ka)*dcol; alpha = ts < 1e8 ? 1. : ka; }
+  col += halo;
   // white dwarf and the thermonuclear nova flash
-  col += vec3(0.75, 0.85, 1.)*(pblob(o, d, X2, 0.008)*400. + blob(o, d, X2, 0.04)*0.6);
+  col += vec3(0.75, 0.85, 1.)*(pblob(o, d, X2, 0.008)*400. + blob(o, d, X2, 0.04)*0.9);
   col += vec3(0.85, 0.9, 1.)*(pblob(o, d, X2, 0.01)*flash*200. + blob(o, d, X2, 0.08 + 0.3*uP2.z)*flash*0.8);
   outCol(col, alpha);
 }`;
@@ -120,8 +127,8 @@ const binary = (() => {
   for (let i=0;i<nd;i++){ const r = 0.015 + 0.19*Math.pow(rnd(), 0.8), c = blackbodyJS(18000*Math.pow(r/0.015, -0.6)); disk.a.set([r, rndn()*0.03, 0.4 + rnd()*0.8, rnd()*6.2832], i*4); disk.c.set([c[0], c[1], c[2], 0], i*4); }
   disk.upload('ac');
   // nova shell
-  const nn = Math.round(2400*QUALITY), shell = makePS(nn);
-  for (let i=0;i<nn;i++){ const d = randDir(), c = rnd() < 0.6 ? [1, 0.4, 0.35] : [0.5, 0.9, 1]; shell.a.set([d[0], d[1], d[2], 0.85 + 0.3*rnd()], i*4); shell.c.set([c[0], c[1], c[2], 0], i*4); }
+  const nn = Math.round(4200*QUALITY), shell = makePS(nn);
+  for (let i=0;i<nn;i++){ const d = randDir(), c = Math.abs(d[1]) > 0.55 ? (rnd() < 0.7 ? [0.55, 0.8, 1] : [0.85, 0.6, 1]) : (rnd() < 0.6 ? [1, 0.4, 0.45] : [1, 0.75, 0.55]); shell.a.set([d[0], d[1], d[2], 0.85 + 0.3*rnd()], i*4); shell.c.set([c[0], c[1], c[2], 0], i*4); }
   shell.upload('ac');
   st.update = dt => {
     st.acc += dt*RATE; let c = 0;
@@ -132,13 +139,13 @@ const binary = (() => {
     const tn = st.novaT;
     st.flash = 14*Math.exp(-tn/0.35) + 3*Math.exp(-tn/2.5);
     st.disrupt = smooth(0, 0.6, tn)*(1 - smooth(9, 20, tn));
-    st.shellR = 0.04 + 1.7*(1 - Math.exp(-tn/6));
+    st.shellR = 0.04 + 2.6*(1 - Math.exp(-tn/7));
     st.shellA = tn < 0.05 ? 0 : Math.exp(-tn/8)*(1 - smooth(22, 30, tn))*3;
     if (st.hsX*st.hsX + st.hsZ*st.hsZ > 1e-6) st.hsAng = Math.atan2(st.hsZ, st.hsX);
     for (let i=0;i<n;i++){
       const on = delay[i] > 0 ? 0 : 1, h = heat[i];
       ps.a[i*4] = p[i*3]*S; ps.a[i*4+1] = p[i*3+1]*S; ps.a[i*4+2] = p[i*3+2]*S; ps.a[i*4+3] = on*(0.35 + 1.6*h*h)*(1 - 0.8*st.disrupt);
-      const col = blackbodyJS(3800 + 12000*h*h); ps.c[i*4] = col[0]; ps.c[i*4+1] = col[1]; ps.c[i*4+2] = col[2];
+      const col = V.lerp([1, 0.42, 0.16], blackbodyJS(9000 + 14000*h*h), Math.min(1, h*1.4)); ps.c[i*4] = col[0]; ps.c[i*4+1] = col[1]; ps.c[i*4+2] = col[2];
     }
     ps.upload('ac');
   };
@@ -150,9 +157,9 @@ const binary = (() => {
     sim:st, tourReset:()=>{ st.novaT = NOVA - 9; }, update(dt){ st.update(dt); this.rot = M3.mul(this.R0, M3.rotY(st.phase)); },
     setU(pr){ gl.uniform4f(pr.u.uP0, mu1, mu2, xL1, PhiS); gl.uniform4f(pr.u.uP1, gp, st.hsAng, RD, 0.35); gl.uniform4f(pr.u.uP2, st.flash, st.disrupt, smooth(0, 3, st.novaT), 0); },
     particles:[
-      {ps, prog:'ptBasic', mode:1, sb:4, size:2},
-      {ps:disk, prog:'ptKDisk', mode:1, sb:1.1, size:1.8, q0:()=>[st.phase, X2, st.disrupt, 0]},
-      {ps:shell, prog:'ptNova', mode:1, sb:2.5, size:2, q0:()=>[X2, st.shellR, st.shellA, smooth(0, 4, st.novaT)], mat:()=>M3.rotY(-(st.phase - st.novaPhase)), show:()=>st.shellA > 0.01},
+      {ps, prog:'ptBasic', mode:1, sb:6.5, size:2.1},
+      {ps:disk, prog:'ptKDisk', mode:1, sb:1.8, size:1.9, q0:()=>[st.phase, X2, st.disrupt, 0]},
+      {ps:shell, prog:'ptNova', mode:1, sb:3.4, size:2.2, q0:()=>[X2, st.shellR, st.shellA, smooth(0, 4, st.novaT)], mat:()=>M3.rotY(-(st.phase - st.novaPhase)), show:()=>st.shellA > 0.01},
     ],
     readout:() => {
       const tn = st.novaT;

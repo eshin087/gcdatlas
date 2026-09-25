@@ -7,12 +7,12 @@
 
 <section class="info" aria-live="polite">
   <div class="brand">gcdatlas <span id="tbadge" class="tbadge" hidden></span></div>
-  <div class="stop"><span id="stopNum">01</span> / <span id="stopCount">11</span> · <span id="mode">tour</span></div>
+  <div class="stop"><span><span id="stopNum">01</span> / <span id="stopCount">11</span></span><span id="mode" class="mode">tour</span></div>
   <div class="title">
     <h1 id="objName">Earth</h1>
     <button class="nav" id="prevObj" aria-label="Previous stop">&lsaquo;</button><button class="nav" id="nextObj" aria-label="Next stop">&rsaquo;</button>
   </div>
-  <div class="acts"><button class="act" id="btnShare" title="Copy a link to exactly this view">share</button><button class="act" id="btnCompare" title="Put another object beside this one at true scale">compare size</button></div>
+  <div class="acts"><button class="act" id="btnShare" title="Copy a link to exactly this view">share</button><button class="act" id="btnCompare" title="Put another object beside this one at true scale">compare size</button><button class="act" id="btnFlyby" hidden title="A sweeping camera move that shows how big this is">flyby</button><button class="act" id="btnPhoto" title="Photo mode: frame a shot, save it as a picture or copy it as ASCII text (P)">photo</button></div>
   <div id="objType" class="type"></div>
   <div id="objDist" class="where"></div>
   <p id="objFact" class="fact"></p>
@@ -20,7 +20,7 @@
   <div class="scale" title="A ruler for what you are looking at: at the distance of this object, the bar's length on screen equals the distance written next to it.">
     <span class="rlab">ruler</span><span id="scaleBar" class="bar"></span><span id="scaleTxt"></span>
   </div>
-  <div id="progress" class="progress"></div>
+  <div id="progress" class="progress"><span id="progLabel" class="plab"></span><span id="progBar" class="pbar" hidden><i></i></span></div>
 </section>
 
 <nav class="controls" aria-label="View controls">
@@ -28,9 +28,11 @@
     <input id="search" type="search" placeholder="search the universe" autocomplete="off" spellcheck="false" aria-controls="atlas"><kbd>/</kbd>
   </label>
   <button class="btn primary" id="btnAtlas" aria-expanded="false" aria-controls="atlas">atlas</button>
-  <button class="btn" id="btnTours" aria-expanded="false" aria-controls="tours">tours</button>
+  <button class="btn resume" id="btnResume" hidden title="Go back to where the tour left off (space)">&#9656; resume tour</button>
+  <span class="tourgrp"><button class="btn tskip" id="tourPrev" aria-label="Previous tour stop" title="Previous stop ([)">&lsaquo;</button><button class="btn" id="btnTours" aria-expanded="false" aria-controls="tours">tours</button><button class="btn tskip" id="tourNext" aria-label="Next tour stop" title="Next stop (])">&rsaquo;</button></span>
   <button class="btn" id="btnTime" aria-expanded="false" aria-controls="timem">time</button>
-  <button class="btn" id="btnShip" aria-pressed="true" title="Show where the Halo is">ship</button>
+  <div class="seg mini" data-key="travel" role="radiogroup" aria-label="Travel speed" title="How fast you fly between objects (Y)"><span class="seg-l">travel</span><button data-v="cinematic" role="radio">slow</button><button data-v="quick" role="radio">quick</button><button data-v="warp" role="radio">warp</button></div>
+  <button class="btn" id="btnShip" title="Fly to the Halo and follow it">ship</button>
   <button class="btn" id="btnSound" aria-pressed="true" title="Background music (M)">sound</button>
   <button class="btn" id="btnSettings" aria-expanded="false" aria-controls="settings">settings</button>
   <button class="btn" id="btnHelp" aria-label="Controls help">?</button>
@@ -42,6 +44,11 @@
     <input id="atlasSearch" type="search" placeholder="search the universe" autocomplete="off" spellcheck="false" aria-label="Search objects">
     <button class="btn" id="atlasClose" aria-label="Close atlas">close</button>
   </div>
+  <div class="atlas-tools">
+    <div class="row" id="atlasSort"><span class="lbl">sort</span><button class="chip" data-sort="distance">distance</button><button class="chip" data-sort="size">size</button><button class="chip" data-sort="name">name</button><button class="chip" id="atlasDir" title="Reverse the order">&darr; nearest first</button><button class="chip reset" id="atlasReset" title="Back to the default view">reset</button></div>
+    <div class="row" id="atlasCats"><span class="lbl">show</span></div>
+    <div class="row seen-row"><span class="lbl">seen</span><span id="seenCount" class="seen-count"></span><span id="badges" class="badges"></span></div>
+  </div>
   <div id="atlasList" class="atlas-list" role="listbox" aria-label="Objects"></div>
   <div class="atlas-foot">real positions and sizes · distances from Earth</div>
 </aside>
@@ -49,7 +56,14 @@
 <aside id="tours" class="panel" aria-label="Tours" hidden>
   <div class="panel-head"><span class="ptitle">tours</span><button class="btn" id="toursClose">close</button></div>
   <div class="opt tog"><button id="btnTour" aria-pressed="true">pause tour</button><button id="btnFree" aria-pressed="false">free camera</button></div>
+  <div class="opt">
+    <div class="opt-l">time at each stop</div>
+    <div class="seg" data-key="dwell" role="radiogroup" aria-label="Time at each stop">
+      <button data-v="short" role="radio">short</button><button data-v="normal" role="radio">normal</button><button data-v="long" role="radio">long</button>
+    </div>
+  </div>
   <div id="tourList" class="tour-list"></div>
+  <div class="opt"><button class="btn saver-go" id="btnSaver">&#9635; screensaver mode</button><div class="opt-note tm-sub">full screen, the interface fades away and an endless shuffled tour plays with the music (Z). Move the mouse or press a key to come back.</div></div>
   <div class="panel-foot">space pauses or resumes · [ ] step between stops</div>
 </aside>
 
@@ -76,8 +90,30 @@
     <input id="deep" type="range" min="-200" max="200" step="1" value="0" aria-label="Deep time in thousands of years">
     <div class="opt-note tm-sub">drag to see the stars drift over ±200,000 years (measured proper motions) and the constellations change shape</div>
   </div>
+  <div class="opt">
+    <div class="opt-l">tonight</div>
+    <div class="tog"><button id="btnSky" title="Stand at your location and look up (B)">&#9650; your sky</button><button id="btnStory" title="Earth through 4.5 billion years">&#9677; Earth's story</button></div>
+    <div id="skyPlaces" class="sky-places" hidden>
+      <div class="opt-note tm-sub">where are you? (your location stays on this device)</div>
+      <div class="tog" id="skyCities"><button data-loc="here">use my location</button></div>
+    </div>
+    <div id="events" class="events"></div>
+  </div>
   <div class="panel-foot">planet positions are accurate from 1800 to 2050 and approximate beyond</div>
 </aside>
+
+<aside id="story" class="panel story" aria-label="Earth's story" hidden>
+  <div class="panel-head"><span class="ptitle">Earth's story</span><button class="btn" id="storyPlay">play</button><button class="btn" id="storyClose">close</button></div>
+  <div class="opt">
+    <div class="st-when" id="stWhen">today</div>
+    <input id="storyTime" type="range" min="0" max="1000" step="1" value="1000" aria-label="Time in Earth's history">
+    <div class="st-ticks" id="stTicks"></div>
+    <div class="st-name" id="stName"></div>
+    <div class="st-text" id="stText"></div>
+  </div>
+  <div class="panel-foot">4.54 billion years on a stretched scale so both deep time and recent history have room · the globe shows the broad look of each era, not the ancient map</div>
+</aside>
+<div id="skyBar" class="photo-bar sky-bar" hidden><span class="pb-l">your sky</span><span id="skyWhere" class="sky-where"></span><button class="btn" data-dir="0">north</button><button class="btn" data-dir="90">east</button><button class="btn" data-dir="180">south</button><button class="btn" data-dir="270">west</button><button class="btn" data-dir="up">overhead</button><button class="btn" id="skyExit">done</button></div>
 
 <aside id="settings" class="panel" aria-label="Settings" hidden>
   <div class="panel-head"><span class="ptitle">settings</span><button class="btn" id="settingsClose">close</button></div>
@@ -94,6 +130,16 @@
     </div>
   </div>
   <div class="opt">
+    <div class="opt-l">tour stops <span class="opt-note">how long the tour lingers on each angle</span></div>
+    <div class="seg" data-key="dwell" role="radiogroup" aria-label="Time at each tour stop">
+      <button data-v="short" role="radio">short</button><button data-v="normal" role="radio">normal</button><button data-v="long" role="radio">long</button>
+    </div>
+  </div>
+  <div class="opt">
+    <div class="opt-l">text size <span class="opt-note" id="tsTxt">100%</span></div>
+    <input id="textSize" type="range" min="0.85" max="1.6" step="0.05" aria-label="Text size" style="width:100%;accent-color:var(--flare)">
+  </div>
+  <div class="opt">
     <div class="opt-l">time <span class="opt-note">orbits, spins and explosions</span></div>
     <div class="seg" data-key="time" role="radiogroup" aria-label="Time speed">
       <button data-v="0" role="radio">pause</button><button data-v="0.25" role="radio">0.25x</button><button data-v="1" role="radio">1x</button><button data-v="3" role="radio">3x</button><button data-v="10" role="radio">10x</button>
@@ -102,7 +148,7 @@
   <div class="opt">
     <div class="opt-l">show</div>
     <div class="tog">
-      <button data-key="glow" aria-pressed="true">glow</button><button data-key="labels" aria-pressed="true">labels</button><button data-key="twinkle" aria-pressed="true">twinkle</button><button data-key="shipFinder" aria-pressed="true">ship finder</button>
+      <button data-key="glow" aria-pressed="true">glow</button><button data-key="labels" aria-pressed="true">labels</button><button data-key="twinkle" aria-pressed="true">twinkle</button><button data-key="gravity" aria-pressed="true" title="The true shape of space around black holes (Flamm's paraboloid)">gravity grid</button><button data-key="shipFinder" aria-pressed="true">ship finder</button>
     </div>
   </div>
   <div class="opt">
@@ -111,16 +157,36 @@
       <button data-key="sound" aria-pressed="true">music</button>
       <input id="volume" type="range" min="0" max="1" step="0.05" aria-label="Volume">
     </div>
+    <div class="seg" data-key="musicStyle" role="radiogroup" aria-label="Music style" style="margin-top:6px">
+      <button data-v="mix" role="radio">mix</button><button data-v="lofi" role="radio">lofi</button><button data-v="house" role="radio">chill house</button><button data-v="ambient" role="radio">ambient</button>
+    </div>
+    <div class="now-playing"><span class="np-l">now playing</span><span id="nowPlaying">press play: music starts with your first click</span><button class="chip" id="npSkip" title="Next track">next &#9656;&#9656;</button></div>
+  </div>
+  <div class="opt">
+    <div class="opt-l">screensaver <span class="opt-note">start by itself when nobody touches anything</span></div>
+    <div class="seg" data-key="saverIdle" role="radiogroup" aria-label="Start the screensaver after">
+      <button data-v="0" role="radio">never</button><button data-v="2" role="radio">2 min</button><button data-v="5" role="radio">5 min</button><button data-v="10" role="radio">10 min</button>
+    </div>
   </div>
   <div class="panel-foot">keys: V detail · Y travel · T time · G glow · L labels · M music</div>
 </aside>
 
 <div id="ladder" class="ladder" aria-label="Scale ladder: drag to zoom, click a name to travel there">
-  <div class="lad-cap">view width</div>
+  <div class="lad-cap" id="ladCap">view width</div>
   <div id="ladTrack" class="lad-track"></div>
   <div id="ladMark" class="ladmark" role="slider" tabindex="0" aria-label="Zoom" aria-valuetext=""><span id="ladTxt"></span></div>
 </div>
 
+<!-- today's discovery -->
+<aside id="daily" class="daily" hidden aria-label="Today's discovery">
+  <div class="d-top"><span class="d-lbl">today's discovery</span><span id="dailyStreak" class="d-streak"></span><button class="d-x" id="dailyClose" aria-label="Dismiss">&times;</button></div>
+  <div class="d-name" id="dailyName"></div><div class="d-type" id="dailyType"></div>
+  <div class="d-acts"><button class="act" id="dailyGo">fly there</button><button class="act" id="dailyShare">share</button></div>
+</aside>
+<!-- screensaver overlay -->
+<div id="saverHud" class="saver-hud" hidden aria-hidden="true"><div class="sv-time" id="svTime"></div><div class="sv-obj" id="svObj"></div><div class="sv-fact" id="svFact"></div><div class="sv-np" id="svNp"></div></div>
+<!-- photo mode -->
+<div id="photoBar" class="photo-bar" hidden><span class="pb-l">photo mode</span><button class="btn" id="phSave">save picture</button><button class="btn" id="phText">copy as text</button><button class="btn" id="phFreeze" aria-pressed="false">freeze time</button><button class="btn" id="phLabels" aria-pressed="false">labels</button><button class="btn" id="phClose">done</button></div>
 <div id="caption" class="caption" hidden aria-live="polite"><span id="capText"></span><button class="btn" id="capBtn" hidden>end compare</button></div>
 
 <div class="strip">
@@ -146,6 +212,7 @@
       <dt>esc</dt><dd>close panels, then unlock (free camera)</dd>
       <dt>V · Y · T</dt><dd>detail · travel speed · time speed</dd>
       <dt>G · L · M</dt><dd>glow · labels · music</dd>
+      <dt>Z · P</dt><dd>screensaver · photo mode</dd>
     </dl>
     <p class="note">Everything sits at its real position and real size: the planets where they are today, 1,982 naked-eye stars at their measured distances, the Milky Way, its neighbours and the cosmic web out to the edge of the observable universe. Brightness is compressed so faint things stay visible, stars twinkle gently for life, and fast processes (orbits, explosions, mergers) are sped up. The few objects too small to see next to their surroundings (a quasar's engine, a kilonova) are drawn magnified, and the ruler shows their true size. The music is generated in your browser as you listen. The Halo, the crescent flagship that wanders between wonders, is the one invented thing here.</p>
     <p><button class="btn" id="helpClose">close</button></p>

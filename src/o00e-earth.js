@@ -45,6 +45,15 @@ void main(){
     float mu = max(dot(n, -d), 0.), sdot = dot(n, L), day = smoothstep(-0.08, 0.12, sdot), dif = max(sdot, 0.);
     vec3 ocean = mix(vec3(0.02, 0.075, 0.2), vec3(0.04, 0.24, 0.32), coast*0.8);
     vec3 surf = mix(ocean, landCol(n, lat, tx.g)*1.7, land);
+    // Earth's story: 1 bare rock before land plants, 2 snowball Earth, 3 an ocean world under an orange haze, 4 molten
+    float era = uP1.w;
+    if(era > 0.001){
+      vec3 barren = mix(ocean*vec3(0.9, 1.05, 0.95), vec3(0.42, 0.36, 0.3)*(0.7 + 0.5*tx.r), land);
+      vec3 snow = vec3(0.9, 0.93, 0.97)*(0.85 + 0.15*tx.r);
+      vec3 water = mix(vec3(0.05, 0.16, 0.13), vec3(0.3, 0.26, 0.22), land*0.2);
+      vec3 lava = mix(vec3(0.1, 0.03, 0.02), vec3(0.9, 0.3, 0.08), pow(noise(n*16. + t*0.02), 3.)*2.);
+      surf = era < 1. ? mix(surf, barren, era) : era < 2. ? mix(barren, snow, era - 1.) : era < 3. ? mix(snow, water, era - 2.) : mix(water, lava, era - 3.);
+    }
     float cl = clouds(n, t);
     // clouds cast soft shadows a little way from themselves
     float cls = clouds(normalize(n + L*0.012), t);
@@ -55,6 +64,7 @@ void main(){
     // city lights on the night side, dimmed by cloud
     float lights = tx.b*(1. - day)*(1. - 0.75*cl)*(0.55 + 0.9*noise(n*140.))*uP0.z;
     col = lit + vec3(1., 0.72, 0.36)*lights*1.7;
+    if(era > 3.) col += vec3(1., 0.36, 0.08)*pow(noise(n*16. + t*0.02), 3.)*(era - 3.)*2.5;   // the magma ocean glows on its own
     // atmosphere along the view path: blue by day, orange at the terminator
     float path = pow(1. - mu, 2.5);
     vec3 sky = mix(vec3(1., 0.42, 0.16), vec3(0.3, 0.55, 1.), smoothstep(-0.02, 0.3, sdot));
@@ -123,8 +133,11 @@ const earth = (() => {
       {dirFn:() => sunSide(o, 0.95, 0.32), k:3.1, hold:9, drift:0.035},
       {dirFn:() => sunSide(o, 2.75, 0.22), k:2.1, hold:9, drift:0.03},
       {dirFn:() => sunSide(o, 0.55, 0.05), k:1.3, off:[0, 0.62, 0], hold:8, drift:0.012},
-      {dirFn:() => { const m = V.norm(moon.offset), L = sunDirFrom(o), c = V.norm(V.sub(L, V.mul(m, V.dot(L, m)))); return V.norm(V.add(c, [0, 0, 0.3])); },
-       k:62, off:() => V.mul(M3.applyT(o.R0, moon.offset), 0.5/o.rad), hold:9, drift:0.002},
+      // pull back from behind Earth, with the Moon hanging beyond it, until the true gap between them opens up (30 Earths wide)
+      {dirFn:() => { const m = V.norm(moon.offset), L = sunDirFrom(o), c = V.norm(V.sub(L, V.mul(m, V.dot(L, m)))); return V.norm(V.add(V.mul(m, -1), V.mul(c, 0.55))); },
+       k:2.6, hold:13, drift:0, flyby:'pulling back to the Moon', offW:'dist',
+       to:{ dirFn:() => { const m = V.norm(moon.offset), L = sunDirFrom(o), c = V.norm(V.sub(L, V.mul(m, V.dot(L, m)))); return V.norm(V.add(c, V.mul(m, -0.12))); },
+         k:74, off:() => V.mul(M3.applyT(o.R0, moon.offset), 0.5/o.rad) }},
     ],
     update(){
       const jd = jdNow();
@@ -132,8 +145,8 @@ const earth = (() => {
       this.rot = bodyFrame(0, 90, 190.147 + 360.9856235*(jd - 2451545));
     },
     setU(pr){ const L = sunDirFrom(this);
-      gl.uniform4f(pr.u.uP0, this.t, 1, 1, Math.log2(Math.max(160/Math.max(this.rpx*2, 1), 1)));
-      gl.uniform4f(pr.u.uP1, L[0], L[1], L[2], 0);
+      gl.uniform4f(pr.u.uP0, this.t, 1, EARTH_ERA.lights, Math.log2(Math.max(160/Math.max(this.rpx*2, 1), 1)));
+      gl.uniform4f(pr.u.uP1, L[0], L[1], L[2], EARTH_ERA.era);
       gl.uniform4f(pr.u.uP2, magN[0], magN[1], magN[2], 0); },
     particleVis:rpx => smooth(3, 12, rpx),
     particles:[{ps:sats, prog:'ptSat', mode:3, sb:0.4, size:1.6, rot:() => o.R0, rad:R*bound, q0:() => [(jdNow() - JD_NOW)*86400, 0, 0, 0], vis:() => 1 - smooth(1.5e-8, 6e-8, orbit.dist)}],

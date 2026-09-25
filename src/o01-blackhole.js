@@ -35,7 +35,7 @@ void main(){
   if(hit.y < 0.) discard;
   vec3 p = o + d*max(hit.x, 0.), v = d;
   vec3 hv = cross(p, v); float h2 = dot(hv, hv);
-  vec3 col = vec3(0.); float T = 1.; bool captured = false;
+  vec3 col = vec3(0.), jc = vec3(0.); float T = 1.; bool captured = false;
   int N = int(mix(110., 220., uLod));
   float rin = uP0.x, rout = uP0.y;
   for(int i=0;i<260;i++){
@@ -54,14 +54,21 @@ void main(){
       if(rq > rin && rq < rout) disk(q, rq, mix(v, vn, f), col, T);
     }
     // relativistic jets along the spin axis (launched from just outside the horizon)
-    if(uP1.x > 0.){ float ay = abs(pn.y); float w = 0.8 + 0.12*ay; float rr = length(pn.xz); col += T*vec3(0.62, 0.72, 1.)*exp(-rr*rr/(w*w))*smoothstep(2., 5., ay)*exp(-ay/60.)*uP1.x*dt*0.05; }
+    if(uP1.x > 0.){ float ay = abs(pn.y); float w = 0.8 + 0.12*ay; float rr = length(pn.xz); jc += T*vec3(0.62, 0.72, 1.)*exp(-rr*rr/(w*w))*smoothstep(2., 5., ay)*exp(-ay/60.)*uP1.x*dt*0.05; }
     p = pn; v = vn;
     if(T < 0.01) break;
   }
   float b = length(cross(o, d));
   float w = smoothstep(11., 19.5, b);
   vec3 bg = vec3(0.);
-  if(!captured && T > 0.01) bg = starfield(normalize(mix(uRot*normalize(v), rd, w)));
+  if(!captured && T > 0.01){
+    vec3 dv = normalize(mix(uRot*normalize(v), rd, w));
+    bg = starfield(dv);
+    // uP1.w: a dormant hole has nothing of its own to show, so the lensed background (magnified into arcs and an Einstein ring) is lifted to make its pull visible
+    if(uP1.w > 0.) bg += uP1.w*smoothstep(15., 3.2, b)*(starCell(dv, 84., 0.24, 5.)*0.8 + starCell(dv, 44., 0.13, 9.) + vec3(0.5, 0.58, 0.9)*0.03*fbm3(dv*6.));
+  }
+  // the jets are in front of the hole, but only faintly where they cross its shadow, so the shadow stays black
+  col += jc*(captured ? 0.12 : 1.);
   // photon ring: light that orbited the hole piles up in a razor-thin ring at the shadow's edge
   float pr = exp(-pow((b - 2.598)/0.035, 2.))*(length(o) > 3. ? 1. : 0.);
   col += T*vec3(1., 0.85, 0.6)*pr*0.35*uP0.w;
@@ -83,7 +90,7 @@ const sgra = (() => {
   const M = 4.3e6, rs = schwarzschild(M), RB = 20;
   const o = addObj({ key:'sgra', name:'Sagittarius A*', label:'Sgr A*', type:'supermassive black hole · 4.3 million Suns · heart of the Milky Way', group:'galaxies', sortKey:26670,
     fact:'Its event horizon is 17 times wider than the Sun. Light skimming past bends into a ring; the approaching side of the disk glows brighter and bluer. Its real feeding disk is dimmer than shown.',
-    pos:SGRA_POS, rad:rs*RB, solid:0.13, R0:facingEarth(SGRA_POS, V.norm([0.5, 0.86, 0]), 20), prog:P.blackhole, minZoom:0.105, pxMin:6, farColor:[1, 0.7, 0.4], farLum:0.2, labelRange:600,
+    pos:SGRA_POS, rad:rs*RB, solid:0.13, R0:facingEarth(SGRA_POS, V.norm([0.5, 0.86, 0]), 20), prog:P.blackhole, minZoom:0.053, pxMin:6, farColor:[1, 0.7, 0.4], farLum:0.2, labelRange:600,
     aka:'sgr a* black hole galactic centre center',
     setU(pr){ gl.uniform4f(pr.u.uP0, 3, 15, 1, 1); gl.uniform4f(pr.u.uP1, 0, 0, 0, 0); },
     views:[

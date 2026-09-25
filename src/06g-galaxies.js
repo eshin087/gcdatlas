@@ -6,6 +6,16 @@
 // uP3: x Orion-spur radius (0 none), y minor-arm weakening, z bar angle, w arm reference radius
 const FS_GALAXYG = COMMON + `
 float armPat(float psi, float m){ return pow(0.5 + 0.5*cos(m*psi), 3.); }
+// a ring of young stars (ring galaxies such as the Cartwheel and Hoag's Object), drawn where the ray crosses the disk plane
+vec3 starRing(vec3 o, vec3 d){
+  if(uP4.w <= 0. || abs(d.y) < 1e-4) return vec3(0.);
+  float t = -o.y/d.y; if(t < 0.) return vec3(0.);
+  vec3 q = o + d*t; float rho = length(q.xz), pa = atan(q.z, q.x);
+  float ring = exp(-pow((rho - uP4.y)/uP4.z, 2.));
+  float knots = 0.3 + 1.5*pow(noise(vec3(q.xz*38., uP2.y)), 3.) + 0.7*smoothstep(0.55, 0.8, noise(vec3(pa*11., rho*28., 3.)));
+  vec3 c = mix(vec3(0.55, 0.7, 1.), vec3(1., 0.45, 0.7), smoothstep(0.62, 0.85, noise(vec3(q.xz*24., 7.))));
+  return c*ring*knots*uP4.w*0.03/max(abs(d.y), 0.15);
+}
 void main(){
   vec3 o, d; localRay(o, d);
   vec2 h = sphIsect(o, d, vec3(0.), 1.);
@@ -22,6 +32,7 @@ void main(){
       col += warm*I*dt*40.;
     }
     col += warm*(pblob(o, d, vec3(0.), 0.004)*40. + blob(o, d, vec3(0.), 0.02)*1.2);
+    col += starRing(o, d);
     outCol(col, 0.);
     return;
   }
@@ -47,10 +58,15 @@ void main(){
       float disk = exp(-rho/Rd)*exp(-ay/H)*smoothstep(1., 0.55, rho);
       vec2 q = vec2(p.x*ca + p.z*sa, -p.x*sa + p.z*ca);
       float barD = bar > 0. ? exp(-(q.x*q.x/(bar*bar) + q.y*q.y/(bar*bar*0.12)))*exp(-ay/(H*2.2 + bar*0.12)) : 0.;
-      vec3 em = warm*barD*0.9 + mix(old, young, a)*disk*(0.12 + 1.7*a);
-      float knots = smoothstep(0.6, 0.78, noise(p*vec3(52., 70., 52.) + sd));
-      em += pink*disk*a*knots*sf*3.;
-      float lane = m > 0.5 ? armPat(psi + 0.2, m)*(0.4 + 1.2*fbm3(p*40. + sd)) : fbm3(p*18. + sd)*0.6;
+      // cloudy structure: the arms are billowing star clouds, not lines; a soft envelope carries a haze of unresolved stars
+      float cloud = fbm3(p*vec3(13., 36., 13.) + sd*1.7);
+      float haze = m > 0.5 ? pow(0.5 + 0.5*cos(m*psi), 1.3) : 0.;
+      vec3 em = warm*barD*0.9 + mix(old, young, a)*disk*(0.12 + 1.7*a)*(0.5 + 1.*cloud) + young*disk*haze*cloud*cloud*0.9;
+      // star-forming regions: pink hydrogen clouds strung along the arms
+      float knots = smoothstep(0.58, 0.8, noise(p*vec3(34., 60., 34.) + sd));
+      em += pink*disk*a*knots*sf*4.5*(0.6 + cloud);
+      // dust: lanes on the inner edge of each arm, and feathery spurs crossing it
+      float lane = m > 0.5 ? armPat(psi + 0.22, m)*(0.3 + 1.4*fbm3(p*40. + sd)) + 0.45*a*smoothstep(0.55, 0.8, ridge(p*vec3(26., 60., 26.) + sd)) : fbm3(p*18. + sd)*0.6;
       float dust = lane*exp(-ay/(H*0.45))*exp(-rho/(Rd*1.6))*smoothstep(bar*0.4, bar*0.9 + 0.03, rho);
       if(ringR > 0.) dust += exp(-pow((rho - ringR)/(ringR*0.08), 2.))*exp(-ay/(H*0.5))*(0.6 + 0.8*fbm3(p*30.))*3.;
       col += T*em*dt*uP4.x;
@@ -71,6 +87,7 @@ void main(){
     }
   }
   col += warm*(pblob(o, d, vec3(0.), 0.003)*30.*bw + blob(o, d, vec3(0.), 0.015)*0.8*bw);
+  col += starRing(o, d);
   outCol(col, (1. - T)*0.85);
 }`;
 P.galaxy = program(VS_RECT, FS_GALAXYG);
@@ -81,7 +98,7 @@ function galaxyU(g){
     gl.uniform4f(pr.u.uP1, g.bar ?? 0, g.H ?? 0.012, g.sf ?? 0.6, g.ell ?? 0);
     gl.uniform4f(pr.u.uP2, g.irr ?? 0, g.seed ?? 1, g.Rd ?? 0.3, g.ring ?? 0);
     gl.uniform4f(pr.u.uP3, g.spur ?? 0, g.minor ?? 0, (g.barAng ?? 20)*DEG, g.armRef ?? 0.3);
-    gl.uniform4f(pr.u.uP4, (g.gain ?? 1)*0.32/(g.H ?? 0.012), 0, 0, 0);
+    gl.uniform4f(pr.u.uP4, (g.gain ?? 1)*0.32/(g.H ?? 0.012), g.ringR ?? 0, g.ringW ?? 0.05, g.ringGain ?? 0);
   };
 }
 // star particles that follow the same structure as the volume model (arms, bar, bulge, clumps)
@@ -91,7 +108,8 @@ function galaxyStars(g, n){
   let k = 0, guard = 0;
   while (k < n && guard++ < n*20){
     const u = rnd(); let p, c, w = 1;
-    if (g.ell){ const d = randDir(), r = Rd*0.4*Math.pow(-Math.log(1 - rnd()*0.995), 1.6); p = [d[0]*r, d[1]*r*(1 - g.ell), d[2]*r]; c = blackbodyJS(3800 + 1400*rnd()); w = 0.8; }
+    if (g.ringR && rnd() < (g.ringStars ?? 0.45)){ const rr = g.ringR + rndn()*(g.ringW ?? 0.05)*0.6, a = rnd()*6.283; p = [rr*Math.cos(a), rndn()*0.008, rr*Math.sin(a)]; c = rnd() < 0.2 ? [1, 0.45, 0.7] : [0.55 + 0.2*rnd(), 0.7, 1]; w = 1.3; }
+    else if (g.ell){ const d = randDir(), r = Rd*0.4*Math.pow(-Math.log(1 - rnd()*0.995), 1.6); p = [d[0]*r, d[1]*r*(1 - g.ell), d[2]*r]; c = blackbodyJS(3800 + 1400*rnd()); w = 0.8; }
     else if (u < (g.bulge ?? 0.6)*0.18){ const d = randDir(), r = 0.03*(0.5 + (g.bulge ?? 0.6))*(-Math.log(1 - rnd()*0.99)); p = [d[0]*r, d[1]*r*0.7, d[2]*r]; c = blackbodyJS(3600 + 1500*rnd()); w = 0.9; }
     else if (bar && u < 0.3){ const x = rndn()*bar*0.5, z = rndn()*bar*0.13; p = [x*Math.cos(ba) - z*Math.sin(ba), rndn()*0.01, x*Math.sin(ba) + z*Math.cos(ba)]; c = blackbodyJS(4000 + 1200*rnd()); }
     else {
@@ -140,7 +158,7 @@ const SGRA_POS = radec(hms(17,45,40.04), dms(-29,0,28.2), 26670);
 const milkyway = (() => {
   const RAD = 90000;
   const R0 = frameY([0, 0, 1], V.mul(SGRA_POS, -1));
-  const g = { arms:4, pitch:12, bulge:0.9, dust:1.1, bar:0.18, H:0.011, sf:0.7, Rd:0.105, spur:26670/RAD, minor:0.45, barAng:27, armRef:23150/RAD, seed:3, gain:0.35 };
+  const g = { arms:4, pitch:12, bulge:0.55, dust:1.6, bar:0.18, H:0.011, sf:1.5, Rd:0.105, spur:26670/RAD, minor:0.45, barAng:27, armRef:23150/RAD, seed:3, gain:0.75 };
   const L = v => V.add(SGRA_POS, M3.apply(R0, V.mul(v, RAD)));   // local (units of RAD) -> world
   // stars: arms, disk, bar, bulge; globular clusters in the halo
   const nA = Math.round(26000*QUALITY), nB = Math.round(7000*QUALITY), nH = Math.round(1500*QUALITY), nG = 157;
@@ -191,7 +209,7 @@ const milkyway = (() => {
       {d:[1, 0.62, 0.2], k:0.36, off:[26670/RAD, 0, 0], hold:9, drift:0.015},
     ],
     particles:[
-      {ps, prog:'ptBasic', mode:0, sb:0.3, size:1.4, cap:0.7},
+      {ps, prog:'ptBasic', mode:0, sb:0.22, size:1.4, cap:0.7},
       {ps:glob, prog:'ptBasic', mode:1, sb:0.8, size:1.8},
     ],
     readout:() => 'the Sun circles the centre at 230 km/s\none lap, a "galactic year", takes about 230 million years' });

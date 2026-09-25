@@ -16,12 +16,24 @@ function setBasis(fwd, up){
 }
 function orbitDir(){ return M3.apply(orbit.frame, sphL(orbit.yaw, orbit.pitch)); }
 function applyOrbit(){
+  if (SKYV.on && SKYV.site){ skyCamera(); return; }
   const d = orbitDir();
   cam.rel = V.add(orbit.target, V.mul(d, orbit.dist));
   setBasis(V.mul(d, -1), M3.apply(orbit.frame, [0,1,0]));
 }
-function viewParams(o, vi){
-  const v = o.views[vi];
+// planetarium: the camera stands at your location on the turning Earth; dragging looks around (azimuth, altitude)
+function skyCamera(){
+  const s = SKYV.site, up = V.norm(s.offset), pole = M3.apply(earth.R0, [0, 1, 0]);
+  const north = V.norm(V.sub(pole, V.mul(up, V.dot(pole, up)))), east = V.norm(V.cross(north, up));
+  orbit.pitch = clamp(orbit.pitch, -0.25, 1.52);
+  const az = -orbit.yaw, alt = orbit.pitch, dir = V.add(V.mul(V.add(V.mul(north, Math.cos(az)), V.mul(east, Math.sin(az))), Math.cos(alt)), V.mul(up, Math.sin(alt)));
+  cam.focus = s.index; orbit.lock = s.index; cam.rel = V.mul(up, 2*KM);
+  orbit.dist = orbit.distT = 30; orbit.target = V.add(cam.rel, dir);
+  SKYV.az = az; SKYV.alt = alt; SKYV.up = up; SKYV.north = north; SKYV.east = east;
+  setBasis(dir, up);
+}
+function viewParams(o, vi){ return viewParamsV(o, o.views[vi]); }
+function viewParamsV(o, v){
   let d = [0, 0.3, 1];
   if (v.d) d = v.d;
   if (v.dirFn) d = M3.applyT(o.R0, v.dirFn());
@@ -104,6 +116,7 @@ function updateFlight(dt){
     flight = null; applyOrbit(); f.onDone && f.onDone();
   }
 }
+let flyMove = null;   // a flyby playing outside a tour
 function startTween(to, dur){ tween = { t:0, dur, from:{yaw:orbit.yaw, pitch:orbit.pitch, dist:orbit.dist, off:orbit.off.slice()}, to }; }
 function updateTween(dt){
   const w = tween; w.t += dt; const u = ease(clamp(w.t/w.dur, 0, 1));
@@ -119,7 +132,7 @@ const TOUR = [];   // filled after all objects exist (list of object indices)
 const TOUR_KEYS = ['earth', 'moon', 'sun', 'jupiter', 'saturn', 'solarsystem', 'oort', 'alphacen', 'betelgeuse', 'hltau', 'catseye', 'pillars', 'crab', 'crabpulsar', 'etacar', 'rsoph',
   'omegacen', 'galcentre', 'sgra', 'magnetar', 'milkyway', 'sn1987a', 'andromeda', 'm51', 'antennae', 'm87', 'gw170817', '3c273', 'ton618', 'cosmicweb', 'universe'];
 function tourGo(i, instant){
-  const o = OBJ[i]; tour.obj = i; tour.view = 0; tour.t = 0;
+  const o = OBJ[i]; tour.obj = i; tour.view = 0; tour.t = 0; tour.last = null;
   o.tourReset && o.tourReset();
   const vp = viewParams(o, 0);
   setInfo(i);
@@ -135,10 +148,11 @@ function tourNext(dir = 1){ const k = TOUR.indexOf(tour.obj); return TOUR[((k < 
 function updateTour(dt){
   const o = OBJ[tour.obj];
   if (tour.phase === 'hold'){
-    const v = o.views[tour.view];
+    const v = o.views[tour.view], hold = holdOf(v);
     tour.t += dt;
-    if (!reduceMotion) orbit.yaw += v.drift*dt;
-    if (tour.t > v.hold){
+    if (v.to) playMove(o, v, clamp(tour.t/hold, 0, 1));
+    else if (!reduceMotion) orbit.yaw += v.drift*dt;
+    if (tour.t > hold){
       if (tour.view < o.views.length - 1){
         tour.phase = 'swing'; tour.t = 0;
         startTween(viewParams(o, tour.view + 1), reduceMotion ? 0.6 : (SET.travel === 'warp' ? 1.4 : SET.travel === 'quick' ? 2.6 : 3.4));
@@ -147,11 +161,24 @@ function updateTour(dt){
     }
   }
 }
+const holdOf = v => v.hold*(v.to ? Math.max(dwellK(), 0.75) : dwellK());
+// a camera move: glide from the view's own framing to its 'to' framing, easing in and out, distance changing smoothly in log space
+function playMove(o, v, u){
+  const a = viewParamsV(o, v), b = viewParamsV(o, Object.assign({ hold:1, drift:0 }, v.to));
+  const e = v.ease === 'out' ? 1 - Math.pow(1 - u, 3) : u*u*(3 - 2*u);
+  let dy = b.yaw - a.yaw; dy = Math.atan2(Math.sin(dy), Math.cos(dy));
+  orbit.yaw = a.yaw + dy*e; orbit.pitch = a.pitch + (b.pitch - a.pitch)*e;
+  orbit.dist = orbit.distT = Math.exp(Math.log(a.dist) + (Math.log(b.dist) - Math.log(a.dist))*(v.distEase ? v.distEase(e) : e));   // (moves are designed to stay outside the object)
+  // offW 'dist': the aim point shifts in step with the real distance travelled, so a pull-back keeps its subject in frame
+  const w = v.offW === 'dist' && Math.abs(b.dist - a.dist) > 1e-30 ? clamp((orbit.dist - a.dist)/(b.dist - a.dist), 0, 1) : e;
+  orbit.offFn = null; orbit.off = V.lerp(a.offFn ? a.offFn() : a.off, b.offFn ? b.offFn() : b.off, w);
+}
 function setTour(on){
   tour.on = on;
   $('#btnTour').setAttribute('aria-pressed', String(on));
   if (on){
     let i = orbit.lock >= 0 ? orbit.lock : nearestObject();
+    if (tour.last != null && TOUR.includes(tour.last)){ i = tour.last; toast('resuming the tour at ' + OBJ[i].name); }   // back to where the tour left off
     if (!TOUR.includes(i)) i = TOUR[0];
     if (orbit.lock === i && !flight){ tour.obj = i; tour.view = 0; tour.t = 0; tour.phase = 'swing'; startTween(viewParams(OBJ[i], 0), 2.5); tween.onDone = () => { tour.phase = 'hold'; tour.t = 0; }; setInfo(i); }
     else tourGo(i);
@@ -160,10 +187,10 @@ function setTour(on){
 }
 function stopTour(msg){
   if (!tour.on) return;
-  tour.on = false; tween = null;
+  tour.on = false; tween = null; tour.last = tour.obj;
   if (flight) finishFlightHere();
   $('#btnTour').setAttribute('aria-pressed', 'false');
-  if (msg) toast('tour paused · press space or tap tour to resume');
+  if (msg) toast('tour paused · tap resume tour (or press space) to pick up where it left off');
   updateModeUI();
 }
 // abandon a flight mid-way, keeping the camera where it is
@@ -234,7 +261,7 @@ function beginManual(){
   manualAt = performance.now();
   if (tour.on) stopTour(true);
   if (flight) finishFlightHere();
-  tween = null;
+  tween = null; flyMove = null;
   hideHint();
 }
 const MAX_DIST = 1.6e11;
@@ -292,7 +319,7 @@ function stepObject(dir){
   const cur = tour.on ? tour.obj : (orbit.lock >= 0 ? orbit.lock : nearestObject());
   let k = TOUR.indexOf(cur); if (k < 0) k = 0;
   const n = TOUR[(k + dir + TOUR.length) % TOUR.length];
-  if (tour.on){ tween = null; if (flight) finishFlightHere(); tourGo(n); } else lockOn(n);
+  if (tour.on){ tween = null; if (flight) finishFlightHere(); tourGo(n); } else { lockOn(n); tour.last = n; updateModeUI(); }
 }
 function updateKeys(dt){
   if (!keys.size) return;

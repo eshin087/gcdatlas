@@ -88,7 +88,7 @@ function progFinish(pr){
 function progReady(pr, wait){
   if (pr.ready) return true;
   progStart(pr);
-  if (!wait && PAR && !gl.getProgramParameter(pr.p, PAR.COMPLETION_STATUS_KHR)) return false;
+  if (!wait && PAR && !window.__syncCompile && !gl.getProgramParameter(pr.p, PAR.COMPLETION_STATUS_KHR)) return false;
   progFinish(pr); return true;
 }
 function useProg(pr){ progReady(pr, true); gl.useProgram(pr.p); }
