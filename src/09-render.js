@@ -780,8 +780,8 @@ $('#btnHelp').addEventListener('click', () => toggleHelp(true));
 $('#helpClose').addEventListener('click', () => toggleHelp(false));
 $('#help').addEventListener('click', e => { if (e.target.id === 'help') toggleHelp(false); });
 function toggleHelp(on){ $('#help').hidden = !on; if (on) $('#helpClose').focus(); else canvas.focus({preventScroll:true}); }
-// the first click or key press is what browsers accept as permission to play sound
-for (const ev of ['pointerdown', 'keydown', 'wheel', 'touchstart']) addEventListener(ev, () => music.gesture(), { capture:true, passive:true });
+// browsers that block sound on load accept a click, tap or key press as permission (pointerup and touchend count on phones)
+for (const ev of ['pointerdown', 'pointerup', 'touchend', 'click', 'keydown', 'wheel', 'touchstart']) addEventListener(ev, () => music.gesture(), { capture:true, passive:true });
 
 // ================================================================ main loop
 let tmT = 0, last = performance.now(), ema = 16, adaptCount = 0, runTime = 0, resizePending = false, refocusT = 0, lodT = 0;

@@ -3,11 +3,12 @@
 // Three styles take turns: lofi beats (dusty drums, Rhodes chords, vinyl crackle), chill house (soft four-on-the-floor,
 // sidechained pads, plucked arpeggios) and ambient interludes (slow pads, drone, distant chimes). Every track gets its own
 // key, tempo, chord progression, melody and arrangement (intro, verses, a breakdown, an outro), so nothing loops audibly.
-// Everything is synthesised in the browser: no audio files. Browsers only allow sound after a click or key press.
+// Everything is synthesised in the browser: no audio files. It tries to start on load; browsers that block that start it on the first
+// click, tap or key press. The first track skips its intro so the groove is there at once.
 const music = (() => {
   const AC = window.AudioContext || window.webkitAudioContext;
   let ctx = null, master = null, verbSend = null, drumBus = null, drumLP = null, musBus = null, duck = null, crackleG = null, droneG = null, wobble = null, noiseBuf = null;
-  let wantOn = false, running = false, timer = 0;
+  let wantOn = false, running = false, timer = 0, first = true;
   const hz = m => 440*Math.pow(2, (m - 69)/12);
   const R = Math.random, pick = a => a[Math.floor(R()*a.length)];
   // ---------------------------------------------------------------- harmony
@@ -47,7 +48,7 @@ const music = (() => {
       kickPat:pick([[0, 7, 10], [0, 10], [0, 3, 10], [0, 8, 11]]), hatDensity:0.55 + R()*0.4, lead:R() < 0.8,
       title:pick(WORDS1) + ' ' + pick(WORDS2), label:(style === 'lofi' ? 'lofi' : style === 'house' ? 'chill house' : 'ambient') + ' · ' + bpm + ' bpm' };
     T.name = `${T.title} · ${T.label}`;
-    step = 0;
+    step = first ? Math.max(sections.indexOf('A'), 0)*16 : 0; first = false;
     if (typeof onTrack === 'function') onTrack(T);
     // style-dependent textures
     const t = ctx.currentTime;
@@ -239,7 +240,7 @@ const music = (() => {
     if (!T) newTrack();
     nextT = Math.max(nextT, ctx.currentTime + 0.1);
     clearInterval(timer); timer = setInterval(pump, 50); pump();
-    fadeTo(level(), 3);
+    fadeTo(level(), ctx.currentTime < 1 ? 0.6 : 3);
   }
   function stop(){
     running = false;
@@ -252,8 +253,9 @@ const music = (() => {
     get track(){ return T; },
     get _dbg(){ return { ctx, master }; },   // for the level tests
     set onTrack(f){ onTrack = f; },
-    gesture(){ if (wantOn && !running) start(); },
-    set(on){ wantOn = on; if (on){ if (ctx || navigator.userActivation?.hasBeenActive) start(); } else stop(); },
+    // a blocked context stays suspended, so every gesture retries until one is accepted (wheel and touchstart are not)
+    gesture(){ if (!wantOn) return; if (!running) start(); else if (ctx.state === 'suspended'){ ctx.resume(); fadeTo(level(), 0.6); } },
+    set(on){ wantOn = on; if (on) start(); else stop(); },
     volume(){ if (running) fadeTo(level(), 0.3); },
     // move on to a new track now (the current one is cut at the next beat with a short fade)
     skip(){ if (!ctx || !running){ T = null; return; } const t = ctx.currentTime; musBus.gain.setValueAtTime(musBus.gain.value, t); musBus.gain.linearRampToValueAtTime(0, t + 0.4); musBus.gain.linearRampToValueAtTime(1, t + 1.2); T = null; newTrack(); },
