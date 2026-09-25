@@ -67,6 +67,18 @@ if (await has('ui-idle')) fail('a tap did not bring the interface back');
 if (!(await page.evaluate(() => __cosmos.tour.on))) fail('the wake-up tap stopped the tour');
 await shot('7-tour-awake');
 void lockBefore;
+
+// a wake-up tap that lands on an object's label does not fly there either
+await page.waitForFunction(() => document.body.classList.contains('ui-idle'), null, { timeout:15000 }).catch(() => fail('the interface did not fade again'));
+const lab = await page.evaluate(() => {
+  const b = [...document.querySelectorAll('#labels .lab:not(.star)')].find(el => { const r = el.getBoundingClientRect(); return el.style.visibility !== 'hidden' && r.width > 0 && r.top > 60 && r.bottom < innerHeight - 220; });
+  if (!b) return null; const r = b.getBoundingClientRect(); return { x:r.left + r.width/2, y:r.top + r.height/2, t:b.textContent };
+});
+if (lab){
+  await page.touchscreen.tap(lab.x, lab.y); await page.waitForTimeout(600);
+  if (!(await page.evaluate(() => __cosmos.tour.on))) fail(`a wake-up tap on the label "${lab.t}" flew there and stopped the tour`);
+  if (await has('ui-idle')) fail('a tap on a label did not bring the interface back');
+}
 await fade('off');
 
 // dragging breaks the tour: the card offers "resume tour", which picks it up again
@@ -84,5 +96,5 @@ if (ld.over > 1) fail('landscape dock overflows');
 if (ld.cardBottom > ld.dockTop + 1) fail('landscape card overlaps the dock');
 await page.tap('#btnAtlas'); await page.waitForTimeout(800); await shot('9-landscape-atlas');
 
-report('mobile', errors, 'screenshots in tests/out/mobile');
+report('mobile', errors, 'screenshots in tests/out/mobile' + (lab ? ` · wake-up tap on "${lab.t}" checked` : ''));
 await browser.close();
