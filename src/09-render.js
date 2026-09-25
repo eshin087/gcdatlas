@@ -207,9 +207,9 @@ function render(){
 
 // ================================================================ HUD
 let infoObj = 0, toastTimer = 0, roTimer = 0, hintHidden = false;
-const infoEl = $('.info'), atlasEl = $('#atlas'), settingsEl = $('#settings'), ladderEl = $('#ladder'), controlsEl = $('.controls');
+const infoEl = $('.info'), atlasEl = $('#atlas'), settingsEl = $('#settings'), ladderEl = $('#ladder'), controlsEl = $('.controls'), brandEl = $('.brand'), ladChipEl = $('#ladChip'), infoPillEl = $('#infoPill');
 // panels and the ladder sit just below the toolbar, however many rows it wraps onto
-const syncCtl = () => { const b = controlsEl.getBoundingClientRect(); document.documentElement.style.setProperty('--ctl-b', (innerWidth <= 680 ? 54 : Math.round(b.bottom)) + 'px'); };
+const syncCtl = () => { const b = controlsEl.getBoundingClientRect(); document.documentElement.style.setProperty('--ctl-b', (isCompact() ? 54 : Math.round(b.bottom)) + 'px'); };
 if (typeof ResizeObserver !== 'undefined') new ResizeObserver(syncCtl).observe(controlsEl); syncCtl();
 function projectCSS(rel){
   const z = V.dot(rel, cam.fwd); if (z <= 0) return null;
@@ -222,9 +222,9 @@ const distFromEarth = o => o.distEarth || fmtDist(V.len(V.sub(o.pos, earth.pos))
 const readoutEl = $('#readout'); let roLast = '';
 function setReadout(t){
   if (t === roLast) return; roLast = t;
-  const one = innerWidth > 680 ? t.replace(/\n+/g, '  ·  ') : t;
+  const one = !isCompact() ? t.replace(/\n+/g, '  ·  ') : t;
   readoutEl.textContent = one; readoutEl.title = t.replace(/\n+/g, ' · ');
-  if (innerWidth <= 680){ readoutEl.style.fontSize = ''; return; }
+  if (isCompact()){ readoutEl.style.fontSize = ''; return; }
   // shrink a step or two if the line is too long for the space beside the panel
   readoutEl.style.fontSize = '';
   for (let k = 0; k < 3 && readoutEl.scrollWidth > readoutEl.clientWidth + 1; k++) readoutEl.style.fontSize = `calc(${(11.5 - 0.6*(k + 1)).toFixed(1)}px*var(--ts))`;
@@ -243,8 +243,8 @@ function updateModeUI(){
   const m = cmp ? 'size compare' : tour.on ? tourName() : (orbit.lock >= 0 || flight ? 'locked on' : 'free camera'), me = $('#mode');
   if (me.textContent !== m){ me.textContent = m; me.className = 'mode ' + (tour.on ? 'm-tour' : m === 'free camera' ? 'm-free' : 'm-lock'); }
   $('#btnTours').classList.toggle('touring', tour.on);
-  $('#btnResume').hidden = tour.on || tour.last == null || !!cmp;
-  const sh = typeof ship !== 'undefined' && orbit.lock === ship.index; $('#btnShip').classList.toggle('following', sh); $('#btnShip').textContent = sh ? 'following ship' : 'ship';
+  $('#btnResume').hidden = $('#btnResumeI').hidden = tour.on || tour.last == null || !!cmp;
+  const sh = typeof ship !== 'undefined' && orbit.lock === ship.index; $('#btnShip').classList.toggle('following', sh); $('#btnShip').textContent = sh && !isCompact() ? 'following ship' : 'ship';
   $('#btnFree').setAttribute('aria-pressed', String(!tour.on && orbit.lock < 0 && !flight));
   $('#btnTour').setAttribute('aria-pressed', String(tour.on)); $('#btnTour').textContent = tour.on ? 'pause tour' : 'resume ' + tourName();
   if (typeof tourRows !== 'undefined') tourRows.forEach(r => r.b.setAttribute('aria-current', String(tour.on && r.id === TOUR_ID)));
@@ -264,8 +264,9 @@ const labelEls = OBJ.map((o, i) => {
 const starEls = STAR_LABELS.map(s => { const b = document.createElement('span'); b.className = 'lab star'; b.textContent = s.name; $('#labels').appendChild(b); return b; });
 // interface areas labels must stay clear of
 function uiRects(){
-  const r = [infoEl.getBoundingClientRect(), controlsEl.getBoundingClientRect()];
-  const lb = ladderEl.getBoundingClientRect(); r.push({ left:lb.left - 190, right:lb.right + 12, top:lb.top - 30, bottom:lb.bottom + 10 });
+  const r = [infoEl.getBoundingClientRect(), controlsEl.getBoundingClientRect(), brandEl.getBoundingClientRect()];
+  const lb = ladderEl.getBoundingClientRect(); if (lb.height > 0) r.push({ left:lb.left - 190, right:lb.right + 12, top:lb.top - 30, bottom:lb.bottom + 10 });
+  for (const el of [ladChipEl, infoPillEl]) if (!el.hidden){ const b = el.getBoundingClientRect(); if (b.height > 0) r.push(b); }
   if (!atlasEl.hidden) r.push(atlasEl.getBoundingClientRect());
   if (!settingsEl.hidden) r.push(settingsEl.getBoundingClientRect());
   return r;
@@ -330,6 +331,7 @@ function updateHUD(dt){
     const pl = $('#progLabel'), pb = $('#progBar');
     if (pl.textContent !== p) pl.textContent = p;
     pb.hidden = f < 0; if (f >= 0) pb.firstChild.style.width = (f*100).toFixed(1) + '%';
+    $('#progress').classList.toggle('hintish', !tour.on && f < 0);
     updateTourTrack();
     updateScale();
   }
@@ -524,11 +526,11 @@ shipArrowEl.addEventListener('click', followShip);
 
 // ---------------------------------------------------------------- settings
 function syncSettingsUI(){
-  const v = { detail:String(detailIdx), travel:SET.travel, time:String(timeScale), dwell:SET.dwell, musicStyle:SET.musicStyle, saverIdle:String(SET.saverIdle) };
+  const v = { detail:String(detailIdx), travel:SET.travel, time:String(timeScale), dwell:SET.dwell, musicStyle:SET.musicStyle, saverIdle:String(SET.saverIdle), fadeUI:SET.fadeUI };
   document.querySelectorAll('.seg[data-key]').forEach(seg => { const k = seg.dataset.key; seg.querySelectorAll('button').forEach(b => b.setAttribute('aria-checked', String(b.dataset.v === v[k]))); });
   settingsEl.querySelectorAll('.tog button').forEach(b => b.setAttribute('aria-pressed', String(!!SET[b.dataset.key])));
   $('#volume').value = SET.volume;
-  $('#btnSound').setAttribute('aria-pressed', String(SET.sound)); $('#btnSound').textContent = SET.sound ? 'sound' : 'sound off';
+  $('#btnSound').setAttribute('aria-pressed', String(SET.sound)); $('#btnSound').textContent = SET.sound ? 'sound' : (isCompact() ? 'muted' : 'sound off');
   $('#textSize').value = SET.textSize; $('#tsTxt').textContent = Math.round(SET.textSize*100) + '%';
   $('#detailInfo').textContent = `${cols} x ${rows} characters`;
 }
@@ -548,6 +550,7 @@ function setOpt(key, v, quiet){
     case 'saverIdle': SET.saverIdle = +v || 0; if (!quiet) toast(SET.saverIdle ? `screensaver starts after ${SET.saverIdle} minutes without input` : 'screensaver only when you ask (Z)'); break;
     case 'dwell': SET.dwell = v; if (!quiet) toast('tour stops: ' + v + (v === 'short' ? ' · quicker tour' : v === 'long' ? ' · lingers on each view' : '')); break;
     case 'textSize': SET.textSize = clamp(+v, 0.85, 1.6); applyTextSize(); break;
+    case 'fadeUI': SET.fadeUI = v; if (!quiet) toast(v === 'off' ? 'the interface stays put' : 'the interface fades ' + (v === 'quick' ? 'after a few seconds (sooner on tours)' : 'after a while') + ' · touch or move to bring it back'); break;
   }
   saveSet(); syncSettingsUI();
 }
@@ -687,6 +690,8 @@ $('#btnFlyby').addEventListener('click', () => { const o = OBJ[infoObj]; if (o.f
 music.onTrack = tr => { $('#nowPlaying').textContent = tr.name; if (SET.sound) toast('\u266a ' + tr.name); };
 $('#npSkip').addEventListener('click', () => { music.skip(); if (!SET.sound) toast('music is off · turn it on to hear the next track'); });
 $('#btnResume').addEventListener('click', () => { hideHint(); if (cmp) endCompare(false); setTour(true); });
+$('#btnResumeI').addEventListener('click', () => $('#btnResume').click());
+$('#settingsHelp').addEventListener('click', () => { togglePanel('settings', false); toggleHelp(true); });
 $('#tourPrev').addEventListener('click', () => { hideHint(); stepObject(-1); });
 $('#tourNext').addEventListener('click', () => { hideHint(); stepObject(1); });
 $('#btnSound').addEventListener('click', () => setOpt('sound', !SET.sound));
@@ -721,6 +726,7 @@ function refocus(dt){
 const PANELS = { tours:['#tours', '#btnTours'], timem:['#timem', '#btnTime'], settings:['#settings', '#btnSettings'] };
 function togglePanel(id, on){
   for (const [k, [p, b]] of Object.entries(PANELS)){ const show = k === id ? on : false; $(p).hidden = !show; $(b).setAttribute('aria-expanded', String(show)); }
+  document.body.classList.toggle('panel-open', !!on);
   if (on && id === 'settings') syncSettingsUI();
   if (on && id === 'timem') syncTimeUI();
 }

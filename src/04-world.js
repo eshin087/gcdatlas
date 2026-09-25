@@ -5,9 +5,12 @@ const LY = 9.4607e12, AU = 1.495979e8;   // km
 const KM = 1/LY, AU_LY = AU/LY;         // light-years per km / per AU
 const RSUN = 695700;
 const IS_SMALL = Math.min(innerWidth, innerHeight) < 600;
+// the phone layout (dock, info card, scale chip): narrow screens, and short ones on their side. Keep in step with the CSS in 00-head.html.
+const COMPACT_MQ = matchMedia('(max-width:680px), (max-height:520px) and (max-width:1000px)');
+const isCompact = () => COMPACT_MQ.matches;
 // user settings, remembered between visits when the browser allows it
 const SET = (() => {
-  const d = { detail:1, travel:'quick', glow:true, labels:true, twinkle:true, shipFinder:true, gravity:true, sound:true, volume:0.55, dwell:'normal', textSize:1, musicStyle:'mix', saverIdle:0 };
+  const d = { detail:1, travel:'quick', glow:true, labels:true, twinkle:true, shipFinder:true, gravity:true, sound:true, volume:0.55, dwell:'normal', textSize:1, musicStyle:'mix', saverIdle:0, fadeUI:'quick', infoD:'full', infoM:'compact' };
   try { const s = JSON.parse(localStorage.getItem('gcdatlas.settings') || '{}'); for (const k in d) if (k in s && typeof s[k] === typeof d[k]) d[k] = s[k]; } catch (e) {}
   return d;
 })();

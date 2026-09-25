@@ -33,11 +33,12 @@ body:has(#view.dragging) *{-webkit-user-select:none;user-select:none}
 ::selection{background:rgba(255,179,92,.35);color:#fff}
 
 /* ---- info panel, top left */
-.info{position:fixed;left:calc(16px + env(safe-area-inset-left,0px));top:calc(14px + env(safe-area-inset-top,0px));
+.info{position:fixed;left:calc(16px + env(safe-area-inset-left,0px));top:calc(28px + 28.5px*var(--ts) + env(safe-area-inset-top,0px));
   max-width:min(440px,calc(100vw - 32px));pointer-events:none;text-shadow:0 0 14px #000,0 0 4px #000;z-index:2}
-.info::before{content:"";position:absolute;inset:-60px -120px -50px -80px;z-index:-1;pointer-events:none;
+.info::before{content:"";position:absolute;inset:-100px -120px -50px -80px;z-index:-1;pointer-events:none;transition:opacity .25s;
   background:radial-gradient(closest-side,rgba(3,4,9,.9),rgba(3,4,9,.7) 55%,rgba(3,4,9,0))}
-.brand{font-family:var(--disp);font-size:calc(19px*var(--ts));letter-spacing:.08em;color:var(--ink);text-shadow:0 0 12px rgba(143,200,255,.35),0 0 14px #000;margin-bottom:14px}
+.brand{position:fixed;left:calc(16px + env(safe-area-inset-left,0px));top:calc(14px + env(safe-area-inset-top,0px));z-index:2;pointer-events:none;
+  font-family:var(--disp);font-size:calc(19px*var(--ts));line-height:1.5;letter-spacing:.08em;color:var(--ink);text-shadow:0 0 12px rgba(143,200,255,.35),0 0 14px #000}
 .tbadge{font-family:var(--mono);font-size:calc(10.5px*var(--ts));letter-spacing:.06em;color:var(--void);background:var(--flare);border-radius:2px;padding:1px 6px;margin-left:8px;vertical-align:1px}
 .stop{margin-top:0;color:var(--flare);display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:calc(11px*var(--ts));letter-spacing:.14em;text-transform:uppercase;font-variant-numeric:tabular-nums}
 .title{display:flex;align-items:center;gap:6px;margin:4px 0 2px}
@@ -60,6 +61,35 @@ body:has(#view.dragging) *{-webkit-user-select:none;user-select:none}
 .mode.m-tour{border-color:rgba(160,240,170,.5);color:#a8f0b0}
 .mode.m-free{background:var(--cyan);border-color:var(--cyan);color:var(--void);font-weight:600;animation:modeFlash 1.2s ease-out 1}
 @keyframes modeFlash{0%{box-shadow:0 0 0 0 rgba(127,220,255,.9)}100%{box-shadow:0 0 0 12px rgba(127,220,255,0)}}
+
+/* info panel controls: more / less, hide, and the pill that brings it back */
+.grip{display:none}
+.itools{margin-left:auto;display:inline-flex;gap:2px;pointer-events:auto}
+.itool{font:inherit;font-size:calc(10px*var(--ts));letter-spacing:.1em;text-transform:uppercase;color:var(--dim);background:none;border:1px solid transparent;border-radius:3px;padding:1px 6px;cursor:pointer}
+.itool:hover{color:var(--ink);border-color:var(--line)}
+.resume-i{display:none}
+body.info-compact .info .acts,body.info-compact .info .type,body.info-compact .info .fact,body.info-compact .info .readout,body.info-compact .info .scale{display:none}
+body.info-hidden .info{display:none}
+.info-pill{position:fixed;left:calc(16px + env(safe-area-inset-left,0px));top:calc(28px + 28.5px*var(--ts) + env(safe-area-inset-top,0px));z-index:2;display:flex;align-items:center;gap:8px;max-width:calc(100vw - 120px);
+  padding:3px 11px 3px 4px;color:var(--soft);background:var(--panel);border:1px solid var(--line);border-radius:14px;font-size:calc(11.5px*var(--ts));cursor:pointer;-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px)}
+.info-pill b{flex:none;display:grid;place-items:center;width:calc(18px*var(--ts));height:calc(18px*var(--ts));border-radius:50%;border:1px solid var(--flare);color:var(--flare);font-size:calc(10.5px*var(--ts));font-weight:600;font-style:italic;font-family:Georgia,serif}
+.info-pill span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.info-pill:hover{color:var(--ink);border-color:rgba(255,179,92,.5)}
+/* scale chip: the phone's way into the scale ladder */
+.lad-chip{display:none}
+
+/* idle: after a few quiet seconds the interface fades, leaving the object's name; any touch, key or mouse move brings it back */
+.brand,.lad-chip,.info-pill,.itools,.resume-i,.grip,.info .nav,.info .stop,.info .title,.info .acts,.info .type,.info .where,.info .fact,.info .readout,.info .scale,.info .progress{transition:opacity .25s}
+body.ui-idle .controls,body.ui-idle .ladder,body.ui-idle .lad-chip,body.ui-idle .brand,body.ui-idle .info-pill,body.ui-idle .daily,body.ui-idle .shiparrow,
+body.ui-idle .itools,body.ui-idle .resume-i,body.ui-idle .grip,body.ui-idle .info .nav,body.ui-idle .info .acts,body.ui-idle .info .type,body.ui-idle .info .where,body.ui-idle .info .fact,body.ui-idle .info .readout,body.ui-idle .info .scale{opacity:0!important;transition:opacity 1s ease-in}
+/* on touch screens the first tap only wakes the interface, so faded controls let it through; a mouse wakes them on the way to a button */
+@media (pointer:coarse){
+  body.ui-idle .controls,body.ui-idle .ladder,body.ui-idle .lad-chip,body.ui-idle .info-pill,body.ui-idle .daily,body.ui-idle .shiparrow,body.ui-idle .itools,body.ui-idle .resume-i,body.ui-idle .grip,body.ui-idle .info .acts,body.ui-idle .info .nav{pointer-events:none!important}
+}
+body.ui-idle .info .stop,body.ui-idle .info .title,body.ui-idle .info .progress{opacity:.5;transition:opacity 1s ease-in}
+body.ui-idle .info .progress.hintish{opacity:0}
+body.ui-idle .info::before{opacity:0;transition:opacity 1s}
+body.ui-idle .caption{background:rgba(5,7,14,.4);border-color:transparent;border-left-color:var(--flare);transition:background 1s,border-color 1s}
 
 /* info actions: share, compare */
 .acts{display:flex;gap:6px;margin:6px 0 2px}
@@ -266,8 +296,8 @@ body:has(#view.dragging) *{-webkit-user-select:none;user-select:none}
 .d-type{color:var(--dim);font-size:calc(11px*var(--ts))}
 .d-acts{display:flex;gap:6px;margin-top:8px}
 /* screensaver: everything fades away */
-.info,.controls,.ladder,.labels,.strip,.caption,.daily,.atlas,.panel,.shipmark,.shiparrow{transition:opacity 1.2s}
-body.saver .info,body.saver .controls,body.saver .ladder,body.saver .labels,body.saver .strip,body.saver .caption,body.saver .daily,body.saver .atlas,body.saver .panel,body.saver .shipmark,body.saver .shiparrow{opacity:0!important;pointer-events:none!important}
+.info,.controls,.ladder,.labels,.strip,.caption,.daily,.atlas,.panel,.shipmark,.shiparrow{transition:opacity .25s}
+body.saver .info,body.saver .brand,body.saver .lad-chip,body.saver .info-pill,body.saver .controls,body.saver .ladder,body.saver .labels,body.saver .strip,body.saver .caption,body.saver .daily,body.saver .atlas,body.saver .panel,body.saver .shipmark,body.saver .shiparrow{opacity:0!important;pointer-events:none!important;transition:opacity 1.2s}
 body.saver #view{cursor:none}
 .saver-hud{position:fixed;left:calc(28px + env(safe-area-inset-left,0px));bottom:calc(26px + env(safe-area-inset-bottom,0px));max-width:min(520px,calc(100vw - 56px));color:var(--soft);z-index:5;pointer-events:none;text-shadow:0 0 12px #000,0 0 4px #000;opacity:.8}
 .sv-time{font-family:var(--disp);font-size:calc(34px*var(--ts));color:var(--ink);letter-spacing:.06em}
@@ -276,7 +306,7 @@ body.saver #view{cursor:none}
 .sv-np{margin-top:8px;font-size:calc(11px*var(--ts));color:var(--flare)}
 .btn.saver-go{width:100%;color:#a8f0b0;border-color:rgba(168,240,176,.5)}
 /* photo mode: the interface hides, a small bar stays */
-body.photo .info,body.photo .controls,body.photo .ladder,body.photo .strip,body.photo .caption,body.photo .daily,body.photo .atlas,body.photo .panel,body.photo .shipmark,body.photo .shiparrow{opacity:0!important;pointer-events:none!important}
+body.photo .info,body.photo .brand,body.photo .lad-chip,body.photo .info-pill,body.photo .controls,body.photo .ladder,body.photo .strip,body.photo .caption,body.photo .daily,body.photo .atlas,body.photo .panel,body.photo .shipmark,body.photo .shiparrow{opacity:0!important;pointer-events:none!important}
 body.photo:not(.photo-labels) .labels{opacity:0}
 .photo-bar{position:fixed;left:50%;bottom:calc(18px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);display:flex;gap:6px;align-items:center;flex-wrap:wrap;justify-content:center;padding:6px 8px;
   background:rgba(5,7,14,.82);border:1px solid var(--line);border-radius:4px;z-index:8;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);max-width:calc(100vw - 24px);box-sizing:border-box}
@@ -292,7 +322,7 @@ body.photo:not(.photo-labels) .labels{opacity:0}
 .ev small{display:block;color:var(--faint);font-size:calc(10.5px*var(--ts))}
 .sky-places{margin-top:6px}
 .sky-where{color:var(--soft);font-size:calc(11px*var(--ts));padding:0 6px}
-body.sky .info .acts,body.sky .ladder,body.sky .progress{opacity:.0;pointer-events:none}
+body.sky .info .acts,body.sky .ladder,body.sky .lad-chip,body.sky .progress{opacity:.0;pointer-events:none}
 .story .st-when{font-size:calc(18px*var(--ts));color:var(--flare);font-variant-numeric:tabular-nums}
 #storyTime{width:100%;accent-color:var(--flare);margin-top:6px}
 .st-ticks{position:relative;height:10px;margin:0 8px}
@@ -301,32 +331,107 @@ body.sky .info .acts,body.sky .ladder,body.sky .progress{opacity:.0;pointer-even
 .st-text{margin-top:3px;color:var(--soft);font-size:calc(12px*var(--ts));min-height:3.4em;-webkit-user-select:text;user-select:text}
 
 @media (max-width:1100px){ .search input{width:170px} .controls{max-width:calc(100vw - 420px)} }
-@media (max-width:680px){
-  .info h1{font-size:calc(20px*var(--ts))}
-  .readout{white-space:pre-wrap;width:auto;max-width:none}
-  .controls .seg.mini{display:none}
-  .pbar{width:110px}
-  .fact{font-size:calc(11.5px*var(--ts));max-width:40ch}
-  .controls{top:auto;right:12px;left:12px;bottom:calc(12px + env(safe-area-inset-bottom,0px));justify-content:center;max-width:none;gap:5px}
-  .search{display:none}
-  .btn{padding:5px 6px;font-size:calc(10.5px*var(--ts))}
-  .controls{gap:4px;flex-wrap:nowrap}
-  .strip{padding-bottom:calc(58px + env(safe-area-inset-bottom,0px))}
+/* ---- phones and small windows: a dock of big buttons at the bottom, the info as a card above it, the scale ladder behind a chip.
+   --dock-h and --sheet-h are measured by src/09h-ui.js so captions, toasts and cards stack above them. */
+@media (max-width:680px), (max-height:520px) and (max-width:1000px){
+  .brand{font-size:calc(15px*var(--ts));left:calc(12px + env(safe-area-inset-left,0px));top:calc(7px + env(safe-area-inset-top,0px))}
   .hint{display:none}
-  .atlas,.panel{top:auto;left:12px;right:12px;width:auto;bottom:calc(56px + env(safe-area-inset-bottom,0px))}
-  .atlas{max-height:44vh}
-  .caption{bottom:calc(92px + env(safe-area-inset-bottom,0px));font-size:calc(12px*var(--ts));padding:8px 10px}
-  .atlas:not([hidden]) ~ .caption{display:none}
-  .panel{max-height:66vh}
+  /* the dock */
+  .controls{top:auto;left:calc(8px + env(safe-area-inset-left,0px));right:calc(8px + env(safe-area-inset-right,0px));bottom:calc(6px + env(safe-area-inset-bottom,0px));max-width:none;box-sizing:border-box;
+    flex-wrap:nowrap;justify-content:space-between;gap:2px;padding:3px;background:rgba(5,7,14,.66);border:1px solid var(--line);border-radius:14px;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
+  .controls .search,.controls .seg.mini,.controls #btnResume,.controls .btn.tskip,.controls #btnHelp{display:none}
+  .controls .tourgrp{display:contents}
+  .controls .btn{flex:1 1 0;min-width:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;min-height:46px;padding:4px 2px 3px;
+    border:0;border-radius:10px;background:none;font-size:calc(10px*var(--ts));letter-spacing:.03em;overflow:hidden;text-overflow:ellipsis;-webkit-backdrop-filter:none;backdrop-filter:none}
+  .controls .btn[data-ico]::before{content:attr(data-ico);font-size:calc(17px*var(--ts));line-height:1.15}
+  .controls .btn:hover{border-color:transparent}
+  .controls .btn[aria-expanded="true"]{background:var(--flare-bg);color:var(--flare)}
+  #btnSound[aria-pressed="false"]{color:var(--faint)}
+  #btnShip.following{background:rgba(143,230,255,.14);color:var(--ship)}
+  #btnTours.touring{background:rgba(168,240,176,.1)}
+  /* the info card */
+  .info{top:auto;bottom:calc(var(--dock-h,64px) + 6px);box-sizing:border-box;padding:0 12px 10px;pointer-events:auto;
+    background:rgba(5,7,14,.7);border:1px solid var(--line);border-radius:14px;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);
+    max-height:calc(100% - var(--dock-h,64px) - 60px - env(safe-area-inset-top,0px));overflow-y:auto;overscroll-behavior:contain;scrollbar-width:none;text-shadow:0 0 8px #000;
+    transition:background .25s,border-color .25s,opacity .25s,-webkit-backdrop-filter .25s,backdrop-filter .25s}
+  .info::-webkit-scrollbar{display:none}
+  .info::before{display:none}
+  .grip{display:block;position:sticky;top:0;z-index:1;width:calc(100% + 24px);height:20px;margin:0 -12px;padding:0;background:none;border:0;cursor:pointer}
+  .grip i{display:block;width:38px;height:4px;margin:7px auto 0;border-radius:2px;background:rgba(195,203,224,.4)}
+  .stop{letter-spacing:.1em;row-gap:6px}
+  .itool{padding:5px 10px;margin:-3px 0;font-size:calc(10.5px*var(--ts));letter-spacing:.06em;color:var(--dim);border-color:var(--line);border-radius:12px;text-transform:none}
+  .itools{gap:5px}
+  .resume-i:not([hidden]){display:inline-block;order:5;color:var(--void);background:#a8f0b0;border-color:#a8f0b0;font-weight:600;letter-spacing:.02em;text-transform:none;padding:4px 12px}
+  .itools{order:4}
+  .title{gap:0;margin:3px 0 0}
+  .info h1{flex:1;min-width:0;font-size:calc(20px*var(--ts))}
+  .title .nav{width:42px;height:38px;font-size:calc(24px*var(--ts));color:var(--soft);border-color:var(--line);border-radius:10px;margin-left:4px}
+  .type,.where{font-size:calc(11px*var(--ts))}
+  body.info-compact .where{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .acts{flex-wrap:wrap;margin:8px 0 4px}
+  .act{padding:4px 11px}
+  .fact{font-size:calc(12px*var(--ts));max-width:none}
+  .readout{white-space:pre-wrap;width:auto;max-width:none}
+  .progress{margin-top:5px}
+  .progress.hintish{display:none}
+  .pbar{flex:1;width:auto;max-width:200px}
+  body.ui-idle .info{background:transparent;border-color:transparent;-webkit-backdrop-filter:none;backdrop-filter:none;pointer-events:none;transition:background 1s,border-color 1s}
+  /* hidden: a pill above the dock brings it back */
+  .info-pill{top:auto;left:calc(10px + env(safe-area-inset-left,0px));bottom:calc(var(--dock-h,64px) + 8px);padding:6px 14px 6px 6px;font-size:calc(12px*var(--ts));background:rgba(5,7,14,.72)}
+  .info-pill b{width:calc(22px*var(--ts));height:calc(22px*var(--ts))}
+  .info-pill::after{content:"\25B4";color:var(--dim)}
+  /* panels open from the dock */
   .atlas-head input{display:block}
   .atlas-head .pcount{display:none}
-  .daily{bottom:calc(64px + env(safe-area-inset-bottom,0px));left:12px}
-  .ladder{top:calc(210px + env(safe-area-inset-top,0px));bottom:calc(120px + env(safe-area-inset-bottom,0px));right:12px}
-  .atlas-open .ladder{right:12px;opacity:.25;pointer-events:none}
-  .tick{font-size:0;gap:0}
-  .tick.here,.tick.near{font-size:calc(10px*var(--ts));gap:6px}
-  .lad-cap{display:none}
+  .atlas,.panel{border-radius:14px}
+  /* atlas filters stay on one line each and scroll sideways, so the list keeps the room */
+  .atlas-tools{gap:5px;padding:6px 10px}
+  .atlas-tools .row{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;overscroll-behavior-x:contain}
+  .atlas-tools .row::-webkit-scrollbar{display:none}
+  .atlas-tools .chip,.atlas-tools .lbl,.seen-count,.badge{flex:none}
+  .badges{flex-wrap:nowrap;margin-left:4px}
+  .chip.reset{margin-left:0}
+  /* the scale ladder: folded behind a chip at the top right, opens over a dark scrim */
+  .ladder{display:none}
+  .lad-chip{display:flex;align-items:center;gap:6px;position:fixed;right:calc(8px + env(safe-area-inset-right,0px));top:calc(6px + env(safe-area-inset-top,0px));z-index:6;max-width:62vw;
+    padding:5px 11px 5px 9px;color:var(--soft);background:rgba(5,7,14,.62);border:1px solid var(--line);border-radius:14px;font-size:calc(11px*var(--ts));font-variant-numeric:tabular-nums;cursor:pointer;
+    -webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+  .lad-chip b{color:var(--flare);font-weight:400}
+  .lad-chip span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  body.lad-open .lad-chip{color:var(--flare);border-color:rgba(255,179,92,.6)}
+  body.lad-open::after{content:"";position:fixed;top:0;right:0;bottom:0;width:min(290px,82vw);z-index:5;pointer-events:none;background:linear-gradient(to left,rgba(3,4,9,.94),rgba(3,4,9,.84) 60%,rgba(3,4,9,0))}
+  body.lad-open .ladder,body.lad-open.atlas-open .ladder{display:block;z-index:6;right:calc(28px + env(safe-area-inset-right,0px));top:calc(88px + env(safe-area-inset-top,0px));bottom:calc(var(--dock-h,64px) + 30px);opacity:1;pointer-events:auto}
+  body.lad-open .lad-cap{display:block;top:-32px}
+  body.lad-open .caption,body.lad-open .daily{opacity:0;pointer-events:none}
+  /* your sky: its bar sits above the dock and the card */
+  .sky-bar{bottom:calc(var(--dock-h,64px) + var(--sheet-h,0px) + 8px);max-width:calc(100vw - 16px)}
 }
-@media (max-height:520px) and (max-width:1000px){ .fact{display:none} .ladder{display:none} }
+/* phones held upright: everything stacks at the bottom, full width */
+@media (max-width:680px){
+  .info{left:calc(8px + env(safe-area-inset-left,0px));right:calc(8px + env(safe-area-inset-right,0px));max-width:none}
+  .atlas,.panel{top:auto;left:calc(8px + env(safe-area-inset-left,0px));right:calc(8px + env(safe-area-inset-right,0px));width:auto;bottom:calc(var(--dock-h,64px) + 6px)}
+  .atlas{max-height:48vh}
+  .panel{max-height:64vh}
+  body.atlas-open .info,body.panel-open .info,body.atlas-open .info-pill,body.panel-open .info-pill{opacity:0;pointer-events:none}
+  .caption{bottom:calc(var(--dock-h,64px) + var(--sheet-h,0px) + 8px);font-size:calc(12px*var(--ts));padding:8px 10px}
+  .atlas:not([hidden]) ~ .caption{display:none}
+  .strip{padding-bottom:calc(var(--dock-h,64px) + var(--sheet-h,0px) + 10px)}
+  .daily{left:calc(8px + env(safe-area-inset-left,0px));bottom:calc(var(--dock-h,64px) + var(--sheet-h,0px) + 10px)}
+}
+/* phones on their side: the card sits bottom left, panels and captions on the right, the dock in the middle */
+@media (max-height:520px) and (max-width:1000px){
+  .controls{left:50%;right:auto;transform:translateX(-50%);width:min(500px,calc(100vw - 16px))}
+  .controls .btn{min-height:40px}
+  .info{left:calc(8px + env(safe-area-inset-left,0px));right:auto;width:min(380px,46vw);max-width:none;max-height:calc(100% - var(--dock-h,56px) - 50px)}
+  .info h1{font-size:calc(18px*var(--ts))}
+  .atlas,.panel{top:calc(46px + env(safe-area-inset-top,0px));left:auto;right:calc(8px + env(safe-area-inset-right,0px));width:min(360px,48vw);bottom:calc(var(--dock-h,56px) + 6px);max-height:none}
+  .panel{bottom:auto;max-height:calc(100% - var(--dock-h,56px) - 58px)}
+  body.atlas-open .info,body.panel-open .info,body.atlas-open .info-pill,body.panel-open .info-pill{opacity:1;pointer-events:auto}
+  .caption{left:auto;right:calc(8px + env(safe-area-inset-right,0px));transform:none;width:min(420px,calc(52vw - 24px));bottom:calc(var(--dock-h,56px) + 8px)}
+  .strip{padding-bottom:calc(var(--dock-h,56px) + 10px);padding-right:calc(8px + env(safe-area-inset-right,0px))}
+  .toast{align-self:flex-end;max-width:min(420px,calc(52vw - 24px))}
+  .daily{left:auto;right:calc(8px + env(safe-area-inset-right,0px));top:calc(44px + env(safe-area-inset-top,0px));bottom:auto}
+  body.lad-open .ladder{top:calc(62px + env(safe-area-inset-top,0px))}
+}
 @media (prefers-reduced-motion:reduce){ .shipmark{animation:none} }
 </style>

@@ -6,6 +6,9 @@ let flight = null, tween = null;
 const tour = { on:!reduceMotion, obj:0, view:0, phase:'hold', t:0 };
 const keys = new Set();
 let timeScale = 1, manualAt = -1e9, zoomAt = -1e9;
+// on phones the camera looks slightly off-centre so the object sits in the middle of the space the interface leaves free (radians, set by 09h-ui.js)
+const viewShift = { x:0, y:0 };
+let wakeTapAt = -1e9;   // a tap that only woke the faded interface does not also pick an object
 
 const sphL = (yaw, pitch) => [Math.cos(pitch)*Math.sin(yaw), Math.sin(pitch), Math.cos(pitch)*Math.cos(yaw)];
 function setBasis(fwd, up){
@@ -13,6 +16,12 @@ function setBasis(fwd, up){
   let r = V.cross(cam.fwd, up);
   if (V.len(r) < 1e-6) r = V.cross(cam.fwd, V.norm([up[1], up[2], up[0]]));
   cam.right = V.norm(r); cam.up = V.cross(cam.right, cam.fwd);
+  if ((viewShift.x || viewShift.y) && !SKYV.on){
+    // turn the view a little (left for x > 0, down for y > 0) so the target appears right of / above the centre
+    const cx = Math.cos(viewShift.x), sx = Math.sin(viewShift.x), cy = Math.cos(viewShift.y), sy = Math.sin(viewShift.y);
+    let f = V.sub(V.mul(cam.fwd, cx), V.mul(cam.right, sx)); cam.right = V.add(V.mul(cam.right, cx), V.mul(cam.fwd, sx));
+    cam.fwd = V.sub(V.mul(f, cy), V.mul(cam.up, sy)); cam.up = V.add(V.mul(cam.up, cy), V.mul(f, sy));
+  }
 }
 function orbitDir(){ return M3.apply(orbit.frame, sphL(orbit.yaw, orbit.pitch)); }
 function applyOrbit(){
@@ -251,7 +260,7 @@ canvas.addEventListener('pointermove', e => {
 function endPointer(e){
   const wasTap = drag && pointers.size === 1 && drag.moved < 6 && performance.now() - drag.t0 < 450;
   pointers.delete(e.pointerId);
-  if (pointers.size === 0){ canvas.classList.remove('dragging'); if (wasTap) pick(e.clientX, e.clientY); drag = null; }
+  if (pointers.size === 0){ canvas.classList.remove('dragging'); if (wasTap && Math.abs(drag.t0 - wakeTapAt) > 150) pick(e.clientX, e.clientY); drag = null; }
 }
 canvas.addEventListener('pointerup', endPointer);
 canvas.addEventListener('pointercancel', endPointer);
