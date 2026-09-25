@@ -56,6 +56,6 @@ Tests need `npm install` once (dev dependencies: playwright, sharp). Headless Ch
 - Do not name a local variable `P` inside object files: `P` is the global shader program registry (`P.blackhole`, `P.ptBasic`…). This has bitten before (black holes silently vanished).
 - Objects added after start-up need a label element (`labelEls[o.index]`) because labels are created once at init.
 - `afterFrame` (in `09-render.js`) runs once right after a frame is drawn; use it to read the canvas (photo mode).
-- WebGL points/lines are not depth-tested against volumes. Hide what should be behind an opaque object in the vertex shader (see the gravity grid and satellites).
+- WebGL points/lines are not depth-tested against volumes. Hide what should be behind an opaque object in the vertex shader (see the satellites in `src/objects/e1-earth-live.js`).
 - The artifact build (`dist/artifact.html`) runs without `/api`, so live features must degrade gracefully.
 - Phones get their own layout (dock, info card, scale chip; `src/09h-ui.js`). The breakpoint is `COMPACT_MQ` in `src/04-world.js` and the matching `@media` blocks at the end of `00-head.html`; change both together. Anything new that sits at the bottom of the screen on a phone should stack above `var(--dock-h)` + `var(--sheet-h)`, and anything that should fade when idle goes in the `body.ui-idle` rule.

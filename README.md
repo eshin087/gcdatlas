@@ -76,7 +76,7 @@ npm run catalog         # regenerates docs/CATALOG.md, the list of everything im
 | `src/02-core.js` … `src/04-world.js` | WebGL helpers, shared shader code and the ASCII pipeline, units, ephemerides, settings, feature flags, the object registry |
 | `src/05-data.js` | generated star catalogue and textures (`tools/`) |
 | `src/06*.js`, `src/o*.js` | the sky, galaxies, the cosmic web, and the built-in objects (one family per file) |
-| `src/objects/` | content packs and add-ons (nebulae, galaxies, extreme stars, the black hole zoo, flybys, gravity grids, live Earth) |
+| `src/objects/` | content packs and add-ons (nebulae, galaxies, extreme stars, the black hole zoo, flybys, live Earth) |
 | `src/07*.js` | the Halo, transient events, music |
 | `src/08*.js` | camera, flights, tours, input |
 | `src/09*.js` | rendering, interface, atlas, features (screensaver, photo, collection, tonight, Earth's story) |
