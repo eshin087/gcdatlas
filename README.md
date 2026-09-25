@@ -28,6 +28,8 @@ How accurate is it? See [docs/ACCURACY.md](docs/ACCURACY.md). The short version:
 | **Collection log** | Ticks off what you have seen, with badges. Stored only on your device. |
 | **Music** | gcd radio: a generative mix of lofi, chill house and ambient, synthesised live so it never loops. Pick a style or skip a track. |
 | **Share** | Links reproduce your exact view, tour and date. |
+| **Calm interface** | Fades after a few quiet seconds (sooner on tours) and comes back with any touch. The info panel can be full, compact or hidden (`I`). |
+| **Phones** | A thumb-sized dock, the details as a card you can expand, shrink or swipe away, the scale ladder behind a chip, and the camera frames the object in the space left free. Works upright and on its side. |
 
 ## Controls
 

@@ -20,7 +20,8 @@ gcdatlas (https://gcdatlas.vercel.app, repo `eshin087/gcdatlas`) is a single-pag
 
 ```sh
 node build.mjs                 # build dist/index.html (+ dist/artifact.html); fails on syntax errors
-npm test                       # smoke test (tests/smoke.mjs)
+npm test                       # smoke test + phone layout test (tests/smoke.mjs, tests/mobile.mjs)
+npm run test:mobile            # just the phone layout (390 x 844 and 844 x 390)
 npm run test:tour              # long tour regression (tests/tour.mjs)
 npm run shots -- sun:0,crab:1  # screenshots into tests/out/ (+ a contact sheet)
 npm run catalog                # regenerate docs/CATALOG.md from the built page
@@ -57,3 +58,4 @@ Tests need `npm install` once (dev dependencies: playwright, sharp). Headless Ch
 - `afterFrame` (in `09-render.js`) runs once right after a frame is drawn; use it to read the canvas (photo mode).
 - WebGL points/lines are not depth-tested against volumes. Hide what should be behind an opaque object in the vertex shader (see the gravity grid and satellites).
 - The artifact build (`dist/artifact.html`) runs without `/api`, so live features must degrade gracefully.
+- Phones get their own layout (dock, info card, scale chip; `src/09h-ui.js`). The breakpoint is `COMPACT_MQ` in `src/04-world.js` and the matching `@media` blocks at the end of `00-head.html`; change both together. Anything new that sits at the bottom of the screen on a phone should stack above `var(--dock-h)` + `var(--sheet-h)`, and anything that should fade when idle goes in the `body.ui-idle` rule.
