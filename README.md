@@ -15,7 +15,7 @@ How accurate is it? See [docs/ACCURACY.md](docs/ACCURACY.md). The short version:
 | | |
 | --- | --- |
 | **Atlas and search** | Type in the search box (or press `/`). Sort by distance, size or name, filter by kind (black holes, nebulae…), see what you have not visited yet, reset in one click. |
-| **Tours** | Guided tours with captions. `‹ ›` next to *tours* skip stops; while a tour plays the right-hand scale becomes the tour's track. Break away and *resume tour* takes you back. Choose how long each stop lasts. |
+| **Tours** | Guided tours with captions. The play / pause button at the top right stops the camera so you can look around, and brings it back. `‹ ›` next to *tours* skip stops; while a tour plays the right-hand scale becomes the tour's track. Break away and *resume tour* takes you back. Choose how long each stop lasts. |
 | **Flybys** | Sweeping camera moves past the giants (the Sun, UY Scuti, TON 618, the Milky Way…) that show their scale. |
 | **Scale ladder** | Drag the marker to zoom from the Moon to the observable universe; let go near a name to fly there. |
 | **Time machine** | Run the Solar System clock forwards or back, jump years, or drag deep time to watch the constellations change over ±200,000 years. |
@@ -38,11 +38,11 @@ How accurate is it? See [docs/ACCURACY.md](docs/ACCURACY.md). The short version:
 | drag | orbit the camera (in *your sky*: look around) |
 | scroll / pinch / + - | zoom |
 | right-drag / shift-drag | pan |
-| click or tap | fly to an object |
+| click or tap | fly to an object; once there it loops through its best angles until you take the camera |
 | `/` | search |
 | `[` `]` | previous / next tour stop |
 | W A S D, R F | fly freely |
-| space | start, pause or resume the tour |
+| space or ❚❚ / ▶ (top right) | pause or play: the tour, or the angle loop of an object you picked |
 | esc | close panels, then free camera |
 | V · Y · T | detail · travel speed · time speed |
 | G · L · M | glow · labels · music |
