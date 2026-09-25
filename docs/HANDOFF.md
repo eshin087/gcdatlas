@@ -1,6 +1,6 @@
 # Handoff: continuing gcdatlas in Claude Code
 
-This file carries the context of the chat sessions that built gcdatlas (v0.1 to v0.7.3, September 2026) so a new Claude Code session can pick up without the old conversation. Read it together with `CLAUDE.md` (rules and commands) and `docs/CHANGELOG.md` (what changed, version by version).
+This file carries the context of the chat sessions that built gcdatlas (v0.1 to v0.7.4, September 2026) so a new Claude Code session can pick up without the old conversation. Read it together with `CLAUDE.md` (rules and commands) and `docs/CHANGELOG.md` (what changed, version by version).
 
 ## How the owner likes to work
 
@@ -22,6 +22,9 @@ This file carries the context of the chat sessions that built gcdatlas (v0.1 to 
 | Logo | Keep the Major Mono Display font for `gcdatlas`; object titles use IBM Plex Mono. |
 | Camera | A picked object loops through its tour angles by default; any drag or zoom pauses; the play / pause button (top right) and the space bar resume. |
 | Phones | Dock at the bottom, info card with more / less / hide, scale ladder behind a chip, interface fades when idle (0.7.1). |
+| The Halo | A long-range cruiser (0.7.4, replaced the flat crescent). The ship button only toggles its blue marker, off by default; riding along is a separate action (ride button, card, C for the cockpit). The camera folds with the ship rather than flying after it. |
+| The Sun | Warm yellow-orange with a boiling surface, on purpose; ACCURACY.md and the readout say its real light is white. |
+| Menus | Menu text has its own size (default 115%) on top of the page text size. |
 | Social features | Planned only, behind the `social` flag (off). Design in `docs/ROADMAP.md`. |
 | Music | Generative "gcd radio": rotating mix of lofi, chill house and ambient. |
 
@@ -38,9 +41,9 @@ This file carries the context of the chat sessions that built gcdatlas (v0.1 to 
 - 0.5: GitHub and Vercel, search, atlas, settings, scale ladder, music, the Halo ship.
 - 0.6: themed tours with captions, size compare, time machine, share links.
 - 0.7: content packs (nebulae, galaxies, extreme stars, black hole zoo), live Earth (satellites, launches), your sky, Earth's story, screensaver, photo mode, daily discovery, collection log, flybys, docs and tests.
-- 0.7.1: phone layout and idle fade. 0.7.2: back to subtle black holes and the ASCII angle bar. 0.7.3: play / pause and angle loops, pitch-black shadows, Gaia BH1 and Cygnus X-1 fixes, the Sun's ejections, Halo beams, Solar System framing, smooth arrivals.
+- 0.7.1: phone layout and idle fade. 0.7.2: back to subtle black holes and the ASCII angle bar. 0.7.3: play / pause and angle loops, pitch-black shadows, Gaia BH1 and Cygnus X-1 fixes, the Sun's ejections, Halo beams, Solar System framing, smooth arrivals. 0.7.4: ride along with the redesigned Halo (chase and cockpit), a warm boiling Sun, JWST-style Pillars, fading labels, menu text size.
 
-Until 0.7.3 the code was pushed through the GitHub website from a cloud session, because that session had no git credentials. From Claude Code on the owner's machine, use git and `gh` directly.
+Until 0.7.4 the code was pushed through the GitHub website from a cloud session, because that session had no git credentials. From Claude Code on the owner's machine, use git and `gh` directly.
 
 ## Open items and ideas
 
@@ -63,12 +66,12 @@ Until 0.7.3 the code was pushed through the GitHub website from a cloud session,
 ## Shipping a version from Claude Code
 
 ```
-git switch -c release/v0.7.4
+git switch -c release/v0.7.5
 # change, then: node build.mjs && npm test (and screenshots for anything visual)
 # bump package.json, add a docs/CHANGELOG.md entry
-git add -A && git commit -m "v0.7.4: ..."
-git push -u origin release/v0.7.4
-gh pr create --title "v0.7.4: ..." --body "What changed, what was checked"
+git add -A && git commit -m "v0.7.5: ..."
+git push -u origin release/v0.7.5
+gh pr create --title "v0.7.5: ..." --body "What changed, what was checked"
 # open the Vercel preview from the PR, check desktop and phone, then:
 gh pr merge --merge --delete-branch
 git switch main && git pull

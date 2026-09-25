@@ -54,6 +54,8 @@ Tests need `npm install` once (dev dependencies: playwright, sharp). Headless Ch
 ## Gotchas
 
 - Do not name a local variable `P` inside object files: `P` is the global shader program registry (`P.blackhole`, `P.ptBasic`…). This has bitten before (black holes silently vanished).
+- Labels show and hide with the `on` class (CSS fades them); do not set `style.visibility` on them. Labels of other objects are kept off the locked object's disc (`overFocus` in `updateLabels`).
+- The Halo has its own camera (`shipCam` in `08-camera.js`): while riding, `updateShipCam` replaces the orbit camera, and any flight or manual input hands the camera back.
 - Objects added after start-up need a label element (`labelEls[o.index]`) because labels are created once at init.
 - `afterFrame` (in `09-render.js`) runs once right after a frame is drawn; use it to read the canvas (photo mode).
 - WebGL points/lines are not depth-tested against volumes. Black holes are handled for every particle system (`uHole` in `particleVS`); for other opaque bodies hide what should be behind them in the vertex shader (see the satellites in `src/objects/e1-earth-live.js`).

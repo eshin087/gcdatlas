@@ -3,6 +3,7 @@
 // Local units: bounding sphere radius 1; the photosphere has radius uP1.x.
 // uP0: T_eff, convection cells per radius, spot activity, cell speed   uP1: R*, oblateness, corona, prominences
 // uP2: flare (local dir, amount)   uP3: CME (local dir, radius)   uP4: x granulation fine detail, y limb darkening, z chromosphere, w colour boost
+// (a negative w switches on the Sun's look: a warm filtered-photo tint, boiling granulation that pulses, and flickering spicules at the limb)
 const FS_STAR = COMMON + `
 vec2 vor(vec3 p, float sp){
   vec3 i = floor(p), f = fract(p); float d1 = 8., d2 = 8.;
@@ -14,6 +15,7 @@ vec2 vor(vec3 p, float sp){
   }
   return vec2(sqrt(d1), sqrt(d2));
 }
+float gCell = 0.;
 vec3 photosphere(vec3 n, float mu, float Rs){
   float T = uP0.x, act = uP0.z;
   float lat = n.y;
@@ -23,6 +25,7 @@ vec3 photosphere(vec3 n, float mu, float Rs){
   vec2 v = vor(q*uP0.y, uP0.w);
   float cell = smoothstep(0., 0.32, v.y - v.x)*(0.8 + 0.2*(1. - v.x));
   if(uP4.x > 0.){ vec2 v2 = vor(q*uP0.y*5.3 + 3.1, uP0.w*2.); cell = mix(cell, cell*(0.55 + 0.45*smoothstep(0., 0.3, v2.y - v2.x)), uP4.x); }
+  gCell = cell;
   float big = fbm3(q*2.2 + 4.);
   // active regions: spots with umbra and penumbra, bright faculae around them
   float band = exp(-pow((abs(lat) - 0.28)/0.13, 2.));
@@ -47,7 +50,14 @@ void main(){
   bool hit = h.x > 0.;
   if(hit){
     vec3 p = os + ds*h.x, n = p/Rs; float mu = max(dot(n, -ds), 0.);
-    col = photosphere(n, mu, Rs)*1.3*uP4.w*vec3(1., 0.93, 0.8);
+    col = photosphere(n, mu, Rs)*1.3*abs(uP4.w)*vec3(1., 0.93, 0.8);
+    if(uP4.w < 0.){
+      // the Sun: boiling patches swell and fade, granules flicker; hot cell centres burn yellow-white, the lanes between them deep orange
+      float boil = fbm3(n*uP0.y*0.5 + vec3(0., uTime*0.23, uTime*0.17)), flick = noise(n*uP0.y*2.3 + vec3(uTime*0.8, 0., -uTime*0.6));
+      float heat = clamp(gCell*0.8 + (boil - 0.5)*1.1 + (flick - 0.5)*0.45 + 0.1, 0., 1.);
+      vec3 hot = mix(mix(vec3(0.8, 0.22, 0.03), vec3(1., 0.56, 0.12), smoothstep(0.05, 0.45, heat)), vec3(1., 0.88, 0.5), smoothstep(0.5, 0.95, heat));
+      col = hot*(dot(col, vec3(0.3, 0.5, 0.2))/dot(hot, vec3(0.3, 0.5, 0.2)))*(0.42 + 1.15*heat);   // about the same brightness, warmer colour, more contrast
+    }
     // flare: a blinding ribbon at an active region
     vec3 fd = normalize(uP2.xyz); float fl = uP2.w;
     if(fl > 0.001){ float e = length(n - fd); col += vec3(1., 0.95, 0.9)*fl*(exp(-e*e/0.0015)*6. + exp(-e*e/0.02)*1.2); }
@@ -57,6 +67,13 @@ void main(){
   if(!hit || tc < 0.){
     float hgt = b - 1.;
     col += vec3(1., 0.32, 0.35)*exp(-max(hgt, 0.)/0.012)*uP4.z*step(0., hgt);
+    if(uP4.w < 0. && hgt > 0.){
+      // spicules: a ragged fringe of flame-like jets that flicker along the limb
+      vec3 u = normalize(pc);
+      float tall = 0.012 + 0.035*pow(noise(u*11. + vec3(0., uTime*0.25, 0.)), 2.);
+      float fl = pow(noise(u*46. + vec3(uTime*0.7, -uTime*0.5, uTime*0.3) - u*hgt*30.), 2.5);
+      col += mix(vec3(1., 0.35, 0.08), vec3(1., 0.7, 0.25), fl)*fl*exp(-hgt/tall)*2.2;
+    }
   }
   if(uP1.w > 0.001){
     vec2 hp = sphIsect(o, d, vec3(0.), Rs*1.35);
@@ -101,7 +118,7 @@ void main(){
     }
   }
   // soft outer glow so the star reads from a distance
-  col += blackbody(uP0.x)*exp(-max(b - 1., 0.)*11.)*0.045*(hit ? 0. : 1.);
+  col += blackbody(uP0.x)*(uP4.w < 0. ? vec3(1., 0.72, 0.38) : vec3(1.))*exp(-max(b - 1., 0.)*11.)*0.045*(hit ? 0. : 1.);
   outCol(col, alpha);
 }`;
 P.star = program(VS_RECT, FS_STAR);
@@ -127,7 +144,7 @@ const sun = (() => {
   const st = { flareDir:[0,1,0], flare:0, cmeDir:[0,1,0], cmeWorld:[0,1,0], cme:0, nextFlare:6, nextCme:14 };
   const o = addObj({ key:'sun', name:'the Sun', label:'Sun', chip:'Sun', type:'G2V main-sequence star · our star', group:'solar', sortKey:-1,
     fact:'A million Earths would fit inside. Its visible surface boils with convection cells, dark sunspots and looping prominences of glowing hydrogen.',
-    pos:[0,0,0], rad:R*bound, solid:1/bound, R0:poleFrame(286.13, 63.87), prog:P.star, minZoom:0.27, pxMin:4, farColor:blackbodyJS(5772), farLum:1.2, labelRange:3e5, distEarth:'8.3 light-minutes',
+    pos:[0,0,0], rad:R*bound, solid:1/bound, R0:poleFrame(286.13, 63.87), prog:P.star, minZoom:0.27, pxMin:4, farColor:V.mul(blackbodyJS(5772), 1).map((c, k) => c*[1, 0.82, 0.5][k]), farLum:1.2, labelRange:3e5, distEarth:'8.3 light-minutes',
     aka:'sol star', starR:1/bound,
     views:[{d:[0.2, 0.25, 1], k:1.8, hold:9, drift:0.03}, {d:[0.7, 0.62, 0.35], k:0.62, off:[0.12, 0.16, 0.08], hold:8, drift:0.02}, {d:[-0.95, 0.1, 0.3], k:1.25, hold:8, drift:-0.03}],
     update(dt){
@@ -146,10 +163,10 @@ const sun = (() => {
       gl.uniform4f(pr.u.uP1, 1/bound, 0, 1, 1);
       gl.uniform4f(pr.u.uP2, st.flareDir[0], st.flareDir[1], st.flareDir[2], st.flare);
       gl.uniform4f(pr.u.uP3, st.cmeDir[0], st.cmeDir[1], st.cmeDir[2], st.cme);
-      gl.uniform4f(pr.u.uP4, clamp(1.5 - orbit.dist/(this.rad*1.2), 0, 1), 0.58, 0.5, 1);
+      gl.uniform4f(pr.u.uP4, clamp(1.5 - orbit.dist/(this.rad*1.2), 0, 1), 0.58, 0.5, -1);
     },
     readout:() => st.cmeT < 10 ? 'coronal mass ejection: a billion tonnes of plasma\nleaving at ~1,000 km/s; it would reach Earth in ~2 days' :
-      (st.flareT < 3 ? 'solar flare: magnetic loops snapping and reconnecting\nreleasing the energy of millions of nuclear bombs' : 'surface 5,500 °C, core 15 million °C · 1.39 million km across\nlight from its core takes ~100,000 years to reach the surface') });
+      (st.flareT < 3 ? 'solar flare: magnetic loops snapping and reconnecting\nreleasing the energy of millions of nuclear bombs' : 'surface 5,500 °C, core 15 million °C · 1.39 million km across\nlight from its core takes ~100,000 years to reach the surface\ndrawn warm like a filtered photo · from space it looks white') });
   o.st = st;
   return o;
 })();

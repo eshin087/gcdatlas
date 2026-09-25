@@ -1,41 +1,53 @@
 
 // ================================================================ travellers and transients: the Halo (a ring ship that folds space), comets, meteors, gamma-ray bursts
-// ---------------------------------------------------------------- the Halo: a ring hull, three spokes and a star-bright core (local: bounding sphere 1, ring axis +y = forward)
+// ---------------------------------------------------------------- the Halo: a long-range cruiser with a star-heart reactor (local: bounding sphere 1, +y = forward)
 const FS_SHIP = COMMON + `
-// the Halo: an original crescent flagship. Local frame: bounding sphere 1, forward +y, wings along z, belly (+x) toward what it studies.
-// At its heart is a captured star-heart: a ball of plasma held by two counter-rotating containment rings, wrapped in a fiery aura,
-// throwing arcs and light spikes whenever it surges. A segmented energy halo circles the whole ship.
-float sdCres(vec2 q){ return max(length(q - vec2(0., -0.05)) - 0.88, -(length(q - vec2(0., -0.28)) - 0.8)); }
-float thick(float y){ return 0.008 + 0.06*smoothstep(-0.46, 0.7, y); }
-float sdTorus(vec3 p, float R, float r){ return length(vec2(length(p.yz) - R, p.x)) - r; }
-const vec3 CORE = vec3(0., 0.08, 0.);
-// power surges: at random moments the core flares, then settles (stepped, so every ship in every browser surges differently in time)
+// the Halo: an original long-range cruiser. Local frame: bounding sphere 1, forward +y (bow at +0.95), dorsal side -x, belly +x toward what it studies, wings along z.
+// Mid-ship an open reactor bay shows its captured star-heart, a ball of plasma held by two counter-rotating containment rings inside a segmented
+// halo ring (the ship's name); it throws arcs and light spikes whenever it surges. Three engines at the stern, a bridge tower forward, swept wings aft.
+float sdBox(vec3 p, vec3 b){ vec3 q = abs(p) - b; return length(max(q, 0.)) + min(max(q.x, max(q.y, q.z)), 0.); }
+float sdCap(vec3 p, vec3 a, vec3 b, float r){ vec3 pa = p - a, ba = b - a; float h = clamp(dot(pa, ba)/dot(ba, ba), 0., 1.); return length(pa - ba*h) - r; }
+float sdTorusY(vec3 p, float R, float r){ return length(vec2(length(p.xz) - R, p.y)) - r; }
+float sdTorusX(vec3 p, float R, float r){ return length(vec2(length(p.yz) - R, p.x)) - r; }
+const vec3 CORE = vec3(-0.01, -0.12, 0.);
 float surge(float tm){ float k = floor(tm/2.3), f = fract(tm/2.3); float h = hash12(vec2(k, 7.3)); return h > 0.5 ? smoothstep(0., 0.05, f)*exp(-f*4.5)*(0.6 + 0.9*hash12(vec2(k, 1.1))) : 0.; }
 mat3 rotA(vec3 a, float t){ a = normalize(a); float c = cos(t), s = sin(t), k = 1. - c; return mat3(c + a.x*a.x*k, a.y*a.x*k + a.z*s, a.z*a.x*k - a.y*s, a.x*a.y*k - a.z*s, c + a.y*a.y*k, a.z*a.y*k + a.x*s, a.x*a.z*k + a.y*s, a.y*a.z*k - a.x*s, c + a.z*a.z*k); }
 float map(vec3 p, out float id){
-  vec2 q = p.zy;
-  float c2 = sdCres(q), t = thick(p.y);
-  vec2 w = vec2(c2, abs(p.x) - t);
-  float hull = min(max(w.x, w.y), 0.) + length(max(w, 0.)) - 0.003;
-  float mid = length(q - vec2(0., -0.16)) - 0.84;
-  float ridge = max(length(vec2(mid, p.x + t*0.8)) - 0.014, c2 + 0.004);
-  vec3 bp = p - vec3(0., 0.83, 0.);
-  float bow = max(length(bp.xz) - 0.03*(1. - clamp(bp.y/0.14, 0., 1.)), abs(bp.y - 0.07) - 0.07);
-  vec3 ep = vec3(p.x, p.y + 0.36, abs(p.z) - 0.8);
-  float eng = (length(ep/vec3(0.05, 0.12, 0.05)) - 1.)*0.05;
-  // containment: two rings turning on different axes around the star-heart
+  // hull: long and armoured, tapering to a sharp bow; the top of the bow is chamfered into a wedge
+  float k = smoothstep(-0.8, 0.95, p.y);
+  float hull = sdBox(p - vec3(0.005, 0.03, 0.), vec3(mix(0.1, 0.03, k), 0.9, mix(0.155, 0.04, k)))*0.8 - 0.01;
+  hull = max(hull, dot(p - vec3(-0.02, 0.62, 0.), normalize(vec3(-0.55, 0.83, 0.))));
+  float keel = sdBox(p - vec3(0.11, -0.05, 0.), vec3(0.02, 0.55, 0.03)) - 0.006;
+  hull = min(hull, keel);
+  // the reactor bay: an opening through the hull around the star-heart, ringed by a heavy collar
+  hull = max(hull, -(length(p - CORE) - 0.14));
+  float collar = sdTorusY(p - CORE, 0.2, 0.032);
+  // bridge tower forward of the bay, with a wider command deck on top
+  float tower = sdBox(p - vec3(-0.13, 0.33, 0.), vec3(0.045, 0.12, 0.03)) - 0.01;
+  float deck = sdBox(p - vec3(-0.185, 0.36, 0.), vec3(0.016, 0.075, 0.07)) - 0.006;
+  // swept wings aft, a dorsal fin at the stern, a sensor mast at the bow
+  vec3 w = vec3(p.x, p.y, abs(p.z));
+  float s = w.z - 0.13;
+  float wing = max(max(abs(w.x - 0.015) - 0.011, s - 0.44), max(-s, max(w.y - (-0.06 - 0.85*s), (-0.6 - 0.33*s) - w.y)*0.75));
+  float tip = sdCap(w, vec3(0.015, -0.46, 0.57), vec3(0.015, -0.78, 0.57), 0.018);
+  float fin = max(sdBox(p - vec3(-0.19, -0.66, 0.), vec3(0.09, 0.13, 0.007)), dot(p - vec3(-0.28, -0.56, 0.), normalize(vec3(-0.8, 0.6, 0.))));
+  float mast = sdCap(p, vec3(-0.02, 0.9, 0.), vec3(-0.02, 1.0, 0.), 0.006);
+  // engines: a big central drive and two outboard nacelles
+  float eng = min(sdCap(p, vec3(0.005, -0.66, 0.), vec3(0.005, -0.9, 0.), 0.062), sdCap(w, vec3(0.025, -0.55, 0.22), vec3(0.025, -0.86, 0.22), 0.045));
+  // containment: two rings turning on different axes around the heart, inside a slowly turning segmented halo ring
   vec3 cp = p - CORE;
-  float r1 = sdTorus(rotA(vec3(1., 0.3, 0.), uTime*0.9)*cp, 0.2, 0.011);
-  float r2 = sdTorus(rotA(vec3(0.2, 1., 0.4), -uTime*0.63)*cp, 0.26, 0.009);
-  float rings = min(r1, r2);
-  float core = length(cp) - 0.062;
-  // the halo: a thin segmented ring of light around the whole crescent
-  vec3 hp = p - vec3(0., -0.05, 0.); float ha = atan(hp.z, hp.y) + uTime*0.12;
-  float halo = max(sdTorus(vec3(hp.x, hp.y, hp.z), 0.94, 0.003), (abs(fract(ha*12./6.2832) - 0.5) - 0.42)*0.3);
-  float d = min(min(hull, ridge), min(bow, eng));
-  id = 0.;
-  if(eng < min(min(hull, ridge), bow)) id = 1.;
-  if(rings < d){ d = rings; id = 3.; }
+  float r1 = sdTorusX(rotA(vec3(1., 0.3, 0.), uTime*0.9)*cp, 0.085, 0.007);
+  float r2 = sdTorusX(rotA(vec3(0.2, 1., 0.4), -uTime*0.63)*cp, 0.108, 0.006);
+  float ha = atan(cp.z, cp.x) + uTime*0.25;
+  float halo = max(sdTorusY(cp, 0.265, 0.004), (abs(fract(ha*16./6.2832) - 0.5) - 0.38)*0.2);
+  float core = length(cp) - 0.048;
+  float body = min(min(hull, collar), min(min(tower, deck), min(min(wing, tip), min(fin, mast))));
+  float d = min(body, eng); id = 0.;
+  if(wing < min(hull, collar) && wing <= body) id = 6.;
+  if(min(tower, deck) <= body && min(tower, deck) < hull) id = 5.;
+  if(eng < body) id = 1.;
+  float rr = min(r1, r2); if(rr < d){ d = rr; id = 3.; }
+  if(collar < d + 0.001 && collar <= body) id = 3.;
   if(halo < d){ d = halo; id = 4.; }
   if(core < d){ d = core; id = 2.; }
   return d;
@@ -48,114 +60,103 @@ void main(){
   float spool = uP0.x, tm = uTime, S = surge(tm);
   float power = 1. + spool*1.6 + S*2.5;
   vec3 L = normalize(uP1.xyz*uRot);
-  vec3 cyan = vec3(0.35, 0.85, 1.), gold = vec3(0.96, 0.72, 0.33), fire = vec3(1., 0.45, 0.16), mag = vec3(0.95, 0.35, 1.);
+  vec3 cyan = vec3(0.35, 0.85, 1.), gold = vec3(0.96, 0.72, 0.33), steel = vec3(0.6, 0.63, 0.7), fire = vec3(1., 0.45, 0.16), mag = vec3(0.95, 0.35, 1.);
   float t = max(hb.x, 0.), id = 0.; bool hit = false;
-  for(int i=0;i<110;i++){ vec3 p = o + d*t; float h = map(p, id); if(h < 0.0006) { hit = true; break; } t += h*0.9; if(t > hb.y) break; }
+  for(int i=0;i<130;i++){ vec3 p = o + d*t; float h = map(p, id); if(h < 0.0006) { hit = true; break; } t += h*0.75; if(t > hb.y) break; }
   vec3 col = vec3(0.); float alpha = 0.;
   if(hit){
     vec3 p = o + d*t, n = nrm(p);
-    float dif = max(dot(n, L), 0.);
-    if(id > 3.5){
-      // the halo ring: light racing round it
-      float ha = atan(p.z, p.y + 0.05);
+    float dif = max(dot(n, L), 0.), fill = 0.3 + 0.25*max(dot(n, -d), 0.), rim = pow(1. - max(dot(n, -d), 0.), 3.);
+    float spec = pow(max(dot(n, normalize(L - d)), 0.), 40.);
+    vec3 toC = CORE - p; float coreLit = max(dot(n, normalize(toC)), 0.)*0.6/(dot(toC, toC)*12. + 0.3);
+    if(id > 5.5){
+      // wings: gold with a leading-edge light line
+      float lead = exp(-pow((p.y - (-0.06 - 0.85*(abs(p.z) - 0.13)))/0.02, 2.));
+      float edge = smoothstep(0.03, 0., abs(abs(p.z) - 0.52)) + smoothstep(0.015, 0., abs(p.y - (-0.6 - 0.33*(abs(p.z) - 0.13))));
+      vec3 wc = mix(mix(steel*1.2, gold, 0.4), gold*1.1, min(edge, 1.));
+      col = wc*(dif*1.1 + fill) + gold*spec + cyan*lead*(0.5 + spool + S)*0.8 + wc*rim*0.3;
+    } else if(id > 4.5){
+      // the bridge: dark armour with a band of lit windows
+      float win = step(0.5, fract(p.y*60.))*exp(-pow((p.x + 0.185)/0.008, 2.))*step(0.055, abs(p.z) + 0.02*step(p.x, -0.17));
+      col = steel*0.55*(dif + fill) + vec3(1., 0.9, 0.6)*win*1.6 + cyan*exp(-pow((p.x + 0.2)/0.006, 2.))*0.8;
+    } else if(id > 3.5){
+      float ha = atan(p.z - CORE.z, p.x - CORE.x);
       col = mix(cyan, vec3(1.), 0.3)*(0.55 + 1.6*pow(0.5 + 0.5*sin(ha*9. - tm*3.), 6.))*(0.7 + 0.4*power);
     } else if(id > 2.5){
-      // containment rings: dark metal with a white-hot inner edge facing the heart
+      // containment rings and the bay collar: dark metal with a white-hot edge facing the heart
       float inner = max(dot(n, normalize(CORE - p)), 0.);
       col = vec3(0.35, 0.33, 0.4)*(dif*0.9 + 0.15) + mix(cyan, vec3(1.), 0.5)*pow(inner, 3.)*1.8*power;
     } else if(id > 1.5){
-      // the star-heart: boiling white-gold plasma
       vec3 cp = p - CORE;
-      float pl = fbm3(cp*40. + vec3(0., tm*1.5, 0.)), mu = max(dot(n, -d), 0.);
+      float pl = fbm3(cp*60. + vec3(0., tm*1.5, 0.)), mu = max(dot(n, -d), 0.);
       col = mix(vec3(1., 0.55, 0.2), vec3(1., 0.97, 0.9), smoothstep(0.35, 0.75, pl)*0.7 + mu*0.4)*(4.5 + 2.5*pl)*power;
     } else if(id > 0.5){
-      float band = exp(-pow((p.y + 0.36)/0.012, 2.)), noz = smoothstep(-0.42, -0.47, p.y);
-      col = vec3(0.62, 0.45, 0.22)*(dif*1.1 + 0.2) + cyan*(band*1.4 + noz*2.2)*(1. + spool + S);
+      // engines: dark nacelles, glowing nozzles facing aft
+      float noz = smoothstep(-0.84, -0.9, p.y)*max(dot(n, vec3(0., -1., 0.)), 0.);
+      float band = exp(-pow((p.y + 0.7)/0.012, 2.));
+      col = vec3(0.3, 0.32, 0.37)*(dif + 0.2) + cyan*(noz*3.5 + band*1.2)*(1. + spool + S);
     } else {
-      float ang = atan(p.z, p.y + 0.05);
-      float plate = step(0.5, fract(ang*4.456));
-      float seam = smoothstep(0.02, 0., abs(fract(ang*4.456) - 0.5) - 0.47);
-      vec3 base = mix(gold, gold*vec3(0.86, 0.8, 0.72), plate)*(1. - 0.5*seam);
-      vec3 hh = normalize(L - d);
-      float spec = pow(max(dot(n, hh), 0.), 40.);
-      vec3 toC = CORE - p; float coreLit = max(dot(n, normalize(toC)), 0.)*0.7/(dot(toC, toC)*5. + 0.35);
-      float e = -sdCres(p.zy), edge = exp(-e/0.006);
-      float flow = 0.55 + 0.45*sin(ang*26. + tm*(2. + 5.*spool));
-      // circuit traces across the plates, pulsing outward from the heart when it surges
-      float tr = smoothstep(0.035, 0., abs(fract(ang*17.8 + step(0.5, fract(p.y*9.))*0.5) - 0.5) - 0.44)*step(0.02, e);
+      // hull: steel plates with gold trim, rows of small lit ports along the flanks, circuit light running aft from the heart when it surges
+      float plate = step(0.5, fract(p.y*7.)), seam = smoothstep(0.02, 0., abs(fract(p.y*7.) - 0.5) - 0.47);
+      float trim = smoothstep(0.012, 0., abs(abs(p.z) - mix(0.155, 0.04, smoothstep(-0.8, 0.95, p.y))*0.92))*step(0.3, abs(n.z));
+      vec3 base = mix(steel, steel*0.86, plate)*(1. - 0.45*seam);
+      base = mix(base, gold, trim*0.8 + smoothstep(0.02, 0., abs(p.x + 0.02))*0.35);
+      float port = step(0.72, abs(n.z))*step(0.6, fract(p.y*42.))*smoothstep(0.012, 0., abs(p.x - 0.025))*step(-0.6, p.y)*step(p.y, 0.75);
       float pulse = pow(0.5 + 0.5*sin(length(toC)*30. - tm*6.), 4.);
-      float fill = 0.36 + 0.25*max(dot(n, -d), 0.), rim = pow(1. - max(dot(n, -d), 0.), 3.);
-      col = base*(dif*1.1 + fill) + gold*spec*1.3 + gold*rim*0.35 + mix(cyan, fire, 0.35*S)*coreLit*power + cyan*edge*flow*(0.6 + 1.6*spool + 1.2*S)
-          + cyan*tr*(0.25 + pulse*(0.6 + 2.5*S));
+      float tr = smoothstep(0.03, 0., abs(fract(p.y*14. + step(0.5, fract(p.z*9.))*0.5) - 0.5) - 0.45)*step(abs(n.z), 0.5);
+      col = base*1.3*(dif*1.1 + fill + 0.1) + gold*spec*1.2 + steel*rim*0.3 + vec3(1., 0.88, 0.6)*port*1.3 + mix(cyan, fire, 0.35*S)*coreLit*power + cyan*tr*(0.12 + pulse*(0.4 + 2.2*S));
     }
     alpha = 1.;
   }
-  // the energy sail across the hollow of the crescent
-  if(abs(d.x) > 1e-4){
-    float ts = -o.x/d.x;
-    if(ts > 0. && (!hit || ts < t)){
-      vec3 q = o + d*ts;
-      float inner = -(length(q.zy - vec2(0., -0.28)) - 0.8), chord = q.y + 0.44;
-      if(inner > 0. && chord > 0.){
-        float r = length(q - CORE);
-        float ripple = pow(0.5 + 0.5*sin(r*36. - tm*(2.2 + 7.*spool + 6.*S)), 3.);
-        float grain = fbm3(vec3(q.zy*8., tm*0.12));
-        float ef = smoothstep(0., 0.05, inner)*smoothstep(0., 0.1, chord);
-        float I = (0.07 + 0.4*ripple*exp(-r*1.8) + 0.3*grain*grain*grain)*ef*(0.55 + 1.8*spool + 1.5*S);
-        col = col*(1. - 0.15*ef) + mix(vec3(0.25, 0.65, 1.), vec3(0.7, 0.95, 1.), ripple*0.6)*I;
-        alpha = max(alpha, 0.12*ef);
-      }
-    }
-  }
   float front = hit ? t : 1e9;
   // the aura: fiery, slowly churning light around the heart (cyan close in, burning orange and violet further out)
-  vec2 ha = sphIsect(o, d, CORE, 0.42);
+  vec2 ha = sphIsect(o, d, CORE, 0.3);
   if(ha.y > 0.){
     float a0 = max(ha.x, 0.), a1 = min(ha.y, front), dt = (a1 - a0)/14.;
     vec3 acc = vec3(0.);
     for(int i=0;i<14;i++){
       vec3 q = o + d*(a0 + dt*(float(i) + 0.5)) - CORE; float r = length(q);
-      float sw = fbm3(q*9. + vec3(tm*0.6, -tm*0.9, tm*0.4) + 3.*vec3(sin(r*20. - tm*2.)));
-      float dens = exp(-r/(0.085 + 0.04*power))*(0.35 + 1.4*sw*sw)*smoothstep(0.42, 0.22, r);
-      vec3 c = mix(mix(vec3(1., 0.95, 0.9), vec3(1., 0.75, 0.4), smoothstep(0.05, 0.1, r)), mix(fire, mag, sw*sw*1.4), smoothstep(0.09, 0.22, r));
+      float sw = fbm3(q*13. + vec3(tm*0.6, -tm*0.9, tm*0.4) + 3.*vec3(sin(r*28. - tm*2.)));
+      float dens = exp(-r/(0.06 + 0.03*power))*(0.35 + 1.4*sw*sw)*smoothstep(0.3, 0.15, r);
+      vec3 c = mix(mix(vec3(1., 0.95, 0.9), vec3(1., 0.75, 0.4), smoothstep(0.035, 0.07, r)), mix(fire, mag, sw*sw*1.4), smoothstep(0.06, 0.16, r));
       acc += c*dens;
     }
-    col += acc*dt*7.*power;
+    col += acc*dt*9.*power;
   }
-  // surge arcs: jagged filaments leaping from the heart to the rings and the hull
+  // surge arcs from the heart to the collar, and four spikes of light
   if(S > 0.02){
     float k = floor(tm/2.3);
     for(int a=0;a<5;a++){
       float fa = float(a);
-      vec3 dir = normalize(vec3(hash12(vec2(k, fa)) - 0.5, hash12(vec2(fa, k + 3.)) - 0.5, hash12(vec2(k + fa, 9.)) - 0.5)*2. + vec3(0., 0.2, 0.));
-      float len = 0.18 + 0.28*hash12(vec2(fa*3., k));
+      vec3 dir = normalize(vec3(hash12(vec2(k, fa)) - 0.5, hash12(vec2(fa, k + 3.)) - 0.5, hash12(vec2(k + fa, 9.)) - 0.5)*2.);
+      float len = 0.12 + 0.14*hash12(vec2(fa*3., k));
       for(int j=1;j<9;j++){
         float s = float(j)/9.;
         vec3 jit = vec3(noise(vec3(s*7., fa, tm*25.)), noise(vec3(s*7. + 3., fa, tm*25.)), noise(vec3(s*7. + 6., fa, tm*25.))) - 0.5;
-        vec3 pp = CORE + dir*len*s + jit*0.07*sin(3.1416*s);
-        col += mix(vec3(1.), mag, s*0.6)*pblob(o, d, pp, 0.0035)*60.*S;
+        vec3 pp = CORE + dir*len*s + jit*0.05*sin(3.1416*s);
+        col += mix(vec3(1.), mag, s*0.6)*pblob(o, d, pp, 0.003)*60.*S;
       }
     }
-    // and four long spikes of light
     for(int k2=0;k2<4;k2++){
       float an = float(k2)*1.5708 + floor(tm/2.3)*0.7;
-      col += jet(o - CORE, d, normalize(vec3(cos(an)*0.3, sin(an), cos(an))), 0.75, 0.002, 0.001, 0.5, tm*3., vec3(1.), cyan)*2.5*S;
+      col += jet(o - CORE, d, normalize(vec3(cos(an), 0.15, sin(an))), 0.55, 0.002, 0.001, 0.5, tm*3., vec3(1.), cyan)*2.5*S;
     }
   }
-  // tethers, engine plumes, wingtip beacons, and the heart's glow
+  // engine plumes streaming aft, running lights on the wingtips, and the heart's glow
   float tk = 1. + spool + S;
-  col += jet(o - CORE, d, vec3(0., 1., 0.), 0.45, 0.005, 0.003, 0.6, tm*2., cyan, vec3(0.8, 0.95, 1.))*0.7*tk;
+  col += jet(o - vec3(0.005, -0.92, 0.), d, vec3(0., -1., 0.), 0.3, 0.03, 0.06, 1., tm*5., vec3(0.75, 0.95, 1.), vec3(0.2, 0.5, 1.))*(2.4 + 3.*spool);
   for(int k=0;k<2;k++){
     float sg = k == 0 ? 1. : -1.;
-    col += jet(o - CORE, d, normalize(vec3(0., -0.44, 0.7*sg)), 0.9, 0.005, 0.003, 0.6, tm*2. + sg, cyan, vec3(0.8, 0.95, 1.))*0.6*tk;
-    col += jet(o - vec3(0., -0.48, 0.8*sg), d, vec3(0., -1., 0.), 0.16, 0.018, 0.04, 1., tm*5. + sg, vec3(0.75, 0.95, 1.), vec3(0.2, 0.5, 1.))*(2.2 + 3.*spool);
-    col += vec3(0.75, 0.95, 1.)*pblob(o, d, vec3(0., -0.45, 0.78*sg), 0.01)*35.*pow(0.5 + 0.5*sin(tm*2.7 + sg*1.3), 10.);
+    col += jet(o - vec3(0.025, -0.88, 0.22*sg), d, vec3(0., -1., 0.), 0.2, 0.02, 0.04, 1., tm*5. + sg, vec3(0.75, 0.95, 1.), vec3(0.2, 0.5, 1.))*(1.8 + 3.*spool);
+    col += (sg > 0. ? vec3(0.4, 1., 0.5) : vec3(1., 0.3, 0.25))*pblob(o, d, vec3(0.015, -0.47, 0.57*sg), 0.008)*30.*pow(0.5 + 0.5*sin(tm*2.7 + sg*1.3), 10.);
   }
-  col += vec3(1., 0.9, 0.8)*(blob(o, d, CORE, 0.09)*2.2 + blob(o, d, CORE, 0.45)*0.25)*power*(1. - alpha*0.5);
+  col += vec3(0.8, 0.95, 1.)*pblob(o, d, vec3(-0.02, 1.0, 0.), 0.006)*25.*pow(0.5 + 0.5*sin(tm*1.9), 12.);
+  col += vec3(1., 0.9, 0.8)*(blob(o, d, CORE, 0.07)*2.2 + blob(o, d, CORE, 0.32)*0.22)*power*(1. - alpha*0.5);
   vec2 hf = sphIsect(o, d, vec3(0.), 0.96);
   if(hf.y > 0. && spool > 0.){ vec3 qn = normalize(o + d*max(hf.x, 0.)); col += vec3(0.5, 0.85, 1.)*pow(1. - abs(dot(qn, d)), 3.)*spool*1.3*(0.7 + 0.3*noise(qn*9. + tm)); }
   outCol(col, alpha);
 }`;
+
 P.ship = program(VS_RECT, FS_SHIP);
 const SHIP_TARGETS = ['earth', 'moon', 'jupiter', 'saturn', 'titan', 'sun', 'mars', 'sgra', 'betelgeuse', 'pillars', 'crab', 'etacar', 'catseye', 'hltau', 'omegacen', 'm87bh', 'andromeda',
   'm51', 'antennae', 'ton618', 'milkyway', 'antares', 'alphacen', 'trappist1', 'magnetar', 'sn1987a', 'galcentre', 'rsoph', 'europa', 'io', 'lmc', 'm104', '3c273', 'proxima', 'sirius'];
@@ -163,8 +164,8 @@ const folds = [];   // space-fold effects: { pos (world), t, kind: 0 departure /
 const ship = (() => {
   const RAD = 2.5*KM;
   const S = { state:'observe', t:0, T:26, target:null, basis:null, th0:0, dir:1, spool:0, visits:0, fromFold:null };
-  const o = addObj({ key:'halo', name:'the Halo', label:'Halo', labelClass:'ship', type:'crescent flagship · a wandering starship that folds space', group:'travel', sortKey:0, layer:3,
-    fact:'A crescent-winged flagship from a civilisation that learned to fold space. Its heart is a captured sliver of star plasma held in spinning containment rings; when it surges, arcs leap across the hull. It hops between the wonders of the universe for a look. (It is the only made-up thing in this atlas.)',
+  const o = addObj({ key:'halo', name:'the Halo', label:'Halo', labelClass:'ship', type:'long-range cruiser · a wandering starship that folds space', group:'travel', sortKey:0, layer:3,
+    fact:'A long-range cruiser from a civilisation that learned to fold space. Its heart, seen through an open reactor bay mid-ship, is a captured sliver of star plasma held in spinning containment rings; when it surges, arcs leap across the bay. It hops between the wonders of the universe for a look. (It is the only made-up thing in this atlas.)',
     pos:[0, 0, 0], rad:RAD, prog:P.ship, minZoom:1.2, pxMin:3, noImpostor:true, labelRange:1, selfPos:true, aka:'ship starship spaceship ring halo follow',
     views:[{d:[-0.72, 0.3, 0.62], k:2.4, hold:10, drift:0.05}, {d:[-0.32, -0.9, 0.25], k:2.1, hold:9, drift:0.03}, {d:[0.8, 0.12, 0.55], k:3.4, hold:8, drift:0.04}],
     setU(pr){ const L = S.target ? V.norm(V.sub(sun.rel, this.rel)) : [0, 1, 0]; gl.uniform4f(pr.u.uP0, S.spool, 0, 0, this.t*0.15); gl.uniform4f(pr.u.uP1, L[0], L[1], L[2], 0); },
@@ -208,13 +209,13 @@ const ship = (() => {
     S.spool = S.state === 'spool' ? smooth(S.T - 2.5, S.T, S.t) : Math.max(0, S.spool - dt);
     if (S.t >= S.T){
       folds.push({ pos:o.pos.slice(), parent:S.target, off:o.offset.slice(), t:0, kind:0, size:Math.max(RAD*30, S.target.rad*0.05) });
-      const following = !tour.on && (orbit.lock === o.index || (flight && flight.obj === o));
-      if (following && flight) finishFlightHere();
-      // re-anchor the camera on the old target so it stays put while the ship folds away
-      if (cam.focus === o.index){ const D = frel(S.target); cam.rel = V.sub(cam.rel, D); orbit.target = V.sub(orbit.target, D); cam.focus = S.target.index; }
+      // riding along (or locked on the ship): the camera folds with it and simply stays attached; a flash covers the jump.
+      // Otherwise re-anchor the camera on the old target so it stays put while the ship folds away.
+      const riding = shipCam.on || (!tour.on && orbit.lock === o.index && cam.focus === o.index);
+      if (!riding && cam.focus === o.index){ const D = frel(S.target); cam.rel = V.sub(cam.rel, D); orbit.target = V.sub(orbit.target, D); cam.focus = S.target.index; }
       S.state = 'observe'; S.spool = 0;
       arrive(pickTarget());
-      if (following){ const vp = viewParams(o, 0); startFlight(o, vp, null); flight.dur = Math.max(flight.dur, 5); toast('following the Halo to ' + S.target.name); }
+      if (riding){ place(); foldFlash(); toast('the Halo folds space · arriving at ' + S.target.name); }
       return;
     }
     place();

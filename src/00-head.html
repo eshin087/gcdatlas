@@ -48,6 +48,9 @@ body:has(#view.dragging) *{-webkit-user-select:none;user-select:none}
 .type{color:var(--dim);font-size:calc(11.5px*var(--ts));letter-spacing:.03em}
 .where{color:var(--soft);font-size:calc(11.5px*var(--ts));font-variant-numeric:tabular-nums}
 .fact{margin:9px 0 0;max-width:46ch;color:var(--soft);font-size:calc(12.5px*var(--ts))}
+.readout.fade{animation:fadeIn 1s ease-out}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.info{animation:fadeIn 1.2s ease-out}
 .readout{margin-top:8px;color:var(--flare);font-size:calc(11.5px*var(--ts));font-variant-numeric:tabular-nums;white-space:pre-wrap;min-height:1.5em;max-width:50ch}
 .scale{display:flex;align-items:center;gap:8px;margin-top:8px;color:var(--soft);font-size:calc(11px*var(--ts));font-variant-numeric:tabular-nums;white-space:nowrap;pointer-events:auto;cursor:help;width:max-content}
 .scale .rlab{color:var(--faint);letter-spacing:.1em;text-transform:uppercase;font-size:calc(10px*var(--ts))}
@@ -125,7 +128,13 @@ body.ui-idle .caption{background:rgba(5,7,14,.4);border-color:transparent;border
 .topr > *{pointer-events:auto}
 .btn.resume{order:9;color:var(--void);background:#a8f0b0;border-color:#a8f0b0;font-weight:600;animation:shipPulse 2.4s ease-in-out infinite}
 .btn.resume:hover{color:var(--void);background:#c8ffd0}
-#btnShip.following{color:var(--void);background:var(--ship);border-color:var(--ship)}
+#btnRide{color:var(--ship)}
+#btnRide.following{color:var(--void);background:var(--ship);border-color:var(--ship)}
+/* the flash when the Halo folds space with you aboard */
+.fold-flash{position:fixed;inset:0;pointer-events:none;z-index:1;opacity:0;background:radial-gradient(ellipse at 50% 50%,rgba(235,250,255,.95) 0%,rgba(143,230,255,.55) 35%,rgba(20,40,70,.0) 80%)}
+.fold-flash.go{animation:foldFlash 1.1s ease-out}
+@keyframes foldFlash{0%{opacity:0}12%{opacity:.9}100%{opacity:0}}
+@media (prefers-reduced-motion:reduce){.fold-flash.go{animation-duration:.4s}}
 .btn:focus-visible,.lab:focus-visible,.arow:focus-visible,.tick:focus-visible,.nav:focus-visible,.seg button:focus-visible,.tog button:focus-visible,.ladmark:focus-visible{outline:1px solid var(--flare);outline-offset:2px}
 .search{position:relative;display:flex;align-items:center}
 .search input{width:190px;box-sizing:border-box;font-size:calc(12px*var(--ts));color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:3px;padding:6px 30px 6px 10px;outline:none;
@@ -146,7 +155,9 @@ body.ui-idle .caption{background:rgba(5,7,14,.4);border-color:transparent;border
 /* ---- labels on objects */
 .labels{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:1}
 .lab{position:absolute;left:0;top:0;font-size:calc(10.5px*var(--ts));color:var(--dim);letter-spacing:.06em;white-space:nowrap;background:none;border:0;
-  padding:2px 4px;cursor:pointer;pointer-events:auto;text-shadow:0 0 6px #000,0 0 2px #000;will-change:transform}
+  padding:2px 4px;cursor:pointer;pointer-events:auto;text-shadow:0 0 6px #000,0 0 2px #000;will-change:transform,opacity;
+  opacity:0;visibility:hidden;transition:opacity .3s ease-in,visibility 0s linear .3s}
+.lab.on{opacity:1;visibility:visible;transition:opacity .8s ease-out,visibility 0s}
 .lab:hover{color:var(--flare)}
 .lab::before{content:"[ ";color:var(--faint)}
 .lab::after{content:" ]";color:var(--faint)}
@@ -173,7 +184,8 @@ body.ui-idle .caption{background:rgba(5,7,14,.4);border-color:transparent;border
 .shiparrow:hover,.shipmark:hover span{color:#fff}
 @keyframes shipPulse{0%,100%{opacity:.55}50%{opacity:1}}
 
-/* ---- side panels: atlas and settings */
+/* ---- side panels: atlas and settings (their text has its own size on top of the page's: menu text in settings) */
+.atlas,.panel,.help-card{--ts:var(--tsm,1.15)}
 .atlas,.panel{position:fixed;top:calc(var(--ctl-b,54px) + 8px);right:calc(16px + env(safe-area-inset-right,0px));
   width:min(calc(340px*var(--ts)),calc(100vw - 32px));display:flex;flex-direction:column;background:rgba(5,7,14,.86);border:1px solid var(--line);border-radius:4px;
   -webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);z-index:5;overflow:hidden}
@@ -351,7 +363,8 @@ body.sky .info .acts,body.sky .ladder,body.sky .lad-chip,body.sky .progress{opac
   .controls .btn:hover{border-color:transparent}
   .controls .btn[aria-expanded="true"]{background:var(--flare-bg);color:var(--flare)}
   #btnSound[aria-pressed="false"]{color:var(--faint)}
-  #btnShip.following{background:rgba(143,230,255,.14);color:var(--ship)}
+  .controls #btnRide{display:none}
+  #btnShip[aria-pressed="true"]{background:rgba(143,230,255,.14);color:var(--ship)}
   #btnTours.touring{background:rgba(168,240,176,.1)}
   /* the info card */
   .info{top:auto;bottom:calc(var(--dock-h,64px) + 6px);box-sizing:border-box;padding:0 12px 10px;pointer-events:auto;
