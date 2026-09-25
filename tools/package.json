@@ -1,0 +1,19 @@
+{
+  "name": "gcdatlas-data-tools",
+  "private": true,
+  "type": "module",
+  "description": "Regenerates src/05-data.js (star catalogue, constellation lines, Milky Way sky map, Earth texture). Not needed to build the site.",
+  "scripts": {
+    "stars": "node stars.mjs",
+    "data": "node gen-data.mjs",
+    "all": "node stars.mjs && node gen-data.mjs"
+  },
+  "dependencies": {
+    "d3-celestial": "^0.7.35",
+    "d3-geo": "^3.1.1",
+    "sharp": "^0.33.5",
+    "star-catalog-lite": "^1.2.0",
+    "topojson-client": "^3.1.0",
+    "world-atlas": "^2.0.2"
+  }
+}
