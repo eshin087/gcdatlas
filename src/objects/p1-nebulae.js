@@ -311,6 +311,8 @@ const eagle = (() => {
     fact:'A cavity 20 light-years wide, blown into a cold cloud by the hot young stars of NGC 6611. What is left of the cloud stands in columns pointing back at the cluster: the Pillars of Creation, the 9-light-year Spire and a dozen smaller trunks.',
     pos, rad, R0, prog:program(VS_RECT, FS_EAGLE), minZoom:0.05, pxMin:6, farColor:[0.55, 0.85, 0.72], farLum:0.5, labelRange:8e4, labelMin:25, aka:'m16 eagle nebula ngc 6611 spire fairy star queen',
     setU(pr){ gl.uniform4f(pr.u.uP0, offL[0], offL[1], offL[2], 0); },
+    // close to the Pillars the surrounding cloud steps back, so the columns stand out against a darker sky as in the telescope images
+    visFn(rpx){ return smooth(6, 16, rpx)*(0.3 + 0.7*smooth(9, 45, V.len(pil.rel))); },
     views:[{ dirFn:() => V.norm(V.mul(pos, -1)), k:1.45, hold:9, drift:0.02 }, { d:[0.55, 0.3, 0.8], k:0.85, hold:8, drift:0.03 }, { d:[0.1, -0.25, 1], k:0.3, off:offL, hold:8, drift:0.02 }],
     particles:[{ ps:cl.ps, prog:'ptBasic', mode:1, sb:0.45, size:1.8 }, { ps:cl.spikes, prog:'spike', lines:true, mode:1, sb:0.45, size:1, len:0.02, q0:() => [1, 0, 0, 0] }],
     readout:() => '6,500 light-years · about 70 x 55 light-years\nthe Pillars are about 10 light-years from the cluster that is slowly destroying them' });

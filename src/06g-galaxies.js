@@ -22,7 +22,8 @@ void main(){
   if(h.y < 0.) discard;
   float m = uP0.x, tp = uP0.y, bw = uP0.z, dustK = uP0.w, bar = uP1.x, H = uP1.y, sf = uP1.z, ell = uP1.w, irr = uP2.x, sd = uP2.y, Rd = uP2.z, ringR = uP2.w;
   vec3 col = vec3(0.); float T = 1.;
-  vec3 warm = vec3(1., 0.8, 0.56), old = vec3(0.95, 0.86, 0.72), young = vec3(0.58, 0.7, 1.), pink = vec3(1., 0.38, 0.6);
+  // the palette of the classic galaxy portraits: a golden core and bar, blue-white arms of young stars, pink star-forming clouds, dark dust lanes
+  vec3 warm = vec3(1., 0.74, 0.42), old = vec3(0.98, 0.84, 0.64), young = vec3(0.5, 0.66, 1.), pink = vec3(1., 0.34, 0.58);
   if(ell > 0.){
     float t0 = max(h.x, 0.), dt = (h.y - t0)/26.; float jit = hash12(gl_FragCoord.xy)*dt;
     for(int i=0;i<26;i++){
@@ -61,16 +62,16 @@ void main(){
       // cloudy structure: the arms are billowing star clouds, not lines; a soft envelope carries a haze of unresolved stars
       float cloud = fbm3(p*vec3(13., 36., 13.) + sd*1.7);
       float haze = m > 0.5 ? pow(0.5 + 0.5*cos(m*psi), 1.3) : 0.;
-      vec3 em = warm*barD*0.9 + mix(old, young, a)*disk*(0.12 + 1.7*a)*(0.5 + 1.*cloud) + young*disk*haze*cloud*cloud*0.9;
+      vec3 em = warm*barD*1.2 + mix(old, young, a)*disk*(0.05 + 2.3*a)*(0.35 + 1.3*cloud) + young*disk*haze*cloud*cloud*0.7;
       // star-forming regions: pink hydrogen clouds strung along the arms
-      float knots = smoothstep(0.58, 0.8, noise(p*vec3(34., 60., 34.) + sd));
-      em += pink*disk*a*knots*sf*4.5*(0.6 + cloud);
+      float knots = smoothstep(0.55, 0.78, noise(p*vec3(34., 60., 34.) + sd)) + 0.6*smoothstep(0.7, 0.9, noise(p*vec3(80., 120., 80.) + sd + 3.));
+      em += pink*disk*a*knots*sf*5.5*(0.6 + cloud);
       // dust: lanes on the inner edge of each arm, and feathery spurs crossing it
       float lane = m > 0.5 ? armPat(psi + 0.22, m)*(0.3 + 1.4*fbm3(p*40. + sd)) + 0.45*a*smoothstep(0.55, 0.8, ridge(p*vec3(26., 60., 26.) + sd)) : fbm3(p*18. + sd)*0.6;
       float dust = lane*exp(-ay/(H*0.45))*exp(-rho/(Rd*1.6))*smoothstep(bar*0.4, bar*0.9 + 0.03, rho);
       if(ringR > 0.) dust += exp(-pow((rho - ringR)/(ringR*0.08), 2.))*exp(-ay/(H*0.5))*(0.6 + 0.8*fbm3(p*30.))*3.;
       col += T*em*dt*uP4.x;
-      T *= exp(-dust*dustK*dt*70.);
+      T *= exp(-dust*dustK*dt*90.);
     }
   }
   // the bulge fills a volume far thicker than the disk; light from behind the disk plane is dimmed by its dust
@@ -204,9 +205,9 @@ const milkyway = (() => {
     },
     views:[
       {d:[0.28, 1, 0.42], k:1.3, hold:10, drift:0.02},
-      {d:[0.82, 0.42, 0.45], k:1.05, hold:9, drift:0.025},
+      {d:[0.82, 0.55, 0.45], k:1.45, hold:9, drift:0.025},
       {d:[0.25, 0.05, 1], k:1.15, hold:8, drift:0.02},
-      {d:[1, 0.62, 0.2], k:0.36, off:[26670/RAD, 0, 0], hold:9, drift:0.015},
+      {d:[0.55, 1, 0.3], k:0.62, off:[26670/RAD, 0, 0], hold:9, drift:0.015},
     ],
     particles:[
       {ps, prog:'ptBasic', mode:0, sb:0.22, size:1.4, cap:0.7},

@@ -4,6 +4,25 @@ All notable changes, newest first. Dates are UTC.
 
 ## Unreleased
 
+## 0.7.5 · 2026-09-25
+
+**New**
+- 16 new places: the JWST icons Cassiopeia A, WR 124, the Southern Ring and the Bubble Nebula, and the Pleiades; strange worlds Kepler-16b (two suns), 55 Cancri e (lava), KELT-9b (hottest planet) and HR 8799's four photographed giants; the wanderers Halley's Comet (tails near the Sun), 'Oumuamua, Ceres and Arrokoth; and the oddities the Einstein Cross, the Boötes Void, El Gordo and Tabby's Star.
+- Two new tours: *through JWST's eyes* and *cosmic oddities*.
+- Scenic travel: long trips pass something real on the way (a nebula, a cluster, a galaxy near the route), turn to look at it, then carry on.
+- The Solar System view draws the Sun and planets enlarged, so you can see each of them; orbits stay to scale and the readout says how much each is enlarged. Pick a planet and it returns to true size.
+
+**Changed**
+- The arrows beside an object's name step through its camera angles. The arrows at the top right step through tour stops on a tour, and otherwise up and down the scale bar (Moon, Earth, Jupiter, the Sun, ...).
+- Every lock-on loops through the object's angles, including picks from the scale bar and shared links.
+- Travel speed: slow by default for new visitors; changing it mid-flight re-times the rest of the trip; the speed you pick is honoured on computers set to reduce motion.
+- The Sun's surface churns like fire, with tongues of flame licking up from its edge. Other stars with boiling surfaces (cooler than about 7,000 K) get the same look in their own colours.
+- The Milky Way and other spirals have golden cores, blue-white arms, pink star-forming clouds and darker dust lanes. The Milky Way's views were reframed to show it whole.
+- The Pillars of Creation stand out against a darker sky when you are close.
+
+**Fixed**
+- "you are inside it away" under the Solar System's name.
+
 ## 0.7.4 · 2026-09-25
 
 **New**

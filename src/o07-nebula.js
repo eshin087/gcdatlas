@@ -60,7 +60,7 @@ void main(){
     float fore = smoothstep(0.57, 0.74, fbm3(p*3. + 2.))*smoothstep(-0.15, -0.95, p.y)*0.7;
     float gv = fbm3(p*1.6 + 9.);
     vec3 gc = mix(mix(vec3(0.16, 0.34, 0.78), vec3(0.36, 0.6, 0.92), gv), vec3(0.85, 0.55, 0.38), smoothstep(0.55, 0.8, edgeN)*0.5);
-    vec3 em = gc*gas*0.4 + dustC*dens*(0.25 + 0.9*face)*(1. - 0.6*depthIn)*14.
+    vec3 em = gc*gas*0.25 + dustC*dens*(0.25 + 0.9*face)*(1. - 0.6*depthIn)*14.
       + mix(vec3(1., 0.28, 0.08), vec3(1., 0.62, 0.26), wav)*rim*7. + mix(vec3(1., 0.55, 0.3), vec3(1., 0.45, 0.55), flow)*evap*2.4;
     col += T*em*dt;
     T *= exp(-(dens*16. + fore*6. + gas*0.3)*dt);

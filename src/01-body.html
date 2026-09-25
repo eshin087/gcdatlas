@@ -19,7 +19,7 @@
   <div class="stop"><span><span id="stopNum">01</span> / <span id="stopCount">11</span></span><span id="mode" class="mode">tour</span><button class="act resume-i" id="btnResumeI" hidden>&#9656; resume tour</button><span class="itools"><button class="itool" id="infoMore" aria-expanded="true" aria-controls="info">less</button><button class="itool" id="infoHide" aria-label="Hide the info panel" title="Hide this panel (I)">hide</button></span></div>
   <div class="title">
     <h1 id="objName">Earth</h1>
-    <button class="nav" id="prevObj" aria-label="Previous stop">&lsaquo;</button><button class="nav" id="nextObj" aria-label="Next stop">&rsaquo;</button>
+    <button class="nav" id="prevObj" aria-label="Previous angle" title="Previous camera angle">&lsaquo;</button><button class="nav" id="nextObj" aria-label="Next angle" title="Next camera angle">&rsaquo;</button>
   </div>
   <div class="acts"><button class="act" id="btnShare" title="Copy a link to exactly this view">share</button><button class="act" id="btnCompare" title="Put another object beside this one at true scale">compare size</button><button class="act" id="btnRideI" hidden>ride along</button><button class="act" id="btnCamI" hidden>cockpit view</button><button class="act" id="btnFlyby" hidden title="A sweeping camera move that shows how big this is">flyby</button><button class="act" id="btnPhoto" title="Photo mode: frame a shot, save it as a picture or copy it as ASCII text (P)">photo</button></div>
   <div id="objType" class="type"></div>
@@ -227,7 +227,8 @@
       <dt>click or tap</dt><dd>fly to an object and lock onto it</dd>
       <dt>/ or the search box</dt><dd>search everything in the atlas; arrow keys and Enter pick a result</dd>
       <dt>right-drag / shift-drag</dt><dd>pan (unlocks the camera)</dd>
-      <dt>[ ] or ‹ ›</dt><dd>previous / next tour stop</dd>
+      <dt>[ ] or ‹ › (top right)</dt><dd>on a tour: previous / next stop; otherwise down / up the scale bar (Moon, Earth, Jupiter, the Sun, ...)</dd>
+      <dt>‹ › beside the name</dt><dd>previous / next camera angle of the object in view</dd>
       <dt>W A S D · R F</dt><dd>fly freely</dd>
       <dt>space · &#10074;&#10074; / &#9654;&#xFE0E;</dt><dd>pause or play: the tour, or the angles of an object you picked (they loop until you take the camera)</dd>
       <dt>esc</dt><dd>close panels, then unlock (free camera)</dd>
