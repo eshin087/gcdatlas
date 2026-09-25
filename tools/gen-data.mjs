@@ -4,7 +4,7 @@ import sharp from 'sharp';
 import { geoEquirectangular, geoPath } from 'd3-geo';
 import * as topo from 'topojson-client';
 
-const OUT = new URL('../src/05-data.js', import.meta.url);
+const OUT = process.env.OUT ? process.env.OUT : new URL('../src/05-data.js', import.meta.url);
 const D = Math.PI/180;
 const EQ2GAL = [[-0.0548755604,-0.8734370902,-0.4838350155],[0.4941094279,-0.4448296300,0.7469822445],[-0.8676661490,-0.1980763734,0.4559837762]];
 const galVec = (ra, dec) => { const a = ra*D, d = dec*D, e = [Math.cos(d)*Math.cos(a), Math.cos(d)*Math.sin(a), Math.sin(d)]; return EQ2GAL.map(r => r[0]*e[0] + r[1]*e[1] + r[2]*e[2]); };
@@ -25,8 +25,13 @@ for (const s of stars){
   dist = Math.min(dist, 6000);
   const g = galVec(s.ra, s.dec).map(x => x*dist);
   let bv = isFinite(s.bv) ? s.bv : 0.6;
-  const i = packed.length/5;
-  packed.push(+g[0].toFixed(dist < 30 ? 3 : 1), +g[1].toFixed(dist < 30 ? 3 : 1), +g[2].toFixed(dist < 30 ? 3 : 1), +s.mag.toFixed(2), +bv.toFixed(2));
+  // space velocity relative to the Sun, from proper motion (mas/yr, RA component includes cos dec) and radial velocity (km/s)
+  const a = s.ra*D, dd = s.dec*D, pc = dist/3.26156, K = 4.74047e-3*pc;              // km/s per mas/yr at this distance
+  const rh = [Math.cos(dd)*Math.cos(a), Math.cos(dd)*Math.sin(a), Math.sin(dd)], ah = [-Math.sin(a), Math.cos(a), 0], dh = [-Math.sin(dd)*Math.cos(a), -Math.sin(dd)*Math.sin(a), Math.cos(dd)];
+  const veq = [0, 1, 2].map(k => (s.rv || 0)*rh[k] + (s.pmra || 0)*K*ah[k] + (s.pmdec || 0)*K*dh[k]);
+  const vg = EQ2GAL.map(r => (r[0]*veq[0] + r[1]*veq[1] + r[2]*veq[2])*3.3356);   // km/s -> light-years per million years
+  const i = packed.length/8;
+  packed.push(+g[0].toFixed(dist < 30 ? 3 : 1), +g[1].toFixed(dist < 30 ? 3 : 1), +g[2].toFixed(dist < 30 ? 3 : 1), +s.mag.toFixed(2), +bv.toFixed(2), +vg[0].toFixed(3), +vg[1].toFixed(3), +vg[2].toFixed(3));
   const nm = PROPER[s.id] || (/^[A-Z][a-z]+$/.test(s.name) ? s.name : '');
   if (nm && s.mag < 3.6) names.push([i, nm]);
   s._i = i; s._v = galVec(s.ra, s.dec);
@@ -48,7 +53,7 @@ for (const f of cl.features) for (const line of f.geometry.coordinates){
     prev = k; }
 }
 const lines = [...seg].flatMap(s => s.split(',').map(Number));
-console.log('stars', packed.length/5, 'named', names.length, 'segments', seg.size, 'missed vertices', miss, '/', tot);
+console.log('stars', packed.length/8, 'named', names.length, 'segments', seg.size, 'missed vertices', miss, '/', tot);
 
 // ---------------------------------------------------------------- Milky Way brightness in galactic equirectangular coordinates
 async function rasterMW(W, H){
@@ -112,7 +117,7 @@ const earthPng = await rasterEarth(1024, 512);
 console.log('mw', mwPng.length, 'earth', earthPng.length);
 const js = `
 // ================================================================ data: Hipparcos/Gaia bright stars (V <= 5) in galactic light-years, constellation figures, Milky Way sky map, Earth
-// STAR_DATA: x, y, z (ly, heliocentric galactic), V magnitude, B-V colour index
+// STAR_DATA (8 per star): x, y, z (ly, heliocentric galactic), V magnitude, B-V colour index, vx, vy, vz (ly per million years, relative to the Sun, from proper motion)
 const STAR_DATA = ${JSON.stringify(packed)};
 const STAR_NAMES = ${JSON.stringify(names)};
 const CON_LINES = ${JSON.stringify(lines)};

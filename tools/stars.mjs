@@ -9,7 +9,8 @@ for (const s of cat){
   const hasPar = (s.flags & 32) && s.parallaxMas > 0;
   if (!hasPar){ noPar++; continue; }
   const bv = bvByHip.get(s.hipId); if (bv === undefined || isNaN(bv)) noBv++;
-  out.push({ name:s.displayName, id:s.canonicalId, hip:s.hipId, ra:s.rightAscensionDeg, dec:s.declinationDeg, plx:s.parallaxMas, mag:s.magnitude, bv });
+  out.push({ name:s.displayName, id:s.canonicalId, hip:s.hipId, ra:s.rightAscensionDeg, dec:s.declinationDeg, plx:s.parallaxMas, mag:s.magnitude, bv,
+    pmra:s.properMotionRaMasPerYear || 0, pmdec:s.properMotionDecMasPerYear || 0, rv:isFinite(s.radialVelocityKmPerSecond) ? s.radialVelocityKmPerSecond : 0 });
   n++;
 }
 console.log(n, noPar, noBv);
