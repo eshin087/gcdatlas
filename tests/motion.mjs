@@ -10,7 +10,7 @@ const fail = m => errors.push('check: ' + m);
 const loop = await page.evaluate(() => {
   const C = __cosmos, sat = C.BYKEY.saturn; C.setTour(false);
   C.lockOn(sat.index);
-  const n = Math.ceil((C.flightDur() + 0.2)*60); for (let i=0;i<n;i++) C.tick(1/60);
+  C.land(0.2);
   const afterFlight = { lock:C.orbit.lock === sat.index, playing:!document.getElementById('btnPlay').classList.contains('paused') };
   const yaw0 = C.orbit.yaw;
   for (let i=0;i<60*40;i++) C.tick(1/60);   // long enough to swing to another angle
@@ -41,7 +41,7 @@ const fl = await page.evaluate(() => {
   C.lockOn(e.index);
   const dur = C.flightDur(), tanY = Math.tan(C.cam.fovY/2), px = () => e.rad/e.dist/tanY*innerHeight/2;
   let prev = px(), worst = 1, t = 0;
-  while (t < dur + 0.5){ C.tick(1/60); t += 1/60; const p = px(); if (prev > 20) worst = Math.max(worst, p/prev, prev/p); prev = p; }
+  while ((C.flight || t < dur) && t < 200){ C.tick(1/60); t += 1/60; const p = px(); if (prev > 20) worst = Math.max(worst, p/prev, prev/p); prev = p; }
   return { worstFrameToFrameScale:+worst.toFixed(3), lock:C.orbit.lock === e.index };
 });
 if (!fl.lock) fail('the flight did not land on Earth');
@@ -50,7 +50,7 @@ if (fl.worstFrameToFrameScale > 1.12) fail('Earth jumped in size between two fra
 // 4. a scale picked on the ladder keeps the camera moving on arrival (a slow circle), and shared links start playing too
 const lad = await page.evaluate(() => {
   const C = __cosmos, m = C.LADDER.find(m => m.key === 'jupiter') || C.LADDER[0];
-  C.goLadder(m); const n = Math.ceil((C.flightDur() + 0.2)*60); for (let i=0;i<n;i++) C.tick(1/60);
+  C.goLadder(m); C.land(0.2);
   const y0 = C.orbit.yaw; for (let i=0;i<120;i++) C.tick(1/60);
   return { name:m.name, show:C.show.on, playing:!document.getElementById('btnPlay').classList.contains('paused'), moved:Math.abs(C.orbit.yaw - y0) > 1e-3 };
 });
@@ -62,7 +62,7 @@ const ride = await page.evaluate(() => {
   const r = { markOff:!vis() };
   document.getElementById('btnShip').click(); C.tick(1/60); C.hud(); r.markOn = C.SET.haloMark;
   document.getElementById('btnShip').click();
-  C.startShipCam('chase'); const n = Math.ceil((C.flightDur() + 0.3)*60); for (let i=0;i<n;i++) C.tick(1/60);
+  C.startShipCam('chase'); C.land(0.3);
   r.riding = C.shipCam.on; r.dist = Math.hypot(...h.rel)/h.rad;
   const k0 = h.S.target.key; let far = 0, i = 0;
   while (h.S.target.key === k0 && i < 60*60){ C.tick(1/60); i++; }
@@ -80,5 +80,22 @@ if (!ride.folded || !ride.stillRiding || ride.farAfterFold > 6) fail('the camera
 if (!ride.cockpit) fail('the cockpit view is not on the ship');
 if (!ride.paused || !ride.resumed) fail('pause / play did not stop and resume riding along');
 
-report('motion', errors, `Saturn loops through ${loop.views} angles · pause, play and space work · universe to Earth, largest frame-to-frame change x${fl.worstFrameToFrameScale} · ladder picks keep moving · riding the Halo through a fold (camera within ${ride.farAfterFold} ship radii)`);
+// 6. arrows: from the Moon, "next" goes up the scale bar to Earth; the arrows beside the name step angles and the loop carries on;
+//    changing the travel speed mid-flight re-times the rest of the trip
+const nav = await page.evaluate(() => {
+  const C = __cosmos, land = () => { C.land(0.3); };
+  C.setTour(false); C.lockOn(C.BYKEY.moon.index); land();
+  C.stepObject(1); const next = C.stepTarget; land();
+  C.stepObject(1); const next2 = C.stepTarget; land();
+  const v0 = C.show.view; document.getElementById('nextObj').click(); for (let i=0;i<60*4;i++) C.tick(1/60);
+  const angle = { from:v0, to:C.show.view, looping:C.show.on };
+  C.setOpt('travel', 'cinematic', true); C.lockOn(C.BYKEY.sun.index); for (let i=0;i<30;i++) C.tick(1/60);
+  const slow = C.flightDur(); C.setOpt('travel', 'warp', true); const fast = C.flightDur(); C.setOpt('travel', 'quick', true); land();
+  return { next, next2, angle, slow:+slow.toFixed(2), fast:+fast.toFixed(2) };
+});
+if (nav.next !== 'earth' || nav.next2 !== 'jupiter') fail('next did not follow the scale bar from the Moon: ' + JSON.stringify(nav));
+if (nav.angle.to === nav.angle.from || !nav.angle.looping) fail('the angle arrows did not step the loop: ' + JSON.stringify(nav.angle));
+if (!(nav.fast < nav.slow)) fail('changing the speed mid-flight did not re-time it: ' + JSON.stringify(nav));
+
+report('motion', errors, `Saturn loops through ${loop.views} angles · pause, play and space work · universe to Earth, largest frame-to-frame change x${fl.worstFrameToFrameScale} · ladder picks keep moving · riding the Halo through a fold (camera within ${ride.farAfterFold} ship radii) · Moon → ${nav.next} → ${nav.next2} · mid-flight speed change ${nav.slow}s → ${nav.fast}s`);
 await browser.close();
