@@ -73,6 +73,7 @@ Helpers: `addStar`, `namedStar`, `addBody` (planets and moons with IAU rotation)
 - `09-render.js`: HUD, labels (with occlusion and interface avoidance), ruler, scale ladder (and its tour-track mode), atlas (sort/filter/search), settings, compare, time machine, share links, main loop.
 - `09f-features.js`: collection log and badges, today's discovery, screensaver, photo mode.
 - `09g-sky.js`: your sky (planetarium), tonight's events, Earth's story.
+- `09h-ui.js`: interface comfort. The info panel's three states (full, compact, hidden; `I`), the phone layout (dock, swipeable info card, scale chip that opens the ladder, `--dock-h`/`--sheet-h` measured for everything that stacks above them), fading the interface when idle (`SET.fadeUI`; the first tap after a fade only wakes it, via `wakeTapAt`), and re-framing on phones: `viewShift` turns the camera slightly in `setBasis` so the object sits in the middle of the space the interface leaves free. The phone breakpoint lives in `COMPACT_MQ` (`src/04-world.js`) and must match the CSS media queries in `00-head.html`.
 - `07m-music.js`: the generative soundtrack (a 16th-note sequencer with a small synthesiser; styles lofi, house, ambient).
 
 ## 8. Live data

@@ -4,6 +4,19 @@ All notable changes, newest first. Dates are UTC.
 
 ## Unreleased
 
+## 0.7.1 · 2026-09-25
+
+**Phones**
+- A dock of six big buttons at the bottom (atlas, tours, time, ship, sound, settings) that always fits the screen.
+- The object's details are a card above the dock. It starts compact (name, distance, tour progress); tap *more*, tap its grip or swipe up for the facts, numbers and ruler; *hide* or swipe down puts it away and leaves a small *i* pill to bring it back. The choice is remembered.
+- The scale ladder folds away behind a chip at the top right showing the current scale (or the tour stop). Tap it to open the ladder; it closes by itself after you pick a rung or tap elsewhere.
+- The camera re-frames the object into the space the card, atlas or a panel leaves free, instead of hiding it behind them.
+- *Resume tour* sits in the card; choosing a tour closes the tours panel so you can watch it; atlas filters scroll sideways so the list keeps its room; landscape puts the card on the left and panels on the right.
+
+**Everywhere**
+- The interface fades after a few quiet seconds (sooner during a tour), leaving just the object's name; move the mouse, tap or press a key to bring it back. The first tap only wakes it, so a tour keeps playing. Settings → interface: never fade, slowly, quickly. New objects get time to be read before their facts fade, and resting the mouse on the text keeps it.
+- The info panel has *less* and *hide* on desktop too (`I` cycles full, compact, hidden).
+
 ## 0.7.0 · 2026-09-25
 
 **New**

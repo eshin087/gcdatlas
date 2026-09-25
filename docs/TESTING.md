@@ -13,7 +13,8 @@ npx playwright install chromium   # first time only, if Playwright has no browse
 
 | Command | What it checks | Time |
 | --- | --- | --- |
-| `npm test` (`tests/smoke.mjs`) | the page loads without errors; every object in the registry renders one frame from its first view; no NaN camera; key interface panels open | 2–4 min |
+| `npm test` (`tests/smoke.mjs`, then `tests/mobile.mjs`) | the page loads without errors; every object in the registry renders one frame from its first view; no NaN camera; key interface panels open; then the phone checks below | 4–6 min |
+| `npm run test:mobile` (`tests/mobile.mjs`) | at 390 x 844 and 844 x 390: the dock fits without overflow, the info card sits above it and expands, collapses and hides, the scale chip opens and closes the ladder, the atlas stays above the dock, the interface fades on a tour and the first tap only wakes it (the tour keeps playing); screenshots in `tests/out/mobile/` | ~2 min |
 | `npm run test:tour` (`tests/tour.mjs`) | plays the grand tour for 1,000 simulated seconds, then locks on, zooms, orbits and flies freely; reports any error or NaN | 5–8 min |
 | `npm run shots -- sun:0,ton618:1` (`tests/shots.mjs`) | screenshots of objects at given view indices into `tests/out/`, plus a contact sheet `tests/out/sheet.png` | ~10 s each |
 | `npm run shots -- --phone earth:0` | the same at a 390 x 844 phone viewport | |
@@ -38,6 +39,6 @@ Copy `tests/smoke.mjs`: use `tests/lib.mjs` → `openPage()`, do things through 
 ## Manual checks before merging visual work
 
 - Desktop Chrome and one of Safari or Firefox.
-- A phone (or the `--phone` screenshots): toolbar, atlas sheet, panels, readout wrapping.
+- A phone (or `npm run test:mobile` and its screenshots): the dock, the info card (more, less, hide, swipe), the scale chip, panels, idle fade. Try it upright and on its side.
 - Reduced motion (OS setting): no flashes, tours still work.
 - Sound on and off; the first click starts music.
