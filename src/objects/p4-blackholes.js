@@ -1,7 +1,7 @@
 
 // ================================================================ content pack: the black hole zoo (Gaia BH1, Cygnus X-1, a tidal disruption, GW150914)
-// no disk: only the shadow and a faint ring of lensed background light
-const noDisk = pr => { gl.uniform4f(pr.u.uP0, 30, 1, 0, 1.6); gl.uniform4f(pr.u.uP1, 0, 0, 0, 2.4); };
+// no disk: only the shadow, the starlight it bends, and a faint photon ring
+const noDisk = pr => { gl.uniform4f(pr.u.uP0, 30, 1, 0, 0.5); gl.uniform4f(pr.u.uP1, 0, 0, 0, 0); };
 // an elliptical orbit drawn as line segments in the host's local xz plane (a in host radii)
 function orbitLine(a, e, n = 180, col = [0.45, 0.62, 1]){
   const ps = makePS(n*2);
@@ -176,44 +176,16 @@ void main(){
   float ring = exp(-pow((b1 - 2.62*ra)/(0.1*ra), 2.)) + 0.12*exp(-pow((b1 - 2.9*ra)/(0.6*ra), 2.));
   if(rb > 0.) ring += exp(-pow((b2 - 2.62*rb)/(0.1*rb), 2.)) + 0.12*exp(-pow((b2 - 2.9*rb)/(0.6*rb), 2.));
   float b = length(cross(o, d)), w = smoothstep(0.6, 0.98, b);
-  // the sky behind them, bent into arcs and a double Einstein ring: the only way to "see" two black holes
-  vec3 dv = normalize(uRot*v);
-  float near = max(smoothstep(7.*ra, 2.7*ra, b1), rb > 0. ? smoothstep(7.*rb, 2.7*rb, b2) : 0.);
-  vec3 bg = cap ? vec3(0.) : starfield(dv)*1.4 + (starCell(dv, 90., 0.26, 5.)*0.9 + starCell(dv, 48., 0.15, 9.) + vec3(0.5, 0.58, 0.95)*0.05*fbm3(dv*5.))*near*1.6;
-  vec3 col = bg + vec3(0.8, 0.86, 1.)*ring*1.3*(cap ? 0.3 : 1.);
+  // the sky behind them, bent around each hole: the only way to "see" two black holes
+  vec3 bg = cap ? vec3(0.) : starfield(normalize(uRot*v));
+  vec3 col = bg + vec3(0.8, 0.86, 1.)*ring*0.35*(cap ? 0. : 1.);
   outCol(col*(1. - w), cap ? 1. : 1. - w);
 }`;
-// the spacetime sheet under the pair: a well beneath each hole, rippling with the gravitational waves they send out
-const PB_BBHGRID = `void body(out vec3 p, out float br, out vec3 col){
-  p = vec3(aP.x, 0., aP.y);
-  float r = length(p.xz), psi = atan(p.z, p.x);
-  float tIn = uQ0.x, Tin = uQ0.y, w0 = uQ0.z, cv = uQ0.w;
-  float h = 0., tret = tIn - r/cv;
-  if(tret > 0. && tret < Tin){ float x = max(1. - tret/Tin, 1e-4); h = cos(2.*(psi - w0*Tin*1.6*(1. - pow(x, 0.625))))/pow(x, 0.25); }
-  else if(tret >= Tin){ float s = tret - Tin; h = cos(2.*psi - s*45.)*exp(-s*2.5)*0.8; }
-  vec2 e = vec2(cos(uQ1.z), sin(uQ1.z)), A = uQ1.y*e, B = -uQ1.w*e;
-  float well = 0.0055/(length(p.xz - A) + 0.035) + 0.0045/(length(p.xz - B) + 0.035);
-  float amp = 0.018/max(r, 0.2);
-  p.y = -0.12 - well + clamp(h*amp, -0.05, 0.05)*smoothstep(1., 0.6, r);
-  br = (0.22 + min(6.*abs(h)*amp, 0.9) + min(well*3., 0.6))*smoothstep(0.95, 0.65, r)*uQ1.x;
-  col = h > 0. ? vec3(0.35, 0.58, 1.) : vec3(0.78, 0.4, 1.);
-  // the sheet is not lensed, so whatever lies behind a hole's shadow is hidden rather than drawn across it
-  vec3 w = uRel + uRot*(p*uRad); float lw = length(w);
-  vec3 wa = uRel + uRot*(vec3(A.x, 0., A.y)*uRad), wb = uRel + uRot*(vec3(B.x, 0., B.y)*uRad);
-  float sa = (uQ1.y > 0. ? 0.084 : 0.144)*uRad, sb = 0.068*uRad;
-  if(lw > length(wa) && length(cross(wa, w/lw)) < sa) br = 0.;
-  if(uQ1.y > 0. && lw > length(wb) && length(cross(wb, w/lw)) < sb) br = 0.;
-}`;
-P.lnBBH = program(particleVS(PB_BBHGRID), FS_LINE);
 const gw150914 = (() => {
   const pos = radec(hms(8,0,0), dms(-70,0,0), 1.3e9);   // the waves' origin was only pinned to a long arc of the southern sky
-  const m1 = 36, m2 = 29, Tin = 20, a0 = 0.42, w0 = 1.05, CYCLE = 34, CV = 0.3, RS1 = 0.032, RS2 = RS1*m2/m1, RSF = RS1*62/m1;
+  const m1 = 36, m2 = 29, Tin = 20, a0 = 0.42, w0 = 1.05, CYCLE = 34, RS1 = 0.032, RS2 = RS1*m2/m1, RSF = RS1*62/m1;
   const f1 = m2/(m1 + m2), f2 = m1/(m1 + m2);
   const st = { t:0, a:a0, ph:0, merged:false };
-  const G = IS_SMALL ? 26 : 34, SEG = IS_SMALL ? 36 : 56, grid = makePS(2*(G + 1)*SEG*2); let gk = 0;
-  for (let dir=0; dir<2; dir++) for (let i=0;i<=G;i++){ const u = -1 + 2*i/G;
-    for (let s=0;s<SEG;s++){ for (const e of [s, s + 1]){ const vv = -1 + 2*e/SEG; grid.a.set(dir ? [u, vv, 0, 1] : [vv, u, 0, 1], gk*4); grid.c.set([0, 0, 0, 0], gk*4); gk++; } } }
-  grid.count = gk; grid.upload('ac');
   const o = addObj({ key:'gw150914', name:'GW150914', label:'GW150914', type:'two black holes merging · the first gravitational waves detected', group:'galaxies', sortKey:1.3e9, isBH:true, sizeR:schwarzschild(62),
     fact:'1.3 billion years ago two black holes of 36 and 29 Suns spiralled together and merged. They gave off no light, but three Suns\' worth of energy left as ripples in spacetime, which reached detectors on Earth on 14 September 2015.',
     pos, rad:3320*KM, R0:facingEarth(pos, V.norm([0.15, 0.55, 0.8]), 0), prog:program(VS_RECT, FS_BBH), minZoom:0.08, pxMin:6, farColor:[0.6, 0.7, 1], farLum:0.2, labelRange:5e9, noImpostor:true, sim:st,
@@ -231,10 +203,9 @@ const gw150914 = (() => {
     },
     tourReset(){ st.t = 4; },
     views:[{ d:[0.12, 0.72, 0.68], k:0.85, hold:12, drift:0.02 }, { d:[0.05, 0.1, 1], k:0.42, hold:10, drift:0.01 }, { d:[0, 1, 0.05], k:1.3, hold:8, drift:0.02 }],
-    particles:[{ ps:grid, prog:'lnBBH', lines:true, mode:1, sb:1.1, size:1, q0:() => [st.t, Tin, w0, CV], q1:() => [smooth(0, 1, st.t)*(1 - smooth(CYCLE - 2, CYCLE, st.t)), st.a*f1, st.ph, st.a*f2] }],
     readout:() => {
       if (!st.merged){ const f = 35*Math.pow(Math.max(1 - st.t/Tin, 1e-3), -0.375); return `wave frequency ${Math.min(f, 250).toFixed(0)} Hz and rising: the "chirp"\nthe pair is circling ${(f/2).toFixed(0)} times a second (shown slowed down)`; }
-      return st.t - Tin < 3 ? 'merged: one black hole of 62 Suns, ringing like a struck bell\n3 Suns of mass turned into gravitational waves in a fifth of a second' : 'the light you see is bent starlight: merging black holes are dark\nthe grid shows the spacetime ripples, which are invisible';
+      return st.t - Tin < 3 ? 'merged: one black hole of 62 Suns, ringing like a struck bell\n3 Suns of mass turned into gravitational waves in a fifth of a second' : 'the light you see is bent starlight: merging black holes are dark\nthe ripples in spacetime are invisible: LIGO felt a stretch of 1 part in 10^21';
     } });
   return o;
 })();
