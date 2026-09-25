@@ -4,6 +4,22 @@ All notable changes, newest first. Dates are UTC.
 
 ## Unreleased
 
+## 0.7.3 · 2026-09-25
+
+**New**
+- Play / pause at the top right (and the space bar): pause the tour or the camera to admire a view, then carry on.
+- Pick any object and, once the camera arrives, it loops through that object's tour angles by itself. Any drag or zoom pauses it; play brings it back.
+
+**Fixed**
+- Black holes are pitch black: nothing shows through a shadow any more. Lines and points behind or inside it are hidden, and so are labels. M87* and TON 618 lose their Solar System scale rings, which sat entirely inside their shadows.
+- Gaia BH1 is no longer an empty black disc: its Sun-like companion's light is bent around it like the rest of the sky. From behind, the second angle follows the star so its light splits into two arcs that swing into a ring.
+- Cygnus X-1's disk no longer thins out as you zoom in: it now runs continuously from the inner disk to where the stream lands, and reads as a surface at every scale.
+- The Sun's coronal mass ejections were cut off by the edge of the Sun's drawing area, a cut that moved with the camera. They now fade into space, and fly straight out instead of turning with the Sun.
+- The Halo's scan beams land on the side of a planet or star the ship can see, with a small glow where they hit. They stop at a black hole's shadow and never pass through the body.
+- The Solar System tour stop now frames all eight orbits, then out to Saturn, then the inner planets. The orbit lines are brighter.
+- Flights land on where the destination is now, not where it was at take-off: arriving at Earth from the edge of the universe no longer jumps in the last frame. Every flight glides in and settles.
+- The orange numbers in the info panel wrap inside the panel again, like the text above them, and *less · hide* stay next to that text.
+
 ## 0.7.2 · 2026-09-25
 
 **Back to the subtle look**

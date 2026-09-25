@@ -14,6 +14,7 @@ npx playwright install chromium   # first time only, if Playwright has no browse
 | Command | What it checks | Time |
 | --- | --- | --- |
 | `npm test` (`tests/smoke.mjs`, then `tests/mobile.mjs`) | the page loads without errors; every object in the registry renders one frame from its first view; no NaN camera; key interface panels open; then the phone checks below | 4–6 min |
+| `npm run test:motion` (`tests/motion.mjs`) | the angle loop starts after picking an object and moves the camera; pause, play and space work; the flight from the edge of the universe to Earth grows Earth smoothly and lands without a jump (part of `npm test`) | ~1 min |
 | `npm run test:mobile` (`tests/mobile.mjs`) | at 390 x 844 and 844 x 390: the dock fits without overflow, the info card sits above it and expands, collapses and hides, the scale chip opens and closes the ladder, the atlas stays above the dock, the interface fades on a tour and the first tap only wakes it (the tour keeps playing); screenshots in `tests/out/mobile/` | ~2 min |
 | `npm run test:tour` (`tests/tour.mjs`) | plays the grand tour for 1,000 simulated seconds, then locks on, zooms, orbits and flies freely; reports any error or NaN | 5–8 min |
 | `npm run shots -- sun:0,ton618:1` (`tests/shots.mjs`) | screenshots of objects at given view indices into `tests/out/`, plus a contact sheet `tests/out/sheet.png` | ~10 s each |
