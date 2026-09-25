@@ -6,7 +6,7 @@ gcdatlas is an explorable atlas of the known universe where every frame is made 
 
 - Denser glyphs mean more light. Colour comes from the physics: blackbody temperature, Doppler shift, emission lines.
 - Black holes bend light (Schwarzschild ray tracing) above the true shape of their curved space (Flamm's paraboloid). Galaxies collide, binary stars trade gas, a star is torn apart, two black holes merge and ripple spacetime.
-- The Halo, a crescent starship with a captured star for a heart, is the one invented thing here.
+- The Halo, a long-range cruiser with a captured star for a heart, is the one invented thing here. Ride along behind it, or from its bridge.
 
 How accurate is it? See [docs/ACCURACY.md](docs/ACCURACY.md). The short version: positions, distances and sizes are real; the look of each object is a physically based artist's rendering.
 
