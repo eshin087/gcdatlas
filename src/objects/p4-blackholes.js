@@ -14,14 +14,18 @@ const gaiabh1 = (() => {
   const M = 9.62, rs = schwarzschild(M), RB = 20, pos = radec(hms(17,28,41.09), dms(-0,34,51.9), 1560);
   const A = 1.4*AU_LY, E = 0.45, PER = 26;
   const bh = addObj({ key:'gaiabh1', name:'Gaia BH1', label:'Gaia BH1', type:'the nearest known black hole · dormant · 9.6 Suns', group:'galaxies', sortKey:1560,
-    fact:'The closest black hole we know of, 1,560 light-years away. It is not feeding, so it gives off no light at all: astronomers found it in 2022 from the wobble of the Sun-like star that circles it every 186 days.',
+    fact:'The closest black hole we know of, 1,560 light-years away. It is not feeding, so it gives off no light at all: astronomers found it in 2022 from the wobble of the Sun-like star that circles it every 186 days. Look through it at that star and its light bends into arcs around the shadow.',
     pos, rad:rs*RB, solid:0.13, R0:facingEarth(pos, V.norm([0.3, 0.8, 0.4]), 0), prog:P.blackhole, minZoom:0.053, pxMin:6, farColor:[0.4, 0.45, 0.6], farLum:0.08, labelRange:4e4, noImpostor:true,
-    aka:'gaia bh1 nearest black hole dormant', setU:noDisk,
-    views:[{ d:[0.2, 1, 0.3], k:A*2.6/(rs*RB), hold:10, drift:0.02 }, { d:[0, 0.3, 1], k:1.6, hold:9, drift:0.03 }, { d:[0.05, 0.08, 1], k:0.3, hold:8, drift:0.01 }],
+    aka:'gaia bh1 nearest black hole dormant',
+    setU(pr){ noDisk(pr); const d = V.norm(V.sub(star.pos, bh.pos)); gl.uniform4f(pr.u.uP2, d[0], d[1], d[2], 0.04); },
+    views:[{ d:[0.2, 1, 0.3], k:A*2.6/(rs*RB), hold:10, drift:0.02 },
+      // behind the hole, looking at its star: the camera follows the star round its orbit, a little off the line, so its image breaks into two arcs that swing into a ring and out again
+      { track:() => { const a = V.norm(V.sub(bh.pos, star.pos)), n = V.norm(V.cross(a, M3.apply(bh.R0, [0, 1, 0]))); return V.norm(V.add(a, V.mul(n, 0.09*Math.sin(GT*0.45)))); }, k:2.2, hold:12 },
+      { d:[0.05, 0.08, 1], k:0.3, hold:8, drift:0.01 }],
     particleVis:rpx => smooth(4, 14, rpx*A/(rs*RB)),
     particles:[{ ps:orbitLine(A/(rs*RB), E), prog:'lnBasic', lines:true, mode:3, sb:0.25, size:1, vis:() => smooth(A*0.2, A*0.8, orbit.dist) }],
     readout:() => orbit.lock === bh.index && V.len(bh.rel) < bh.rad*0.4 ? bhReadout(bh, M, '')() : 'event horizon 57 km across, smaller than a city\nits companion orbits 1.4 AU away, about the distance of Mars from the Sun' });
-  const star = addStar({ key:'gaiabh1-star', name:'Gaia BH1 companion', label:'Sun-like star', parent:bh, offset:[A, 0, 0], R:1, T:5850, star:{ cells:36, act:0.25 }, atlas:false, noImpostor:false, farLum:0.8, labelRange:A*40, labelMin:A*0.05,
+  var star = addStar({ key:'gaiabh1-star', name:'Gaia BH1 companion', label:'Sun-like star', parent:bh, offset:[A, 0, 0], R:1, T:5850, star:{ cells:36, act:0.25 }, atlas:false, noImpostor:false, farLum:0.8, labelRange:A*40, labelMin:A*0.05,
     fact:'An ordinary Sun-like star on a 186-day orbit around an invisible partner ten times its mass.',
     update(){ const Mn = this.t*2*Math.PI/PER, Ea = keplerE(Mn, E); this.offset = M3.apply(bh.R0, [A*(Math.cos(Ea) - E), 0, -A*Math.sqrt(1 - E*E)*Math.sin(Ea)]); } });
   star.update();
@@ -33,6 +37,7 @@ const PB_KEPDISK = `void body(out vec3 p, out float br, out vec3 col){
   float r = aP.x, a = aP.w + uT*uQ0.x*pow(max(r, uQ0.y), -1.5);
   p = vec3(r*cos(a), aP.y*r, r*sin(a));
   br = aP.z*(0.6 + 0.8*pow(0.5 + 0.5*cos(3.*a + 7.*log(r)), 3.)); col = aC.rgb;
+  pSize = 0.1*r;   // the disk is sampled evenly in log radius, so each point covers about a tenth of its orbit's radius: a continuous disk at every zoom
 }`;
 P.ptKepDisk = program(particleVS(PB_KEPDISK), FS_POINT);
 const cygx1 = (() => {
@@ -40,8 +45,9 @@ const cygx1 = (() => {
   const A = 0.2*AU_LY, PER = 22, R0 = facingEarth(pos, V.norm([0.2, 0.75, 0.6]), 0);
   const rad = rs*RB, AL = A/rad;   // separation in black-hole radii
   // the accretion disk out to ~40% of the separation, and the stream of gas pulled off the star through the inner Lagrange point
-  const nD = Math.round(3000*QUALITY), disk = makePS(nD);
-  for (let i=0;i<nD;i++){ const r = AL*(0.004 + 0.3*Math.pow(rnd(), 1.5)), T = 9000 + 90000*Math.pow(AL*0.004/r, 0.75), c = blackbodyJS(Math.min(T, 40000)); disk.a.set([r, rndn()*0.02, 0.4 + rnd(), rnd()*6.283], i*4); disk.c.set([c[0], c[1], c[2], 0], i*4); }
+  const nD = Math.round(9000*QUALITY), disk = makePS(nD);   // spread evenly over four decades of radius, so every zoom has enough of it
+  const rIn = 0.75, rOut = AL*0.3;   // in hole radii (20 r_s): from inside the shader's disk (18 r_s = 0.9) to the stream's landing
+  for (let i=0;i<nD;i++){ const r = rIn*Math.pow(rOut/rIn, rnd()), T = 4500 + 60000*Math.pow(rIn/r, 0.75), c = blackbodyJS(Math.min(T, 40000)); disk.a.set([r, rndn()*0.02, (0.4 + rnd())*(0.7 + 0.6*Math.pow(rIn/r, 0.2)), rnd()*6.283], i*4); disk.c.set([c[0], c[1], c[2], 0], i*4); }
   disk.upload('ac');
   const nS = Math.round(900*QUALITY), stream = makePS(nS);
   for (let i=0;i<nS;i++){ const u = rnd(), x = AL*(0.48 - 0.2*u), y = AL*0.12*Math.sin(Math.PI*u*0.9)*(1 - u*0.3), c = blackbodyJS(12000 + 25000*u); stream.a.set([x + rndn()*AL*0.006, rndn()*AL*0.006, y + rndn()*AL*0.006, 0.5 + u], i*4); stream.c.set([c[0], c[1], c[2], 0], i*4); }
@@ -51,11 +57,11 @@ const cygx1 = (() => {
     fact:'The first object widely accepted as a black hole (1971). Every 5.6 days it circles a blue supergiant 40 times the Sun\'s mass, stripping gas into a disk hot enough to shine in X-rays. Stephen Hawking famously bet it was not a black hole, and lost.',
     pos, rad, solid:0.13, R0, prog:P.blackhole, minZoom:0.053, pxMin:6, farColor:[0.6, 0.75, 1], farLum:0.5, labelRange:8e4, aka:'cyg x-1 cygnus x1 hde 226868 hawking bet',
     setU(pr){ gl.uniform4f(pr.u.uP0, 3, 18, 2.4, 1.3); gl.uniform4f(pr.u.uP1, 0.35, 0, 0, 0); },
-    particleVis:rpx => smooth(3, 10, rpx*AL*0.3),
+    particleVis:rpx => smooth(3, 10, rpx*AL*0.3),   // (the disk now reaches all the way in, so it stays visible as you zoom toward the hole)
     update(dt){ st.ph += dt*2*Math.PI/PER; },
     views:[{ d:[0.3, 0.5, 1], k:AL*1.45, hold:10, drift:0.02 }, { d:[0, 0.22, 1], k:1.5, hold:9, drift:0.03 }, { d:[0.9, 0.3, 0.3], k:AL*0.9, off:[AL*0.35, 0, 0], hold:8, drift:0.02 }],
     particles:[
-      { ps:disk, prog:'ptKepDisk', mode:3, sb:0.6, size:1.6, q0:() => [0.21*Math.pow(AL*0.3, 1.5), AL*0.03, 0, 0], vis:() => smooth(rad*20, rad*300, orbit.dist) },
+      { ps:disk, prog:'ptKepDisk', mode:3, sb:0.55, size:1.6, q0:() => [0.21*Math.pow(AL*0.3, 1.5), AL*0.03, 0, 0], vis:() => smooth(rad*0.8, rad*2.5, orbit.dist) },
       { ps:stream, prog:'ptBasic', mode:3, sb:0.7, size:1.5, rot:() => M3.mul(R0, M3.rotY(st.ph)), vis:() => smooth(rad*40, rad*400, orbit.dist) },
     ],
     readout:() => orbit.lock === bh.index && V.len(bh.rel) < bh.rad*0.4 ? bhReadout(bh, M, '')() : 'the two orbit 0.2 AU apart, half of Mercury\'s distance from the Sun\nX-rays come from gas at millions of degrees just before it falls in' });
