@@ -28,7 +28,10 @@ Suggested wording for the site or for sharing:
 | Time | **Sped up** | The Solar System clock defaults to 10 minutes per second; explosions, orbits and mergers are compressed. Deep-time star drift uses straight-line proper motions (valid for roughly ±100,000 years). |
 | Brightness | **Compressed** | Real brightness spans 30+ orders of magnitude; the renderer tone-maps it so both a quasar and a comet are visible. Some tiny sources (a quasar's engine, a kilonova) are drawn magnified, and the ruler shows their true size. |
 | Earth's story | **Broad strokes** | Dates are standard textbook values (rounded). The globe shows each era's broad look (molten, ocean world, snowball, bare rock, green), not the ancient continents. |
+| Solar System overview | **Enlarged bodies** | In the whole-system view the Sun and planets are drawn up to thousands of times their true size so they are visible; positions and orbits are to scale, and the readout gives the enlargement. Close up, everything is true size. |
+| Star surfaces | **Physically inspired** | Stars cooler than about 7,000 K have convective surfaces; they are drawn with churning granulation and flame-like spicules at the limb, much faster than real (granules last about 10 minutes). |
 | The Sun's colour | **Artistic tint** | Drawn warm yellow-orange with boiling, pulsing granulation, the way filtered solar photos look. Its real light (5,772 K) is white when seen from space; the atmosphere makes it look yellow from the ground. The readout says so. |
+| New worlds (0.7.5) | **Real orbits, sped-up years** | Comets and small bodies use JPL small-body elements; exoplanet orbits keep their real sizes but their periods are shortened so you can see them move (the readout gives the real period). Planet surfaces and 'Oumuamua's shape are illustrative. Tabby's Star's dust clouds are drawn where they could be; nobody has seen them. |
 | The Halo | **Fiction** | The only invented object. |
 | Music | **Fiction** | Space is silent. |
 

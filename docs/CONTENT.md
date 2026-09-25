@@ -19,12 +19,8 @@ Status: `planned`, `in progress`, `done` (then it appears in CATALOG.md and can 
 ### Small worlds · planned
 | Object | Notes |
 | --- | --- |
-| Ceres | dwarf planet in the asteroid belt; Occator's bright salt spots |
 | Vesta | Rheasilvia impact basin with its central peak |
 | Bennu | rubble-pile asteroid sampled by OSIRIS-REx |
-| Arrokoth | contact binary in the Kuiper belt (New Horizons, 2019) |
-| Halley's Comet | orbit to 2061 perihelion; dust and ion tails |
-| 'Oumuamua | the first interstellar object (2017), on its hyperbolic path |
 
 ### Human spaceflight · planned
 | Object | Notes |
@@ -39,11 +35,7 @@ Status: `planned`, `in progress`, `done` (then it appears in CATALOG.md and can 
 | Object | Notes |
 | --- | --- |
 | 51 Pegasi b | the first planet around a Sun-like star (1995) |
-| HR 8799 | four directly imaged giant planets |
 | K2-18 b | sub-Neptune in the habitable zone; JWST chemistry |
-| KELT-9 b | the hottest known planet (~4,300 °C day side) |
-| 55 Cancri e | lava world |
-| Kepler-16 b | the real "Tatooine": orbits two stars |
 
 ### Planet surfaces · planned
 | Object | Notes |
