@@ -2,6 +2,10 @@
 
 This file is read automatically by Claude Code at the start of every session. It is the short, authoritative guide to how this project is built and changed. Longer explanations live in `docs/`. **New session? Read `docs/HANDOFF.md` first**: the owner's preferences, decisions that were tried and reversed, and how to ship.
 
+## Start here
+
+State on 2026-09-25: **v0.7.5 is live** and `main` is in sync, so the next release is **v0.7.6**. Read `docs/HANDOFF.md`, which covers the owner's preferences, decisions not to undo, how the work is done and the open ideas. Then run `npm install` (first time only) and `npm test`. Use git and `gh` directly: branch `release/vX.Y.Z`, open a PR, check the Vercel preview, then merge with a merge commit.
+
 ## What this is
 
 gcdatlas (https://gcdatlas.vercel.app, repo `eshin087/gcdatlas`) is a single-page WebGL2 atlas of the universe rendered entirely as ASCII characters. Real positions, distances and sizes; physically based, artistic rendering. It is meant to be a long-term project that keeps growing (more objects, an ASCII Earth, social features later) without breaking what exists.
