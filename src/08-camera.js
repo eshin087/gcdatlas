@@ -3,7 +3,7 @@
 const cam = { focus:0, rel:[0,0,1], fwd:[0,0,-1], right:[1,0,0], up:[0,1,0], fovY:55*DEG };
 const orbit = { yaw:0, pitch:0.1, dist:1, distT:1, lock:0, off:[0,0,0], offFn:null, target:[0,0,0], frame:M3.I() };
 let flight = null, tween = null;
-const tour = { on:!reduceMotion, obj:0, view:0, phase:'hold', t:0 };
+const tour = { on:true, obj:0, view:0, phase:'hold', t:0 };
 const keys = new Set();
 let timeScale = 1, manualAt = -1e9, zoomAt = -1e9;
 // on phones the camera looks slightly off-centre so the object sits in the middle of the space the interface leaves free (radians, set by 09h-ui.js)
@@ -67,7 +67,7 @@ function slerpDir(a, b, t){
   const s = Math.sin(th);
   return V.add(V.mul(a, Math.sin((1 - t)*th)/s), V.mul(b, Math.sin(t*th)/s));
 }
-function startFlight(o, vp, onDone){
+function startFlight(o, vp, onDone, pass){
   const A = orbit.target.slice(), w0 = Math.max(V.len(V.sub(cam.rel, A)), 1e-30);
   const B = V.add(frel(o), vp.off || [0,0,0]), w1 = vp.dist;
   const path = vwPath(V.len(V.sub(B, A)), w0, w1, 1.3);
@@ -80,20 +80,57 @@ function startFlight(o, vp, onDone){
   let sPeak = 0, wp = -1; for (let i=0;i<=48;i++){ const w = path.w(path.S*i/48); if (w > wp){ wp = w; sPeak = i/48; } }
   const tbl = [0]; let acc = 0;
   // (the floor falls from 0.15 at departure to 0.025 on arrival: the camera glides in and settles, rather than arriving at speed and stopping dead)
-  for (let i=1;i<=64;i++){ const x = (i - 0.5)/64, ease = Math.sin(Math.PI*x)*0.85 + 0.15*(1 - x) + 0.025*x, hover = scenic ? 1 - 0.8*Math.exp(-Math.pow((x - sPeak)/0.07, 2)) : 1; acc += 1/(ease*hover); tbl.push(acc); }
+  // (a leg that passes an object on the way keeps some speed at that end: it slows to look, then carries on)
+  const f0 = pass && pass.start ? 0.5 : 0.15, f1 = pass && pass.end ? 0.45 : 0.025;
+  for (let i=1;i<=64;i++){ const x = (i - 0.5)/64, ease = Math.sin(Math.PI*x)*0.85 + f0*(1 - x) + f1*x, hover = scenic ? 1 - 0.8*Math.exp(-Math.pow((x - sPeak)/0.07, 2)) : 1; acc += 1/(ease*hover); tbl.push(acc); }
   const prog = tbl.map(v => v/acc);   // prog[i] = time fraction at which s/S = i/64
   // travel speed: cinematic (slow and scenic), quick (default), warp (near-instant, same path and effects compressed)
-  let dur = clamp(1.6 + path.S*0.42, 2.4, 13) + (scenic ? 3 : 0);
-  if (SET.travel === 'quick') dur = clamp(1.3 + path.S*0.2, 1.8, 6.5) + (scenic ? 1.4 : 0);
-  else if (SET.travel === 'warp') dur = clamp(0.85 + path.S*0.03, 0.95, 1.6);
-  if (reduceMotion) dur = 1;
+  // (the speed you pick always wins, also on computers that ask for reduced motion; changing it mid-flight re-times the rest of the trip)
+  const durs = { cinematic:clamp(1.6 + path.S*0.42, 2.4, 13) + (scenic ? 3 : 0), quick:clamp(1.3 + path.S*0.2, 1.8, 6.5) + (scenic ? 1.4 : 0), warp:clamp(0.85 + path.S*0.03, 0.95, 1.6) };
+  if (pass) for (const k in durs) durs[k] *= 0.8;
+  const dur = durs[SET.travel] || durs.quick;
   shipCam.on = shipCam.pending = false;   // any flight takes the camera off the ship (riding along starts again when its own flight lands)
   // start compiling the destination's shaders now, so it is ready to draw on arrival
   if (o.prog) progReady(o.prog); for (const sp of o.particles || []) if (P[sp.prog]) progReady(P[sp.prog]);
   music.whoosh(dur);
-  flight = { t:0, dur, path, A, B, L0:V.len(V.sub(B, A)), dir0:V.norm(V.sub(cam.rel, A)), dir1:dirEnd, prog,
+  flight = { t:0, dur, durs, path, A, B, L0:V.len(V.sub(B, A)), dir0:V.norm(V.sub(cam.rel, A)), dir1:dirEnd, prog,
     up0:cam.up.slice(), up1:vp.up || M3.apply(o.R0, [0,1,0]), obj:o, vp, onDone, switched:false, spin:scenic ? 0 : (rnd() < 0.5 ? -1 : 1)*0.5, scenic, dirMid, upMid };
   tween = null;
+}
+// ---------------------------------------------------------------- scenic travel: a long trip passes something real on the way (a nebula, a cluster, a galaxy near the route),
+// turning to look at it and slowing a little, before carrying on to where you are going
+function scenicWaypoint(o, vp){
+  if (SET.travel === 'warp' || cmp || SKYV.on) return null;
+  const F = OBJ[cam.focus]; if (!F) return null;
+  const camW = V.add(F.pos, cam.rel), B = V.add(o.pos, vp.off || [0, 0, 0]), AB = V.sub(B, camW), L = V.len(AB);
+  const w0 = Math.max(V.len(V.sub(cam.rel, orbit.target)), 1e-30);
+  if (!(L > 40*Math.max(w0, vp.dist))) return null;   // a short hop: nothing to see on the way
+  if (L < 0.05) return null;   // (inside the Solar System the planets are the scenery)
+  const u = V.mul(AB, 1/L); let best = null, bs = -1e9;
+  for (const c of OBJ){
+    if (c === o || c === F || c.marker || c.noPick || c.hidden || !c.prog || c.parent || c.layer < 2 || c.noWaypoint || !c.views || !c.views.length) continue;
+    if (c.rad < L*0.0012) continue;                                  // too small to see at the scale of this trip
+    const r = V.sub(c.pos, camW), t = V.dot(r, u)/L; if (t < 0.18 || t > 0.82) continue;
+    if (V.len(r) < c.rad*1.2 || V.len(V.sub(c.pos, B)) < c.rad*1.2) continue;   // it contains one end of the trip (the Milky Way on a trip inside it)
+    if (V.len(V.sub(c.pos, o.pos)) < o.rad*4 || V.len(r) < F.rad*4) continue;    // part of either end
+    const perp = V.len(V.sub(r, V.mul(u, t*L))); if (perp > 0.4*L + c.rad) continue;
+    const sc = Math.log10(c.rad/L) - 3*perp/L - 1.5*Math.abs(t - 0.5);
+    if (sc > bs){ bs = sc; best = c; }
+  }
+  return best;
+}
+// fly somewhere by way of whatever is worth seeing on the way (lockOn, tours, the scale bar)
+function flyTo(o, vp, onDone){
+  const W = scenicWaypoint(o, vp);
+  if (!W){ startFlight(o, vp, onDone); return; }
+  // look at it from beside the route, facing roughly the way we are going
+  const go = V.norm(V.sub(o.pos, W.pos)); let side = V.cross(go, [0, 1, 0]); if (V.len(side) < 0.1) side = V.cross(go, [1, 0, 0]); side = V.norm(side);
+  const dW = V.norm(V.add(V.add(V.mul(go, -0.55), V.mul(side, 0.8)), [0, 0.3, 0])), dl = M3.applyT(W.R0, dW);
+  const vpW = { yaw:Math.atan2(dl[0], dl[2]), pitch:Math.asin(clamp(dl[1], -0.999, 0.999)), dist:viewParams(W, 0).dist*1.25, off:[0, 0, 0], offFn:null };
+  if (o.prog) progReady(o.prog);
+  startFlight(W, vpW, () => { startFlight(o, vp, onDone, { start:true }); flight.via = W; }, { end:true });
+  flight.via = W; flight.dest = o;
+  toast('on the way: ' + W.name);
 }
 function updateFlight(dt){
   const f = flight; f.t += dt;
@@ -155,7 +192,7 @@ function tourGo(i, instant){
     applyOrbit(); tour.phase = 'hold'; return;
   }
   tour.phase = 'fly';
-  startFlight(o, vp, () => { tour.phase = 'hold'; tour.t = 0; });
+  flyTo(o, vp, () => { tour.phase = 'hold'; tour.t = 0; });
 }
 function tourNext(dir = 1){ const k = TOUR.indexOf(tour.obj); return TOUR[((k < 0 ? 0 : k) + dir + TOUR.length) % TOUR.length]; }
 function updateTour(dt){
@@ -165,7 +202,7 @@ function updateTour(dt){
     tour.t += dt;
     if (v.to) playMove(o, v, clamp(tour.t/hold, 0, 1));
     else if (v.track) trackView(o, v, dt);
-    else if (!reduceMotion) orbit.yaw += v.drift*dt;
+    else orbit.yaw += v.drift*dt;
     if (tour.t > hold){
       if (tour.view < o.views.length - 1){
         tour.phase = 'swing'; tour.t = 0;
@@ -225,7 +262,9 @@ function updateShipCam(dt){
   orbit.lock = ship.index; orbit.frame = ship.R0; orbit.off = [0, 0, 0]; orbit.offFn = null; orbit.target = [0, 0, 0];
   orbit.dist = orbit.distT = Math.max(V.len(cam.rel), ship.rad*0.3);
 }
-const swingDur = () => reduceMotion ? 0.6 : (SET.travel === 'warp' ? 1.4 : SET.travel === 'quick' ? 2.6 : 3.4);
+const swingDur = () => SET.travel === 'warp' ? 1.4 : SET.travel === 'quick' ? 2.6 : 3.4;
+// the travel speed changed while flying: keep the same point of the trip, finish it at the new pace
+function retimeFlight(){ if (!flight || !flight.durs) return; const x = clamp(flight.t/flight.dur, 0, 1), d = flight.durs[SET.travel] || flight.dur; flight.dur = d; flight.t = x*d; }
 // ---------------------------------------------------------------- the angle loop: an object you pick yourself plays its tour angles, round and round, until you take the camera
 // (pending: the loop starts when the flight there lands). motion.last remembers what play should bring back: the tour or the loop.
 const show = { on:false, pending:false, obj:-1, view:0, t:0, phase:'hold', free:false };   // free: a scale picked on the ladder, so the camera only circles slowly at that distance
@@ -239,12 +278,12 @@ function updateShow(dt){
   const o = OBJ[show.obj];
   if (!o || orbit.lock !== show.obj){ show.on = false; updateModeUI(); return; }
   if (show.phase !== 'hold'){ if (!tween){ show.phase = 'hold'; show.t = 0; } return; }   // gliding between angles: the tween moves the camera
-  if (show.free){ if (!reduceMotion) orbit.yaw += 0.035*dt; return; }
+  if (show.free){ orbit.yaw += 0.035*dt; return; }
   const v = o.views[show.view], hold = holdOf(v);
   show.t += dt;
   if (v.to) playMove(o, v, clamp(show.t/hold, 0, 1));
   else if (v.track) trackView(o, v, dt);
-  else if (!reduceMotion) orbit.yaw += v.drift*dt;
+  else orbit.yaw += v.drift*dt;
   if (show.t > hold && o.views.length > 1){
     const next = (show.view + 1) % o.views.length;
     show.phase = 'swing'; show.t = 0;
@@ -314,6 +353,7 @@ function finishFlightHere(){
   if (cam.focus !== o.index){ const D = frel(o); cam.rel = V.sub(cam.rel, D); orbit.target = V.sub(orbit.target, D); cam.focus = o.index; }
   orbit.lock = o.index; orbit.frame = o.R0; orbit.off = V.sub(orbit.target, frel(o)); orbit.offFn = null;
   syncOrbitFromCam();
+  if (typeof infoObj !== 'undefined' && infoObj !== o.index) setInfo(o.index);   // stopped on the way past something: show what it is
 }
 function syncOrbitFromCam(){
   const d = V.sub(cam.rel, orbit.target); orbit.dist = orbit.distT = Math.max(V.len(d), 1e-30);
@@ -325,7 +365,7 @@ function lockOn(i, viewIdx = 0, loop = true){
   const vp = viewParams(o, vi);
   setInfo(i);
   show.pending = loop; if (loop) motion.last = 'show';
-  startFlight(o, vp, loop ? () => { if (show.pending) startShow(i, vi); } : null);
+  flyTo(o, vp, loop ? () => { if (show.pending) startShow(i, vi); } : null);
   updateModeUI();
 }
 function unlock(){ shipCam.on = false; pauseShow(); if (orbit.lock < 0 && !tour.on) return; stopTour(false); if (flight) finishFlightHere(); orbit.lock = -1; orbit.offFn = null; updateModeUI(); }
@@ -400,9 +440,9 @@ function panBy(dx, dy){
 function pick(cx, cy){
   let best = -1, bz = 1e300;
   OBJ.forEach((o, i) => {
-    if (o.noPick || o.marker || o.hidden) return;
+    if (o.noPick || o.marker || o.hidden || o.magHide > 0.5) return;
     const pr = projectCSS(o.rel); if (!pr) return;
-    const rpx = o.rad/(pr.z*tanY)*(viewHcss/2);
+    const rpx = o.rad*(o.mag || 1)/(pr.z*tanY)*(viewHcss/2);
     if (rpx > viewHcss*0.8 || (o.layer < 3 && rpx > 60)) return;
     const d = Math.hypot(cx - pr.x, cy - pr.y);
     if (d < Math.max(rpx*0.8, 26) && pr.z < bz){ bz = pr.z; best = i; }
@@ -437,11 +477,39 @@ addEventListener('keydown', e => {
 });
 addEventListener('keyup', e => keys.delete(e.key.toLowerCase()));
 addEventListener('blur', () => keys.clear());
+// next / previous (top-right arrows, [ ]): on a tour, the next tour stop; otherwise the next marker up or down the scale bar
 function stepObject(dir){
-  const cur = tour.on ? tour.obj : (orbit.lock >= 0 ? orbit.lock : nearestObject());
-  let k = TOUR.indexOf(cur); if (k < 0) k = 0;
-  const n = TOUR[(k + dir + TOUR.length) % TOUR.length];
-  if (tour.on){ tween = null; if (flight) finishFlightHere(); tourGo(n); } else { lockOn(n); tour.last = n; updateModeUI(); }
+  if (tour.on){ const n = tourNext(dir); tween = null; if (flight) finishFlightHere(); tourGo(n); return; }
+  ladderStep(dir);
+}
+function ladderStep(dir){
+  const L = LADDER, cur = flight ? (flight.dest || flight.obj) : (orbit.lock >= 0 ? OBJ[orbit.lock] : null), here = Math.log10(Math.max(flight ? flight.vp.dist : orbit.dist, 1e-30));
+  // where we are on the bar: the marker of the object in view (the one closest in scale, if it has two), else our zoom level
+  let k = -1, best = 1e9;
+  L.forEach((m, j) => { if (cur && m.key === cur.key){ const e = Math.abs(Math.log10(m.d) - here); if (e < best){ best = e; k = j; } } });
+  let n;
+  if (k >= 0) n = k + dir;
+  else if (dir > 0){ n = L.findIndex(m => Math.log10(m.d) > here + 0.05); if (n < 0) n = L.length; }
+  else { n = -1; L.forEach((m, j) => { if (Math.log10(m.d) < here - 0.05) n = j; }); }
+  if (n < 0 || n >= L.length){ toast(n < 0 ? 'the Moon is the smallest marker on the scale bar' : 'the observable universe is the top of the scale bar'); return; }
+  goLadder(L[n]);
+}
+// the arrows beside the object's name: step through its camera angles (the loop carries on from the new angle)
+function stepAngle(dir){
+  if (shipCam.on){ setShipCamMode(shipCam.mode === 'chase' ? 'cockpit' : 'chase'); return; }
+  if (cmp || flight) return;
+  if (tour.on){
+    const o = OBJ[tour.obj], n = o.views.length; if (n < 2) return;
+    const next = (tour.view + dir + n) % n;
+    tour.phase = 'swing'; tour.t = 0; startTween(viewParams(o, next), swingDur()*0.7);
+    tween.onDone = () => { tour.view = next; tour.phase = 'hold'; tour.t = 0; };
+    return;
+  }
+  const i = orbit.lock; if (i < 0) return;
+  const o = OBJ[i], n = o.views.length, cur = show.obj === i ? show.view : 0, next = (cur + dir + n) % n;
+  show.on = true; show.pending = false; show.free = false; show.obj = i; show.phase = 'swing'; show.t = 0; motion.last = 'show';
+  startTween(viewParams(o, next), swingDur()*0.7); tween.onDone = () => { show.view = next; show.phase = 'hold'; show.t = 0; };
+  updateModeUI();
 }
 function updateKeys(dt){
   if (!keys.size) return;

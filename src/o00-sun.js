@@ -3,7 +3,8 @@
 // Local units: bounding sphere radius 1; the photosphere has radius uP1.x.
 // uP0: T_eff, convection cells per radius, spot activity, cell speed   uP1: R*, oblateness, corona, prominences
 // uP2: flare (local dir, amount)   uP3: CME (local dir, radius)   uP4: x granulation fine detail, y limb darkening, z chromosphere, w colour boost
-// (a negative w switches on the Sun's look: a warm filtered-photo tint, boiling granulation that pulses, and flickering spicules at the limb)
+// (a negative w switches on the fire look of a star with a boiling convective surface: churning granulation, flames licking up from the limb, lively prominences;
+//  w <= -10 also gives the Sun's warm filtered-photo tint, and its boost is |w| - 10)
 const FS_STAR = COMMON + `
 vec2 vor(vec3 p, float sp){
   vec3 i = floor(p), f = fract(p); float d1 = 8., d2 = 8.;
@@ -16,6 +17,13 @@ vec2 vor(vec3 p, float sp){
   return vec2(sqrt(d1), sqrt(d2));
 }
 float gCell = 0.;
+float boostOf(){ return uP4.w < -9. ? -uP4.w - 10. : abs(uP4.w); }
+// the fire palette, from the dark lanes (0) to the hottest cell centres (1): the Sun's warm filtered-photo tones, or the star's own blackbody colours
+vec3 firePal(float h){
+  if(uP4.w < -9.) return mix(mix(vec3(0.8, 0.22, 0.03), vec3(1., 0.56, 0.12), smoothstep(0.05, 0.45, h)), vec3(1., 0.9, 0.55), smoothstep(0.5, 0.95, h));
+  float T = uP0.x;
+  return mix(mix(blackbody(T*0.62), blackbody(T*0.85), smoothstep(0.05, 0.45, h)), blackbody(T*1.12), smoothstep(0.5, 0.95, h));
+}
 vec3 photosphere(vec3 n, float mu, float Rs){
   float T = uP0.x, act = uP0.z;
   float lat = n.y;
@@ -50,13 +58,17 @@ void main(){
   bool hit = h.x > 0.;
   if(hit){
     vec3 p = os + ds*h.x, n = p/Rs; float mu = max(dot(n, -ds), 0.);
-    col = photosphere(n, mu, Rs)*1.3*abs(uP4.w)*vec3(1., 0.93, 0.8);
+    col = photosphere(n, mu, Rs)*1.3*boostOf()*vec3(1., 0.93, 0.8);
     if(uP4.w < 0.){
-      // the Sun: boiling patches swell and fade, granules flicker; hot cell centres burn yellow-white, the lanes between them deep orange
-      float boil = fbm3(n*uP0.y*0.5 + vec3(0., uTime*0.23, uTime*0.17)), flick = noise(n*uP0.y*2.3 + vec3(uTime*0.8, 0., -uTime*0.6));
-      float heat = clamp(gCell*0.8 + (boil - 0.5)*1.1 + (flick - 0.5)*0.45 + 0.1, 0., 1.);
-      vec3 hot = mix(mix(vec3(0.8, 0.22, 0.03), vec3(1., 0.56, 0.12), smoothstep(0.05, 0.45, heat)), vec3(1., 0.88, 0.5), smoothstep(0.5, 0.95, heat));
-      col = hot*(dot(col, vec3(0.3, 0.5, 0.2))/dot(hot, vec3(0.3, 0.5, 0.2)))*(0.42 + 1.15*heat);   // about the same brightness, warmer colour, more contrast
+      // a boiling surface: granules flicker, bigger patches swell and fade, and a slow churning flow runs through it all like fire; hot cell centres burn bright,
+      // the lanes between them glow a deeper, redder colour
+      float tm = uTime;
+      vec3 q = n*uP0.y*0.32; q += 0.7*(vec3(fbm3(q + vec3(0., tm*0.12, 0.)), fbm3(q + vec3(5.2, -tm*0.1, 1.3)), fbm3(q + vec3(9.1, 2.8, tm*0.08))) - 0.5);
+      float churn = fbm3(q*2.2 + vec3(0., tm*0.45, -tm*0.3));
+      float boil = fbm3(n*uP0.y*0.5 + vec3(0., tm*0.23, tm*0.17)), flick = noise(n*uP0.y*2.3 + vec3(tm*0.8, 0., -tm*0.6));
+      float heat = clamp(gCell*0.75 + (boil - 0.5)*0.9 + (churn - 0.5)*0.9 + (flick - 0.5)*0.5 + 0.1, 0., 1.);
+      vec3 hot = firePal(heat);
+      col = hot*(dot(col, vec3(0.3, 0.5, 0.2))/dot(hot, vec3(0.3, 0.5, 0.2)))*(0.38 + 1.25*heat);   // about the same brightness, a fiery colour, more contrast
     }
     // flare: a blinding ribbon at an active region
     vec3 fd = normalize(uP2.xyz); float fl = uP2.w;
@@ -68,11 +80,15 @@ void main(){
     float hgt = b - 1.;
     col += vec3(1., 0.32, 0.35)*exp(-max(hgt, 0.)/0.012)*uP4.z*step(0., hgt);
     if(uP4.w < 0. && hgt > 0.){
-      // spicules: a ragged fringe of flame-like jets that flicker along the limb
-      vec3 u = normalize(pc);
-      float tall = 0.012 + 0.035*pow(noise(u*11. + vec3(0., uTime*0.25, 0.)), 2.);
-      float fl = pow(noise(u*46. + vec3(uTime*0.7, -uTime*0.5, uTime*0.3) - u*hgt*30.), 2.5);
-      col += mix(vec3(1., 0.35, 0.08), vec3(1., 0.7, 0.25), fl)*fl*exp(-hgt/tall)*2.2;
+      // flames at the limb: a ragged fringe of spicules that rise and flicker, and larger tongues of plasma that swell, lick upward and fall back
+      vec3 u = normalize(pc); float tm = uTime;
+      float tall = 0.014 + 0.05*pow(noise(u*11. + vec3(0., tm*0.3, 0.)), 2.);
+      float fl = pow(noise(u*46. + vec3(tm*0.7, -tm*0.5, tm*0.3) + u*(tm*1.6 - hgt*40.)), 2.2);
+      float tongue = pow(noise(u*8. + vec3(tm*0.21, 0., -tm*0.17)), 3.)*2.6;
+      float lick = pow(noise(u*22. + u*(tm*1.1 - hgt*18.) + 7.), 1.6);
+      float f2 = tongue*lick*exp(-hgt/(0.04 + 0.16*tongue))*smoothstep(0.5, 0.0, hgt);
+      float e = fl*exp(-hgt/tall) + f2;
+      col += firePal(clamp(0.35 + 0.6*fl*exp(-hgt/tall) + 0.3*lick - hgt*2., 0., 1.))*e*3.2;
     }
   }
   if(uP1.w > 0.001){
@@ -86,9 +102,10 @@ void main(){
         if(hh < 0.) continue;
         vec3 u = p/(r*Rs);
         float foot = smoothstep(0.6, 0.78, fbm3(u*3.2 + 7.));
-        float arch = ridge(vec3(u.xz*7. + u.y*3., hh*9. - uTime*0.05) + vec3(u.y*5., 0., 0.));
-        float dens = pow(arch, 5.)*foot*exp(-hh/0.07)*smoothstep(0.35, 0.02, hh);
-        acc += vec3(1., 0.3, 0.32)*dens;
+        float fire = uP4.w < 0. ? 1. : 0.;
+        float arch = ridge(vec3(u.xz*7. + u.y*3., hh*9. - uTime*(0.05 + 0.2*fire)) + vec3(u.y*5., 0., 0.));
+        float dens = pow(arch, 5.)*foot*exp(-hh/0.07)*smoothstep(0.35, 0.02, hh)*(1. + fire*(0.8*noise(u*30. + vec3(0., uTime*1.3, 0.)) - 0.2));
+        acc += mix(vec3(1., 0.3, 0.32), firePal(0.45), fire*0.6)*dens;
       }
       col += acc*dt*uP1.w*160.;
     }
@@ -118,7 +135,7 @@ void main(){
     }
   }
   // soft outer glow so the star reads from a distance
-  col += blackbody(uP0.x)*(uP4.w < 0. ? vec3(1., 0.72, 0.38) : vec3(1.))*exp(-max(b - 1., 0.)*11.)*0.045*(hit ? 0. : 1.);
+  col += blackbody(uP0.x)*(uP4.w < -9. ? vec3(1., 0.72, 0.38) : vec3(1.))*exp(-max(b - 1., 0.)*11.)*0.045*(hit ? 0. : 1.);
   outCol(col, alpha);
 }`;
 P.star = program(VS_RECT, FS_STAR);
@@ -131,7 +148,8 @@ function addStar(def){
       gl.uniform4f(pr.u.uP0, def.T, s.cells ?? 34, s.act ?? 0.4, s.speed ?? 0.25);
       gl.uniform4f(pr.u.uP1, this.starR, s.obl ?? 0, s.corona ?? 0.6, s.prom ?? 0);
       gl.uniform4f(pr.u.uP2, 0, 1, 0, 0); gl.uniform4f(pr.u.uP3, 0, 1, 0, 0);
-      gl.uniform4f(pr.u.uP4, s.fine ?? 0, s.limb ?? 0.55, s.chromo ?? 0.25, s.boost ?? 1);
+      // stars cooler than ~7,000 K have boiling convective surfaces and get the fire look; hotter stars' surfaces are calm
+      gl.uniform4f(pr.u.uP4, s.fine ?? 0, s.limb ?? 0.55, s.chromo ?? 0.25, (s.fire ?? def.T < 7000) ? -(s.boost ?? 1) : (s.boost ?? 1));
     } }, def));
   o.star = def.star || {};
   if (def.spinDays){ const R0 = o.R0; o.update = function(){ this.rot = M3.mul(R0, M3.rotY(-this.t*SS_RATE/86400/def.spinDays*2*Math.PI)); }; }
@@ -163,7 +181,7 @@ const sun = (() => {
       gl.uniform4f(pr.u.uP1, 1/bound, 0, 1, 1);
       gl.uniform4f(pr.u.uP2, st.flareDir[0], st.flareDir[1], st.flareDir[2], st.flare);
       gl.uniform4f(pr.u.uP3, st.cmeDir[0], st.cmeDir[1], st.cmeDir[2], st.cme);
-      gl.uniform4f(pr.u.uP4, clamp(1.5 - orbit.dist/(this.rad*1.2), 0, 1), 0.58, 0.5, -1);
+      gl.uniform4f(pr.u.uP4, clamp(1.5 - orbit.dist/(this.rad*1.2), 0, 1), 0.58, 0.5, -11);
     },
     readout:() => st.cmeT < 10 ? 'coronal mass ejection: a billion tonnes of plasma\nleaving at ~1,000 km/s; it would reach Earth in ~2 days' :
       (st.flareT < 3 ? 'solar flare: magnetic loops snapping and reconnecting\nreleasing the energy of millions of nuclear bombs' : 'surface 5,500 °C, core 15 million °C · 1.39 million km across\nlight from its core takes ~100,000 years to reach the surface\ndrawn warm like a filtered photo · from space it looks white') });
@@ -179,6 +197,7 @@ vec2 vorc(vec3 p){ vec3 i = floor(p), f = fract(p); float d1 = 8.; vec3 id = vec
   for(int z=-1;z<=1;z++) for(int y=-1;y<=1;y++) for(int x=-1;x<=1;x++){ vec3 g = vec3(float(x), float(y), float(z)); vec3 r = g + vec3(hash13(i + g), hash13(i + g + 7.1), hash13(i + g + 3.3)) - f; float dd = dot(r, r); if(dd < d1){ d1 = dd; id = i + g; } }
   return vec2(sqrt(d1), hash13(id + 9.)); }
 float craters(vec3 n, float sc){ vec2 v = vorc(n*sc); float r = 0.18 + 0.3*v.y; float rim = exp(-pow((v.x - r)/0.05, 2.)); float bowl = smoothstep(r, r*0.6, v.x); return rim*0.5 - bowl*0.35*step(0.35, v.y); }
+vec3 gL = vec3(0., 1., 0.), gEm = vec3(0.);   // light direction for surfaces that depend on it, and light a surface gives off by itself
 vec3 surface(vec3 n, float kind, out float spec){
   float lat = n.y, lon = atan(-n.z, n.x); spec = 0.;
   if(kind < 0.5){ // Mercury
@@ -266,6 +285,32 @@ vec3 surface(vec3 n, float kind, out float spec){
     float f = fbm(n*4. + 3.); vec3 c = mix(vec3(0.55, 0.36, 0.26), vec3(0.72, 0.5, 0.34), f);
     return mix(c, vec3(0.85, 0.88, 0.95), smoothstep(-0.2, -0.6, n.x))*(0.85 + 0.3*craters(n, 6.));
   }
+  else if(kind < 15.5){ // lava world: dark basalt crust; the side facing the star a churning sea of magma, cracks glowing on the night side
+    float day = dot(n, gL), f = fbm(n*5. + vec3(uTime*0.02, 0., -uTime*0.015)), cr = fbm3(n*14. + 2.);
+    float melt = smoothstep(-0.15, 0.4, day + 0.3*(f - 0.5));
+    float crack = pow(1. - abs(noise(n*16. + 3.)*2. - 1.), 10.);
+    gEm = mix(vec3(1., 0.32, 0.05), vec3(1., 0.78, 0.32), smoothstep(0.45, 0.85, f))*(melt*(0.6 + 0.9*f) + crack*0.5*(1. - melt))*1.7*(0.8 + 0.4*noise(n*9. + uTime*0.3));
+    return mix(vec3(0.12, 0.1, 0.09)*(0.7 + 0.6*cr), vec3(0.3, 0.12, 0.05), melt);
+  }
+  else if(kind < 16.5){ // ultra-hot giant: the day side glows by its own heat, hotter than many stars
+    float day = dot(n, gL), b = sin(lat*10. + fbm3(n*vec3(3., 10., 3.) + vec3(uTime*0.03, 0., 0.))*2.)*0.5 + 0.5, hot = smoothstep(-0.35, 0.85, day);
+    gEm = mix(vec3(0.85, 0.22, 0.05), vec3(1., 0.86, 0.62), hot)*(0.2 + 1.7*hot)*(0.85 + 0.3*b);
+    return vec3(0.35, 0.2, 0.15);
+  }
+  else if(kind < 17.5){ // cold Saturn-like giant: pale butterscotch bands
+    float b = sin(lat*16. + fbm3(n*vec3(3., 14., 3.) + vec3(uTime*0.01, 0., 0.))*2.)*0.5 + 0.5;
+    return mix(vec3(0.78, 0.7, 0.55), vec3(0.92, 0.86, 0.72), b);
+  }
+  else if(kind < 18.5){ // young giant still hot from its birth: dusky clouds and a faint red glow of its own
+    float b = sin(lat*12. + fbm3(n*vec3(4., 12., 4.) + vec3(uTime*0.02, 0., 0.))*2.5)*0.5 + 0.5;
+    gEm = vec3(0.9, 0.3, 0.15)*(0.12 + 0.2*b);
+    return mix(vec3(0.55, 0.35, 0.45), vec3(0.72, 0.52, 0.45), b);
+  }
+  else if(kind < 19.5){ // Ceres: grey, cratered, with the bright salt spots of Occator crater
+    vec3 oc = normalize(vec3(cos(0.346)*cos(4.177), sin(0.346), -cos(0.346)*sin(4.177)));
+    float spot = exp(-dot(n - oc, n - oc)/0.0005) + 0.6*exp(-dot(n - oc - vec3(0.03, 0.01, 0.02), n - oc - vec3(0.03, 0.01, 0.02))/0.0002);
+    return vec3(0.42, 0.41, 0.4)*(0.8 + 0.5*craters(n, 8.) + 0.3*craters(n, 19.) + 0.15*fbm3(n*5.)) + vec3(0.95)*spot;
+  }
   // temperate world: oceans, land and cloud (TRAPPIST-1e style guess)
   float f = fbm(n*3.5 + 1.), cl = smoothstep(0.55, 0.75, fbm(n*5. + vec3(uTime*0.01, 0., 0.)));
   vec3 c = mix(vec3(0.05, 0.14, 0.32), vec3(0.45, 0.35, 0.22), smoothstep(0.5, 0.56, f));
@@ -277,17 +322,18 @@ void main(){
   vec3 L = normalize(uP1.xyz*uRot);
   vec2 h = sphIsect(o, d, vec3(0.), RP);
   vec3 col = vec3(0.); float alpha = 0.;
-  vec3 atm = kind < 0.5 || (kind > 4.5 && kind < 11.) || kind > 11.5 ? vec3(0.) : (kind < 1.5 ? vec3(1., 0.85, 0.55) : (kind < 2.5 ? vec3(0.95, 0.62, 0.45) : (kind < 3.5 ? vec3(0.55, 0.85, 0.95) : (kind < 4.5 ? vec3(0.4, 0.55, 1.) : vec3(0.95, 0.6, 0.25)))));
-  float atmK = kind < 1.5 ? 0.9 : (kind < 2.5 ? 0.35 : (kind < 4.5 ? 0.7 : 1.));
+  bool giantX = kind > 15.5 && kind < 18.5;
+  vec3 atm = giantX ? (kind < 16.5 ? vec3(1., 0.55, 0.25) : (kind < 17.5 ? vec3(0.9, 0.8, 0.6) : vec3(0.8, 0.45, 0.55))) : kind < 0.5 || (kind > 4.5 && kind < 11.) || kind > 11.5 ? vec3(0.) : (kind < 1.5 ? vec3(1., 0.85, 0.55) : (kind < 2.5 ? vec3(0.95, 0.62, 0.45) : (kind < 3.5 ? vec3(0.55, 0.85, 0.95) : (kind < 4.5 ? vec3(0.4, 0.55, 1.) : vec3(0.95, 0.6, 0.25)))));
+  float atmK = giantX ? 0.8 : kind < 1.5 ? 0.9 : (kind < 2.5 ? 0.35 : (kind < 4.5 ? 0.7 : 1.));
   if(h.x > 0.){
     vec3 p = o + d*h.x, n = p/RP;
-    float spec; vec3 base = surface(n, kind, spec);
+    gL = L; float spec; vec3 base = surface(n, kind, spec);
     float dif = max(dot(n, L), 0.), mu = max(dot(n, -d), 0.);
     // eclipse by a nearby body (a planet's shadow on its moon)
     float sh = 1.;
     if(uP2.w > 0.){ vec3 q = uP2.xyz - p; float tq = dot(q, L); if(tq > 0.){ float dq = length(q - L*tq); sh = smoothstep(uP2.w*0.96, uP2.w*1.04, dq); } }
     float lam = kind > 0.5 && kind < 4.5 ? dif : pow(dif, 0.8)*(0.4 + 0.6*pow(mu, 0.2));   // gas and cloud tops vs rough regolith
-    col = base*(lam*sh*1.25 + 0.006);
+    col = base*(lam*sh*1.25 + 0.006) + gEm;
     col += diskAir(mu, dot(n, L), atm, atm*vec3(1., 0.6, 0.45), atmK*1.3);
     if(kind > 0.5 && kind < 1.5) col += vec3(0.25, 0.08, 0.02)*smoothstep(0.1, -0.2, dot(n, L))*0.08;
     alpha = 1.;
@@ -366,13 +412,14 @@ const solarSystem = (() => {
     fact:'Planets shown where they are today, on their true orbits. The asteroid belt hides gaps carved by Jupiter; two swarms of Trojans share its orbit.',
     pos:[0,0,0], rad:50*AU_LY, R0:ECL, minZoom:0.002, pxMin:3, noImpostor:true, labelRange:3e3, farLum:0, distEarth:'you are inside it', atlasDist:'here',
     // all eight orbits (Neptune's fills the screen), then out to Saturn, then the inner planets and the asteroid belt from above
-    views:[{d:[0.35, 0.62, 1], k:1.0, hold:10, drift:0.025}, {d:[0.3, 0.45, 1], k:0.3, hold:9, drift:0.03}, {d:[0.5, 1, 0.2], k:0.09, hold:8, drift:0.03}],
+    views:[{d:[0.35, 0.62, 1], k:1.0, hold:10, drift:0.025}, {d:[0.3, 0.45, 1], k:0.3, hold:9, drift:0.03}, {d:[0.5, 1, 0.2], k:0.055, hold:9, drift:0.03}],
     particleVis:rpx => smooth(4, 20, rpx),
     particles:[
       {ps, prog:'lnBasic', lines:true, mode:3, sb:0.4, size:1, rad:AU_LY, rot:() => I3, vis:zoomVis(2.5e-5, 1.2e-4, 0.02, 0.2)},
       {ps:belt, prog:'ptKepler', mode:3, sb:0.35, size:1.6, rad:AU_LY, rot:() => ECL, q0:() => [jdNow() - JD_NOW, 0, 0, 0], vis:zoomVis(3e-5, 1.5e-4, 0.03, 0.4)},
     ],
-    readout:() => `Neptune orbits 30 AU out · light takes 4 hours to get there\nVoyager 1, our farthest probe, is ~171 AU away after 49 years` });
+    readout:() => `Neptune orbits 30 AU out · light takes 4 hours to get there\nVoyager 1, our farthest probe, is ~171 AU away after 49 years` +
+      (typeof SYSMAG !== 'undefined' && SYSMAG.k > 0.5 && BYKEY.jupiter.mag > 2 ? `\nthe Sun and planets are drawn enlarged so you can see them (Jupiter ~${fmtNum(Math.round(BYKEY.jupiter.mag/100)*100)}x, the Sun ~${fmtNum(Math.round(sun.mag/10)*10)}x); their orbits are to scale` : '') });
   return o;
 })();
 const oort = (() => {

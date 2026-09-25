@@ -67,6 +67,7 @@ function drawVolume(o, pr, rel, radius, setU, rot, vis = 1){
   if (!progReady(pr)) return false;
   const dist = V.len(rel), R = rot || o.rot;
   gl.useProgram(pr.p); setCommon(pr, o);
+  if (o.outBoost) gl.uniform1f(pr.u.uOut, OUT*o.outBoost);
   gl.uniform1f(pr.u.uRad, radius); gl.uniformMatrix3fv(pr.u.uRot, false, R);
   gl.uniform3fv(pr.u.uCamLocal, M3.applyT(R, V.mul(rel, -1/radius)));
   gl.uniform4f(pr.u.uRect, rect[0], rect[1], rect[2], rect[3]);
@@ -140,6 +141,27 @@ function drawDrift(){
   }
 }
 // (EXTRAS draw hooks are declared in 04-world.js)
+// ---------------------------------------------------------------- the Solar System, magnified: at the scale of the whole system the Sun and planets would be
+// invisible specks, so while you look at the system itself each is drawn at a readable size on screen (orbits and positions stay true).
+// Picking a planet (or the Sun) brings everything back to true size. The readout says how much each is enlarged.
+// Each body gets a target size on screen, capped so it never reaches a neighbouring orbit (cap in AU: half the gap to the nearest orbit; the Sun stops at 70% of Mercury's).
+const SYSMAG = { k:0, list:[['sun', 0.045, 0.27], ['jupiter', 0.034, 1.84], ['saturn', 0.03, 2.2], ['uranus', 0.024, 4.7], ['neptune', 0.024, 4.7], ['earth', 0.022, 0.14], ['venus', 0.021, 0.14],
+  ['mars', 0.018, 0.26], ['mercury', 0.015, 0.16], ['pluto', 0.01, 4.7]].filter(([k]) => BYKEY[k]).map(([k, f, cap]) => ({ o:BYKEY[k], f, cap:cap*AU_LY })), moons:OBJ.filter(o => o.parent && o.parent !== sun && o.parent.parent === sun && !o.marker && o.key !== 'halo') };
+function updateSysMag(dt){
+  const fo = flight ? flight.obj : OBJ[tour.on ? tour.obj : orbit.lock];
+  const dSun = V.len(sun.rel)*(1/AU_LY);
+  const want = fo === BYKEY.solarsystem || (!fo && dSun > 1 && dSun < 2000) ? smooth(0.6, 2.5, dSun)*(1 - smooth(1500, 20000, dSun)) : 0;
+  SYSMAG.k += (want - SYSMAG.k)*(1 - Math.exp(-dt*2.2));
+  const k = SYSMAG.k < 0.002 ? 0 : SYSMAG.k;
+  for (const e of SYSMAG.list){
+    const o = e.o, core = o.solid ? o.rad*o.solid : o.rad, want = Math.min(e.f*2*tanY*Math.max(o.dist, 1e-30), e.cap);   // the body's disc as a fraction of the screen height
+    o.mag = 1 + Math.max(want/core - 1, 0)*k;
+    o.outBoost = o === sun ? 0 : 1 + 2.2*k;   // lit by a Sun that is also in frame, a small planet would look dark: brighten it while enlarged
+  }
+  // moons would sit inside their enlarged planets: they step aside until the planets shrink back
+  for (const m of SYSMAG.moons) m.magHide = k;
+}
+const magOf = o => o.mag || 1;
 function render(){
   camRot = [...cam.right, ...cam.up, ...cam.fwd];
   pickHole();
@@ -160,29 +182,32 @@ function render(){
   const order = OBJ.slice().sort((a, b) => a.layer - b.layer || b.dist - a.dist);
   for (const o of order){
     if (o.hidden || o.marker) continue;
-    const rpx = o.rad/Math.max(o.dist, 1e-300)*pxK;
+    const R = o.rad*magOf(o), rpxTrue = o.rad/Math.max(o.dist, 1e-300)*pxK, rpx = R/Math.max(o.dist, 1e-300)*pxK;
     o.rpx = rpx;
+    if (o.magHide > 0.5){ o.vis = 0; o.pvis = 0; continue; }
     if (o.inRange && !o.inRange()){ o.vis = 0; o.pvis = 0; continue; }
     const pmin = o.pxMin || 7;
     let vis = o.visFn ? o.visFn(rpx) : (o.alwaysFull ? 1 : smooth(pmin, pmin*2.6, rpx));
-    if (cmp && (o === cmp.a || o === cmp.b)) vis = Math.max(vis, smooth(1, 3, rpx));   // side by side, even tiny things are drawn for real
+    if (cmp && (o === cmp.a || o === cmp.b)) vis = Math.max(vis, smooth(1, 3, rpx));
+    if (o.mag > 1.5) vis = Math.max(vis, smooth(0.8, 2.2, rpx)*SYSMAG.k);   // enlarged planets are drawn as real discs even when only a few characters wide   // side by side, even tiny things are drawn for real
     // shaders compile on demand: until this object's are ready it keeps showing as a glowing dot
     if (vis > 0.003 && o.prog && !progReady(o.prog)) vis = 0;
     o.vis = vis;
     if (vis > 0.003){
       // farther glowing dots go down first, so a nearer opaque object (a black hole's shadow) covers them
       if (o.prog && ni){ imp.count = ni; imp.upload('ac'); drawParticles(null, impSpec); ni = 0; }
-      if (o.prog) o.onScreen = drawVolume(o, o.prog, o.rel, o.rad, o.setU && (pr => o.setU(pr)), o.rot, vis);
+      if (o.prog) o.onScreen = drawVolume(o, o.prog, o.rel, R, o.setU && (pr => o.setU(pr)), o.rot, vis);
       if (o.drawBefore) o.drawBefore(vis);
     }
-    const pv = o.particleVis ? o.particleVis(rpx) : smooth(pmin*0.4, pmin*1.4, rpx);
+    const pv = o.particleVis ? o.particleVis(rpxTrue) : smooth(pmin*0.4, pmin*1.4, rpxTrue);
     o.pvis = pv;
     if (pv > 0.003) for (const s of o.particles) drawParticles(o, s, pv);
     if (vis > 0.003 && o.drawAfter) o.drawAfter(vis);
     // impostor dot
-    if (!o.noImpostor && vis < 0.999 && ni < imp.n){
+    if (!o.noImpostor && (vis < 0.999 || o.mag > 1.5) && ni < imp.n){
       // (a dot only stands in for something small: once an object spans the screen, no dot at its centre)
-      const b = o.farLum*(1 - vis)*clamp(Math.pow(rpx/1.2, 0.33), 0, 1.2)*(1 - smooth(40, 120, rpx));
+      // (an enlarged planet keeps a soft glow at its centre too, so a disc a few characters wide still reads at a glance)
+      const b = o.mag > 1.5 ? o.farLum*SYSMAG.k*(1 - smooth(8, 30, rpx))*1.1 : o.farLum*(1 - vis)*clamp(Math.pow(rpx/1.2, 0.33), 0, 1.2)*(1 - smooth(40, 120, rpx));
       if (b > 0.015 && V.dot(o.rel, cam.fwd) > 0){ imp.a.set([o.rel[0], o.rel[1], o.rel[2], b], ni*4); imp.c.set([o.farColor[0], o.farColor[1], o.farColor[2], 0], ni*4); ni++; }
     }
   }
@@ -245,7 +270,7 @@ function setInfo(i){
   $('#objName').textContent = o.name; $('#objType').textContent = o.type; $('#objFact').textContent = o.fact || '';
   const k = TOUR.indexOf(i);
   $('#stopNum').textContent = k >= 0 ? String(k + 1).padStart(2, '0') : '--';
-  $('#objDist').textContent = o.key === 'earth' ? 'you are here' : (o.distEarth ? o.distEarth + (/away|here|around|from|edge|centre/.test(o.distEarth) ? '' : ' away') : distFromEarth(o));
+  $('#objDist').textContent = o.key === 'earth' ? 'you are here' : (o.distEarth ? o.distEarth + (/away|here|around|from|edge|centre|inside/.test(o.distEarth) ? '' : ' away') : distFromEarth(o));
   setReadout(o.readout ? o.readout() : '');
   $('#btnFlyby').hidden = !o.flyby;
   atlasMark(i);
@@ -267,6 +292,7 @@ function updateModeUI(){
   const onShip = typeof ship !== 'undefined' && infoObj === ship.index;
   $('#btnRideI').hidden = !onShip; $('#btnRideI').textContent = riding ? 'stop riding' : 'ride along';
   $('#btnCamI').hidden = !riding; $('#btnCamI').textContent = shipCam.mode === 'chase' ? 'cockpit view' : 'chase view';
+  $('#tourPrev').title = tour.on ? 'Previous tour stop ([)' : 'Down the scale bar: the next smaller marker ([)'; $('#tourNext').title = tour.on ? 'Next tour stop (])' : 'Up the scale bar: the next bigger marker (])';
   $('#btnFree').setAttribute('aria-pressed', String(!tour.on && orbit.lock < 0 && !flight));
   $('#btnTour').setAttribute('aria-pressed', String(tour.on)); $('#btnTour').textContent = tour.on ? 'pause tour' : 'resume ' + tourName();
   if (typeof tourRows !== 'undefined') tourRows.forEach(r => r.b.setAttribute('aria-current', String(tour.on && r.id === TOUR_ID)));
@@ -303,9 +329,9 @@ function updateLabels(){
     let pr = null;
     const zs = Math.max(orbit.dist, 1e-30);
     const inScale = o.marker ? (zs > o.labelMin && zs < o.labelRange && o.dist < zs*12) : (o.dist < o.labelRange && o.dist > (o.labelMin || 0) && (o.dist < zs*(o.layer < 3 ? 25 : 60) || (o.rpx > 6 && o.dist < zs*3000)));
-    if (labelsOn && !o.noLabel && !o.hidden && inScale && (!o.inRange || o.inRange()) && i !== shipId) pr = projectCSS(o.rel);
+    if (labelsOn && !o.noLabel && !o.hidden && !(o.magHide > 0.5) && (inScale || (o.mag > 1.5 && SYSMAG.k > 0.5)) && (!o.inRange || o.inRange()) && i !== shipId) pr = projectCSS(o.rel);
     if (pr){
-      const rpx = o.rad/(pr.z*tanY)*(viewHcss/2);
+      const rpx = o.rad*(o.solid && o.solid < 0.5 ? o.solid*1.3 : 1)*magOf(o)/(pr.z*tanY)*(viewHcss/2);
       let ok = pr.x > -40 && pr.x < innerWidth + 40 && pr.y > -20 && pr.y < innerHeight + 20 && (o.marker || rpx < viewHcss*0.3) && !(i === focus && rpx > 20);
       if (ok) cand.push({ i, el, pr, rpx:o.marker ? 0 : rpx, pri:(o.marker ? 1.5 : 0) + (o.layer < 3 ? 2 : 0) + (i === focus ? 3 : 0) + Math.log10(Math.max(rpx, 0.01)) + (o.labelPri || 0) });
     }
@@ -324,7 +350,7 @@ function updateLabels(){
   const occ = [];
   for (const o of OBJ){
     if (!(o.solid || o.holeR) || !o.onScreen || o.vis < 0.5) continue; const pr = projectCSS(o.rel); if (!pr) continue;
-    const R = o.holeR || o.rad*o.solid, r = R/(pr.z*tanY)*(viewHcss/2); if (r > 3) occ.push({ x:pr.x, y:pr.y, r, z:pr.z, o, zf:o.holeR ? pr.z - R : pr.z*0.999, k:o.holeR ? 1.04 : 0.97 });
+    const R = o.holeR || o.rad*o.solid*magOf(o), r = R/(pr.z*tanY)*(viewHcss/2); if (r > 3) occ.push({ x:pr.x, y:pr.y, r, z:pr.z, o, zf:o.holeR ? pr.z - R : pr.z*0.999, k:o.holeR ? 1.04 : 0.97 });
   }
   const hidden = c => occ.some(q => q.zf < c.pr.z && q.o.index !== c.i && Math.hypot(c.pr.x - q.x, c.pr.y - q.y) < q.r*q.k);
   // the object you are looking at stays clean: no label from something behind it or beside it on the sky may sit on top of it.
@@ -435,9 +461,9 @@ function goLadder(m){
   if (tour.on) stopTour(false);
   const vp = viewParams(o, 0); vp.dist = Math.max(m.d, o.rad*o.minZoom*1.05); vp.off = [0, 0, 0]; vp.offFn = null;
   orbit.offFn = null;
-  // the camera keeps moving on arrival: a slow circle at the chosen scale (pause stops it)
+  // the camera keeps moving on arrival: it starts at the chosen scale, then loops through the object's angles (pause stops it)
   show.on = false; show.pending = true; motion.last = 'show';
-  setInfo(o.index); startFlight(o, vp, () => { if (show.pending) startShow(o.index, 0, true); }); updateModeUI();
+  setInfo(o.index); flyTo(o, vp, () => { if (show.pending) startShow(o.index, 0); }); updateModeUI();
   toast(m.name + ' · a view ' + fmtLen(viewWidth(vp.dist)*LY) + ' wide');
 }
 let ladDrag = null;
@@ -586,7 +612,7 @@ function syncSettingsUI(){
 function setOpt(key, v, quiet){
   switch (key){
     case 'detail': detailIdx = SET.detail = clamp(v | 0, 0, DETAIL.length - 1); adaptCount = 0; resize(); if (!quiet) toast(`detail: ${DETAIL[detailIdx].name} (${cols} x ${rows} characters)`); break;
-    case 'travel': SET.travel = v; if (!quiet) toast('travel: ' + v + (v === 'warp' ? ' · near-instant' : v === 'cinematic' ? ' · slow and scenic' : '')); break;
+    case 'travel': SET.travel = v; retimeFlight(); if (!quiet) toast('travel: ' + v + (v === 'warp' ? ' · near-instant' : v === 'cinematic' ? ' · slow and scenic' : '')); break;
     case 'time': timeScale = +v; if (!quiet) toast(timeScale ? 'time ' + timeScale + 'x' : 'time paused'); break;
     case 'glow': SET.glow = glowOn = !!v; break;
     case 'labels': SET.labels = labelsOn = !!v; break;
@@ -724,8 +750,8 @@ $('#btnAtlas').addEventListener('click', () => toggleAtlas(atlasEl.hidden));
 $('#atlasClose').addEventListener('click', () => { toggleAtlas(false); if (cmpPick){ cmpPick = false; atlasTitle(); } });
 function focusSearch(){ if (IS_SMALL || getComputedStyle(searchEl.parentElement).display === 'none'){ toggleAtlas(true); atlasSearch.focus({ preventScroll:true }); } else searchEl.focus({ preventScroll:true }); }
 
-$('#prevObj').addEventListener('click', () => { hideHint(); stepObject(-1); });
-$('#nextObj').addEventListener('click', () => { hideHint(); stepObject(1); });
+$('#prevObj').addEventListener('click', () => { hideHint(); stepAngle(-1); });
+$('#nextObj').addEventListener('click', () => { hideHint(); stepAngle(1); });
 $('#btnTour').addEventListener('click', () => { hideHint(); setTour(!tour.on); });
 $('#btnFree').addEventListener('click', () => { hideHint(); unlock(); toast('free camera · W A S D to fly, drag to look around'); });
 $('#btnShip').addEventListener('click', () => setOpt('haloMark', !SET.haloMark));
@@ -937,7 +963,7 @@ function applyHash(){
   else { orbit.yaw = vp.yaw; orbit.pitch = vp.pitch; orbit.dist = orbit.distT = vp.dist; }
   orbit.target = frel(o); setInfo(o.index); applyOrbit();
   const vs = BYKEY[p.get('vs')]; if (vs && !vs.marker) startCompare(o.index, vs.index);
-  else if (!reduceMotion) startShow(o.index, 0);   // a shared or reloaded view starts playing its angles, like any picked object
+  else startShow(o.index, 0);   // a shared or reloaded view starts playing its angles, like any picked object
   return true;
 }
 async function share(){
@@ -968,6 +994,7 @@ function tick(dt){
     refocus(dt);
   }
   for (const o of OBJ){ o.rel = V.sub(frel(o), cam.rel); o.dist = V.len(o.rel); }
+  updateSysMag(dt);
   if (cmp) placeCompare(dt);
   updateDrift(dt);
 }
@@ -1008,6 +1035,8 @@ if (!applyHash()) tourGo(TOUR[0], true);
 tick(0);
 updateModeUI(); syncTimeUI();
 window.__cosmos = { startTour, playFlyby, setMove(o, v, f){ flight = null; tween = null; tourGo(o.index, true); tour.on = false; flyMove = { o, v, t:f*v.hold, frozen:true }; },  get flyMove(){ return flyMove; }, startCompare, endCompare, setDeep, viewHash, applyHash, get cmp(){ return cmp; }, get ssRate(){ return ssRate; }, dbg:{ imp, impSpec, get cols(){ return cols; }, get sceneH(){ return sceneH; }, get LODK(){ return LODK; }, PROGS }, OBJ, BYKEY, tourGo, lockOn, setTour, cam, orbit, tour, TOUR, SET, setOpt, music, LADDER, goLadder,
+  land:(extra = 0.2) => { let n = 0; while (flight && n < 60*180){ tick(1/60); n++; } for (let i=0;i<extra*60;i++) tick(1/60); return n/60; },
+  setDays:d => { ssDays = d; }, stepObject, stepAngle, get stepTarget(){ return flight ? (flight.dest || flight.obj).key : null; }, get via(){ return flight && flight.via ? flight.via.key : null; },
   startShipCam, stopShipCam, setShipCamMode, get shipCam(){ return shipCam; }, get show(){ return show; }, togglePlay, get flight(){ return flight; },
   setDetail:i => setOpt('detail', i, true), render, zoomTo, tick, flightDur:() => flight ? flight.dur : 0, hud:() => { roTimer = 0; updateHUD(0.2); },
   simulate:(sec) => { for (let k=0; k<sec*30; k++) tick(1/30); return { obj:tour.obj, view:tour.view, phase:tour.phase, lock:orbit.lock }; },

@@ -68,6 +68,27 @@ const TOURS = [
     ['cnc55e', 'A super-Earth so close to its star that its day side is probably an ocean of lava.'],
     ['kepler16b', 'A real Tatooine: a planet that orbits two suns at once.'],
   ] },
+  { id:'jwst', name:'through JWST\'s eyes', blurb:'icons of the James Webb Space Telescope', stops:[
+    ['jwst', 'The James Webb Space Telescope, 1.5 million km from Earth, sees the universe in infrared: through dust, and back to the first galaxies.'],
+    ['pillars', 'One of its best-known pictures: the Pillars of Creation, towers of gas and dust with newborn stars glowing inside their tips.'],
+    ['southernring', 'In its first images JWST showed that the dim star at the heart of the Southern Ring, the one that made this nebula, is wrapped in dust.'],
+    ['carina', 'The "Cosmic Cliffs" on the edge of the Carina Nebula, where hot young stars are eating into a cloud of gas.'],
+    ['wr124', 'A Wolf-Rayet star shedding its outer layers just before it dies. The ejected gas cools into clumps of glowing dust.'],
+    ['casa', 'Cassiopeia A, the youngest known remnant of an exploding massive star in our galaxy, with the green curtain astronomers nicknamed the Green Monster.'],
+    ['cnc55e', 'JWST also studies planets: on the lava world 55 Cancri e it found hints of an atmosphere breathed out by molten rock.'],
+    ['jadesz14', 'And its deepest looks back in time: this galaxy is seen as it was only 290 million years after the Big Bang.'],
+  ] },
+  { id:'odd', name:'cosmic oddities', blurb:'the strange and the unexplained', stops:[
+    ['oumuamua', 'The first object seen coming from another star (2017). It tumbled, sped up slightly and left forever, and we are still not sure what it was.'],
+    ['halley', 'The most famous comet, back every 76 years. Next close pass: 2061.'],
+    ['arrokoth', 'A world in the dark beyond Neptune: two flattened lobes that touched gently 4.5 billion years ago and stuck.'],
+    ['tabby', 'A star that dims at random by up to a fifth. For a while people wondered about alien megastructures; dust is the likely answer.'],
+    ['kepler16b', 'A planet with two suns, like Tatooine.'],
+    ['einsteincross', 'One quasar seen four times: a galaxy in front of it bends its light along four paths.'],
+    ['bootesvoid', 'A hole in the universe some 330 to 400 million light-years across, with about 60 galaxies where there should be thousands.'],
+    ['elgordo', 'El Gordo, "the fat one": two of the heaviest galaxy clusters known, colliding.'],
+    ['bullet', 'Another cluster collision, where the dark matter and the gas came apart: the clearest evidence that dark matter is real.'],
+  ] },
 ];
 let TOUR_ID = 'grand', TOUR_CAP = {};
 function tourStops(id){ const t = TOURS.find(t => t.id === id) || TOURS[0]; return t.stops.filter(([k]) => BYKEY[k] && !BYKEY[k].marker).map(([k, cap]) => ({ i:BYKEY[k].index, cap })); }
