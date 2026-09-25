@@ -214,7 +214,7 @@ function setStory(s){
 function openStory(){
   if (SKYV.on) exitSky(); togglePanel(null, false);
   storyOn = true; $('#story').hidden = false;
-  if (orbit.lock !== earth.index || flight) lockOn(earth.index, 0);
+  if (orbit.lock !== earth.index || flight) lockOn(earth.index, 0, false);
   setStory(storyS);
 }
 function closeStory(quiet){ if (!storyOn) return; storyOn = false; storyPlay = false; $('#storyPlay').textContent = 'play'; $('#story').hidden = true; EARTH_ERA.era = 0; EARTH_ERA.lights = 1; EARTH_ERA.ya = 0; }

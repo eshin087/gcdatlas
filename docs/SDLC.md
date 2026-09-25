@@ -22,7 +22,7 @@ The goal: keep adding features and content for years without breaking what alrea
    - Phone layout: `npm run shots -- --phone key:0`.
    - `npm run catalog` when objects were added or removed.
 5. **Record it**: add a line to `docs/CHANGELOG.md` under *Unreleased*; update `docs/ACCURACY.md` if something illustrative was added.
-6. **Pull request**: push the branch, open a PR, open the Vercel preview on desktop and phone. Merge when happy (squash merge keeps history readable).
+6. **Pull request**: every version ships as its own PR (branch `release/vX.Y.Z`), so it can be rolled back with GitHub's *Revert* button. Push the branch, open the PR, open the Vercel preview on desktop and phone, then merge with a merge commit (one revertible commit per version).
 7. **Release**: `main` deploys automatically. For a named release, move *Unreleased* to a version heading, bump `package.json`, tag `vX.Y.Z`.
 
 ## Versioning
@@ -35,7 +35,7 @@ Saved state (settings, collection, share links) must keep working across version
 
 ## Rolling back
 
-Vercel keeps every deployment: in the Vercel dashboard, *Deployments* → pick the last good one → *Promote to Production*. Then revert the bad commit on `main` (`git revert <sha>`).
+Fastest: open the version's merged pull request on GitHub and press *Revert*, then merge the revert PR (or `git revert -m 1 <merge commit>`). Vercel also keeps every deployment: in the Vercel dashboard, *Deployments* → pick the last good one → *Promote to Production*, which is instant while the revert goes through.
 
 ## Experiments that might be scrapped
 

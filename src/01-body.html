@@ -6,8 +6,11 @@
 <button id="shipArrow" class="shiparrow" hidden aria-label="Follow the Halo"><b aria-hidden="true">&gt;</b><span></span></button>
 
 <div class="brand">gcdatlas <span id="tbadge" class="tbadge" hidden></span></div>
-<!-- scale chip: on phones the scale ladder folds away behind this -->
-<button id="ladChip" class="lad-chip" aria-expanded="false" aria-controls="ladder" title="Scale: tap to open the ladder"><b aria-hidden="true">&#8661;</b><span id="ladChipTxt"></span></button>
+<!-- phones, top right: play / pause, and the scale chip the ladder folds away behind -->
+<div class="topr">
+  <button id="btnPlayM" class="play-m" aria-pressed="false" aria-label="Pause the camera (space)"><b aria-hidden="true"></b></button>
+  <button id="ladChip" class="lad-chip" aria-expanded="false" aria-controls="ladder" title="Scale: tap to open the ladder"><b aria-hidden="true">&#8661;</b><span id="ladChipTxt"></span></button>
+</div>
 
 <!-- about the object in view: full, compact or hidden (I); on phones a card above the dock -->
 <section class="info" id="info" aria-live="polite">
@@ -42,6 +45,7 @@
   <button class="btn" data-ico="&#9834;" id="btnSound" aria-pressed="true" title="Background music (M)">sound</button>
   <button class="btn" data-ico="&#8943;" id="btnSettings" aria-expanded="false" aria-controls="settings">settings</button>
   <button class="btn" id="btnHelp" aria-label="Controls help">?</button>
+  <button class="btn play" id="btnPlay" aria-pressed="false" title="Pause the camera (space)"><b aria-hidden="true"></b><span>pause</span></button>
 </nav>
 
 <aside id="atlas" class="atlas" aria-label="Universe atlas" hidden>
@@ -220,7 +224,7 @@
       <dt>right-drag / shift-drag</dt><dd>pan (unlocks the camera)</dd>
       <dt>[ ] or ‹ ›</dt><dd>previous / next tour stop</dd>
       <dt>W A S D · R F</dt><dd>fly freely</dd>
-      <dt>space</dt><dd>start or pause the guided tour</dd>
+      <dt>space · &#10074;&#10074; / &#9654;&#xFE0E;</dt><dd>pause or play: the tour, or the angles of an object you picked (they loop until you take the camera)</dd>
       <dt>esc</dt><dd>close panels, then unlock (free camera)</dd>
       <dt>V · Y · T</dt><dd>detail · travel speed · time speed</dd>
       <dt>G · L · M</dt><dd>glow · labels · music</dd>

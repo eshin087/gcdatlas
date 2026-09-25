@@ -40,6 +40,6 @@ const m87bh = (() => {
     setU(pr){ gl.uniform4f(pr.u.uP0, 3, 12, 0.7, 1.3); gl.uniform4f(pr.u.uP1, 1.2, 0, 0.75, 0); },
     views:[{dirFn:() => V.norm(V.mul(M87_POS, -1)), k:1.6, hold:9, drift:0.01}, {d:[1, 0.12, 0.2], k:1.15, hold:8, drift:0.03}, {d:[0.3, 0.9, 0.35], k:3.2, hold:9, drift:0.02}] });
   o.readout = bhReadout(o, M, 'event horizon 38 billion km across (256 AU)\nlight takes a day and a half to cross it');
-  addScaleRings(o, [SS_RINGS.neptune, SS_RINGS.voyager], [0.45, 0.62, 1], 8);
+  // (no Solar System scale rings here: Neptune's orbit and Voyager 1 would both sit inside its black shadow)
   return o;
 })();

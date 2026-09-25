@@ -152,6 +152,7 @@ function startPhoto(){
   togglePanel(null, false); toggleAtlas(false); $('#daily').hidden = true;
   document.body.classList.add('photo'); $('#photoBar').hidden = false; hideHint();
   if (tour.on) stopTour(false);
+  pauseShow(); flyMove = null; updateModeUI();
 }
 function stopPhoto(){
   document.body.classList.remove('photo', 'photo-labels'); $('#photoBar').hidden = true;

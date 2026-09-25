@@ -12,3 +12,4 @@
 | [CATALOG.md](CATALOG.md) | every implemented object (generated) |
 | [ROADMAP.md](ROADMAP.md) | what is next |
 | [CHANGELOG.md](CHANGELOG.md) | what changed, by version |
+| [HANDOFF.md](HANDOFF.md) | context for a new Claude Code session: the owner's preferences, decisions, history, setup |

@@ -10,7 +10,7 @@ const ton618 = (() => {
     setU(pr){ gl.uniform4f(pr.u.uP0, 3, 15, 1.7, 1.6); gl.uniform4f(pr.u.uP1, 0.8, 0, 0, 0); },
     views:[{d:[0, 0.22, 1], k:1.5, hold:9, drift:0.03}, {d:[0.3, 0.9, 0.3], k:3.2, hold:9, drift:0.02}] });
   o.readout = bhReadout(o, M, 'event horizon ~1,600 AU across; light takes 9 days to cross it\nwe see it as it was 10.8 billion years ago');
-  addScaleRings(o, [SS_RINGS.neptune, SS_RINGS.voyager, [2000*AU_LY, 'inner edge of the Oort cloud']], [0.45, 0.62, 1], 8);
+  // (no Solar System scale rings here: Neptune, Voyager and even the Oort cloud's inner edge would all sit inside its black shadow)
   return o;
 })();
 // the Bullet Cluster: two galaxy clusters that passed through each other; the hot gas (pink) lagged behind the dark matter (blue)

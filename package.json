@@ -1,14 +1,15 @@
 {
   "name": "gcdatlas",
-  "version": "0.7.2",
+  "version": "0.7.3",
   "private": true,
   "description": "The real universe drawn entirely in ASCII: an explorable WebGL2 atlas with seamless zoom from Earth to the edge of the observable universe.",
   "type": "module",
   "scripts": {
     "build": "node build.mjs",
-    "test": "node build.mjs && node tests/smoke.mjs && node tests/mobile.mjs",
+    "test": "node build.mjs && node tests/smoke.mjs && node tests/mobile.mjs && node tests/motion.mjs",
     "test:tour": "node build.mjs && node tests/tour.mjs",
     "test:mobile": "node build.mjs && node tests/mobile.mjs",
+    "test:motion": "node build.mjs && node tests/motion.mjs",
     "shots": "node tests/shots.mjs",
     "catalog": "node build.mjs && node tools/catalog.mjs",
     "dev": "npx vercel dev"
