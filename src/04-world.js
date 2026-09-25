@@ -10,7 +10,7 @@ const COMPACT_MQ = matchMedia('(max-width:680px), (max-height:520px) and (max-wi
 const isCompact = () => COMPACT_MQ.matches;
 // user settings, remembered between visits when the browser allows it
 const SET = (() => {
-  const d = { detail:1, travel:'quick', glow:true, labels:true, twinkle:true, shipFinder:true, sound:true, volume:0.55, dwell:'normal', textSize:1, musicStyle:'mix', saverIdle:0, fadeUI:'quick', infoD:'full', infoM:'compact' };
+  const d = { detail:1, travel:'quick', glow:true, labels:true, twinkle:true, haloMark:false, menuSize:1.15, sound:true, volume:0.55, dwell:'normal', textSize:1, musicStyle:'mix', saverIdle:0, fadeUI:'quick', infoD:'full', infoM:'compact' };
   try { const s = JSON.parse(localStorage.getItem('gcdatlas.settings') || '{}'); for (const k in d) if (k in s && typeof s[k] === typeof d[k]) d[k] = s[k]; } catch (e) {}
   return d;
 })();

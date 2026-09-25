@@ -87,11 +87,12 @@ function startFlight(o, vp, onDone){
   if (SET.travel === 'quick') dur = clamp(1.3 + path.S*0.2, 1.8, 6.5) + (scenic ? 1.4 : 0);
   else if (SET.travel === 'warp') dur = clamp(0.85 + path.S*0.03, 0.95, 1.6);
   if (reduceMotion) dur = 1;
+  shipCam.on = shipCam.pending = false;   // any flight takes the camera off the ship (riding along starts again when its own flight lands)
   // start compiling the destination's shaders now, so it is ready to draw on arrival
   if (o.prog) progReady(o.prog); for (const sp of o.particles || []) if (P[sp.prog]) progReady(P[sp.prog]);
   music.whoosh(dur);
   flight = { t:0, dur, path, A, B, L0:V.len(V.sub(B, A)), dir0:V.norm(V.sub(cam.rel, A)), dir1:dirEnd, prog,
-    up0:cam.up.slice(), up1:M3.apply(o.R0, [0,1,0]), obj:o, vp, onDone, switched:false, spin:scenic ? 0 : (rnd() < 0.5 ? -1 : 1)*0.5, scenic, dirMid, upMid };
+    up0:cam.up.slice(), up1:vp.up || M3.apply(o.R0, [0,1,0]), obj:o, vp, onDone, switched:false, spin:scenic ? 0 : (rnd() < 0.5 ? -1 : 1)*0.5, scenic, dirMid, upMid };
   tween = null;
 }
 function updateFlight(dt){
@@ -181,20 +182,64 @@ function trackView(o, v, dt){
   const k = 1 - Math.exp(-dt*2.5); let dy = y - orbit.yaw; dy = Math.atan2(Math.sin(dy), Math.cos(dy));
   orbit.yaw += dy*k; orbit.pitch += (p - orbit.pitch)*k;
 }
+// ---------------------------------------------------------------- riding along with the Halo: a chase camera behind and above the ship (third person), or the bridge (first person)
+// Poses are in the ship's frame (+y forward, -x dorsal = up); the camera follows them with a little lag so turns feel like flying, not like a bolted-on view.
+// When the ship folds space the camera folds with it: it stays attached, and a flash covers the jump.
+const shipCam = { on:false, pending:false, mode:'chase', zoom:1, eye:null, fwd:null, up:null };
+const SHIP_POSE = { chase:{ eye:[-0.95, -3.0, 0], look:[-0.2, 1.4, 0], lag:3.2 }, cockpit:{ eye:[-0.27, 0.3, 0], look:[-0.05, 2.2, 0], lag:14 } };
+function shipPose(mode){
+  const q = SHIP_POSE[mode], R = ship.R0, r = ship.rad;
+  const z = mode === 'chase' ? shipCam.zoom : 1, eye = V.mul(M3.apply(R, V.mul(q.eye, z)), r), look = V.mul(M3.apply(R, q.look), r);
+  return { eye, look, fwd:V.norm(V.sub(look, eye)), up:M3.apply(R, [-1, 0, 0]) };
+}
+function shipCamSnap(p){ shipCam.eye = p.eye; shipCam.fwd = p.fwd; shipCam.up = p.up; }
+function startShipCam(mode){
+  if (typeof ship === 'undefined' || !ship.S.target) return;
+  stopTour(false); pauseShow(); tween = null; flyMove = null; if (cmp) endCompare(true);
+  shipCam.mode = mode || shipCam.mode; motion.last = 'ship';
+  setInfo(ship.index);
+  const near = cam.focus === ship.index && orbit.lock === ship.index && V.len(cam.rel) < ship.rad*30 && !flight;
+  if (near){ shipCam.on = true; shipCam.eye = cam.rel.slice(); shipCam.fwd = cam.fwd.slice(); shipCam.up = cam.up.slice(); updateModeUI(); return; }
+  // fly in first, landing exactly on the chase pose, then take over
+  const p = shipPose('chase'), dl = M3.applyT(ship.R0, V.norm(V.sub(p.eye, p.look)));
+  const vp = { yaw:Math.atan2(dl[0], dl[2]), pitch:Math.asin(clamp(dl[1], -0.999, 0.999)), dist:V.len(V.sub(p.eye, p.look)), off:p.look, offFn:null, up:p.up };
+  startFlight(ship, vp, () => { shipCam.on = true; shipCam.pending = false; shipCamSnap(shipPose('chase')); updateShipCam(0); updateModeUI(); });
+  shipCam.pending = true;
+  updateModeUI();
+}
+function stopShipCam(){
+  if (!shipCam.on) return false;
+  shipCam.on = false; motion.last = 'ship';
+  // hand the camera over as an ordinary lock on the ship, from exactly where it is
+  orbit.lock = ship.index; orbit.frame = ship.R0; orbit.target = [0, 0, 0]; orbit.off = [0, 0, 0]; orbit.offFn = null; cam.focus = ship.index;
+  syncOrbitFromCam(); updateModeUI();
+  return true;
+}
+function setShipCamMode(m){ shipCam.mode = m; if (!shipCam.on) startShipCam(m); updateModeUI(); toast(m === 'cockpit' ? 'cockpit view · on the bridge of the Halo' : 'chase view · behind the Halo'); }
+function updateShipCam(dt){
+  if (cam.focus !== ship.index){ const D = frel(ship); cam.rel = V.sub(cam.rel, D); cam.focus = ship.index; if (shipCam.eye) shipCam.eye = cam.rel.slice(); }
+  const p = shipPose(shipCam.mode), k = dt > 0 ? 1 - Math.exp(-dt*SHIP_POSE[shipCam.mode].lag) : 1;
+  if (!shipCam.eye) shipCamSnap(p);
+  shipCam.eye = V.lerp(shipCam.eye, p.eye, k); shipCam.fwd = V.norm(V.lerp(shipCam.fwd, p.fwd, k)); shipCam.up = V.norm(V.lerp(shipCam.up, p.up, k));
+  cam.rel = shipCam.eye.slice(); setBasis(shipCam.fwd, shipCam.up);
+  orbit.lock = ship.index; orbit.frame = ship.R0; orbit.off = [0, 0, 0]; orbit.offFn = null; orbit.target = [0, 0, 0];
+  orbit.dist = orbit.distT = Math.max(V.len(cam.rel), ship.rad*0.3);
+}
 const swingDur = () => reduceMotion ? 0.6 : (SET.travel === 'warp' ? 1.4 : SET.travel === 'quick' ? 2.6 : 3.4);
 // ---------------------------------------------------------------- the angle loop: an object you pick yourself plays its tour angles, round and round, until you take the camera
 // (pending: the loop starts when the flight there lands). motion.last remembers what play should bring back: the tour or the loop.
-const show = { on:false, pending:false, obj:-1, view:0, t:0, phase:'hold' };
+const show = { on:false, pending:false, obj:-1, view:0, t:0, phase:'hold', free:false };   // free: a scale picked on the ladder, so the camera only circles slowly at that distance
 const motion = { last:'tour' };
-function startShow(i, view = 0){
+function startShow(i, view = 0, free = false){
   const o = OBJ[i]; if (!o) return;
-  show.on = true; show.pending = false; show.obj = i; show.view = clamp(view, 0, o.views.length - 1); show.t = 0; show.phase = 'hold'; motion.last = 'show';
+  show.free = free; show.on = true; show.pending = false; show.obj = i; show.view = clamp(view, 0, o.views.length - 1); show.t = 0; show.phase = 'hold'; motion.last = 'show';
   updateModeUI();
 }
 function updateShow(dt){
   const o = OBJ[show.obj];
   if (!o || orbit.lock !== show.obj){ show.on = false; updateModeUI(); return; }
   if (show.phase !== 'hold'){ if (!tween){ show.phase = 'hold'; show.t = 0; } return; }   // gliding between angles: the tween moves the camera
+  if (show.free){ if (!reduceMotion) orbit.yaw += 0.035*dt; return; }
   const v = o.views[show.view], hold = holdOf(v);
   show.t += dt;
   if (v.to) playMove(o, v, clamp(show.t/hold, 0, 1));
@@ -211,17 +256,20 @@ function updateShow(dt){
 function resumeShow(){
   const i = orbit.lock, o = OBJ[i]; if (!o) return;
   const view = show.obj === i ? show.view : 0;
-  show.on = true; show.pending = false; show.obj = i; show.view = view; show.phase = 'swing'; show.t = 0; motion.last = 'show';
+  if (show.free && show.obj === i){ show.on = true; show.pending = false; show.phase = 'hold'; motion.last = 'show'; if (flight) finishFlightHere(); updateModeUI(); return; }
+  show.free = false; show.on = true; show.pending = false; show.obj = i; show.view = view; show.phase = 'swing'; show.t = 0; motion.last = 'show';
   if (flight) finishFlightHere();
   startTween(viewParams(o, view), swingDur()*0.8);
   tween.onDone = () => { show.phase = 'hold'; show.t = 0; };
   updateModeUI();
 }
 function pauseShow(){ if (show.on || show.pending){ show.on = show.pending = false; motion.last = 'show'; if (show.phase === 'swing') tween = null; } }
-const isPlaying = () => tour.on || show.on || show.pending || !!flyMove;
+const isPlaying = () => tour.on || show.on || show.pending || !!flyMove || shipCam.on || (!!flight && !!shipCam.pending && flight.obj === ship);
 // the play / pause control (and the space bar): pause whatever moves the camera; play brings back the last thing that did
 function togglePlay(){
   if (tour.on){ stopTour(false); motion.last = 'tour'; toast('paused · press play (or space) to carry on with the tour'); }
+  else if (shipCam.on){ stopShipCam(); toast('paused · press play to ride along with the Halo again'); }
+  else if (motion.last === 'ship' && typeof ship !== 'undefined' && orbit.lock === ship.index){ startShipCam(); }
   else if (show.on || show.pending || flyMove){ pauseShow(); flyMove = null; tween = null; toast('paused · the camera is yours · press play to carry on'); }
   else if (motion.last === 'show' && orbit.lock >= 0 && !cmp) resumeShow();
   else setTour(true);
@@ -240,7 +288,7 @@ function playMove(o, v, u){
 }
 function setTour(on){
   tour.on = on;
-  if (on){ show.on = show.pending = false; motion.last = 'tour'; }
+  if (on){ show.on = show.pending = false; motion.last = 'tour'; shipCam.on = false; }
   $('#btnTour').setAttribute('aria-pressed', String(on));
   if (on){
     let i = orbit.lock >= 0 ? orbit.lock : nearestObject();
@@ -280,7 +328,7 @@ function lockOn(i, viewIdx = 0, loop = true){
   startFlight(o, vp, loop ? () => { if (show.pending) startShow(i, vi); } : null);
   updateModeUI();
 }
-function unlock(){ pauseShow(); if (orbit.lock < 0 && !tour.on) return; stopTour(false); if (flight) finishFlightHere(); orbit.lock = -1; orbit.offFn = null; updateModeUI(); }
+function unlock(){ shipCam.on = false; pauseShow(); if (orbit.lock < 0 && !tour.on) return; stopTour(false); if (flight) finishFlightHere(); orbit.lock = -1; orbit.offFn = null; updateModeUI(); }
 function nearestObject(){ let b = 0, bd = 1e300; OBJ.forEach((o, i) => { if (o.layer < 2 || o.noPick || o.marker) return; const d = o.dist/o.rad; if (d < bd){ bd = d; b = i; } }); return b; }
 
 // ---------------------------------------------------------------- input
@@ -322,10 +370,15 @@ function endPointer(e){
 }
 canvas.addEventListener('pointerup', endPointer);
 canvas.addEventListener('pointercancel', endPointer);
-canvas.addEventListener('wheel', e => { e.preventDefault(); beginManual(); zoomBy(Math.exp(clamp(e.deltaY*(e.deltaMode ? 0.06 : 0.0022), -0.6, 0.6))); }, {passive:false});
+canvas.addEventListener('wheel', e => { e.preventDefault();
+  // riding along: the wheel moves the chase camera nearer or further back instead of letting go of the ship
+  if (shipCam.on && shipCam.mode === 'chase'){ shipCam.zoom = clamp(shipCam.zoom*Math.exp(clamp(e.deltaY*(e.deltaMode ? 0.06 : 0.0022), -0.6, 0.6)), 0.55, 4); return; }
+  beginManual(); zoomBy(Math.exp(clamp(e.deltaY*(e.deltaMode ? 0.06 : 0.0022), -0.6, 0.6))); }, {passive:false});
 
 function beginManual(){
   manualAt = performance.now();
+  if (stopShipCam()) toast('the camera is yours · press play to ride along with the Halo again');
+  shipCam.pending = false;
   if (tour.on){ stopTour(true); motion.last = 'tour'; }
   if (show.on || show.pending){ pauseShow(); updateModeUI(); }
   if (flight) finishFlightHere();
@@ -368,6 +421,7 @@ addEventListener('keydown', e => {
   }
   if (k === ' '){ e.preventDefault(); togglePlay(); return; }
   if (k === '/' || k === 'o'){ e.preventDefault(); focusSearch(); return; }
+  if (k === 'c' && typeof ship !== 'undefined'){ setShipCamMode(shipCam.on && shipCam.mode === 'chase' ? 'cockpit' : 'chase'); return; }
   if (k === 'y'){ setOpt('travel', cycle(['quick', 'warp', 'cinematic'], SET.travel)); return; }
   if (k === 'm'){ setOpt('sound', !SET.sound); return; }
   if (k === '[' || k === ']'){ stepObject(k === ']' ? 1 : -1); return; }

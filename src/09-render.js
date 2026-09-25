@@ -239,6 +239,8 @@ function setReadout(t){
   readoutEl.textContent = t;
 }
 function setInfo(i){
+  // a new object's numbers (the orange lines) fade in instead of appearing all at once
+  if (i !== infoObj){ readoutEl.classList.remove('fade'); void readoutEl.offsetWidth; readoutEl.classList.add('fade'); }
   infoObj = i; const o = OBJ[i];
   $('#objName').textContent = o.name; $('#objType').textContent = o.type; $('#objFact').textContent = o.fact || '';
   const k = TOUR.indexOf(i);
@@ -259,7 +261,12 @@ function updateModeUI(){
   }
   $('#btnPlay').lastChild.textContent = playing ? 'pause' : 'play';
   $('#btnResume').hidden = $('#btnResumeI').hidden = tour.on || tour.last == null || !!cmp;
-  const sh = typeof ship !== 'undefined' && orbit.lock === ship.index; $('#btnShip').classList.toggle('following', sh); $('#btnShip').textContent = sh && !isCompact() ? 'following ship' : 'ship';
+  $('#btnShip').setAttribute('aria-pressed', String(!!SET.haloMark));
+  const riding = shipCam.on || (shipCam.pending && !!flight), rb = $('#btnRide'); rb.classList.toggle('following', riding); rb.textContent = riding ? 'riding' : 'ride';
+  rb.title = riding ? 'Stop riding along (the camera stays with the ship)' : 'Ride along with the Halo: chase view behind the ship, C for the cockpit';
+  const onShip = typeof ship !== 'undefined' && infoObj === ship.index;
+  $('#btnRideI').hidden = !onShip; $('#btnRideI').textContent = riding ? 'stop riding' : 'ride along';
+  $('#btnCamI').hidden = !riding; $('#btnCamI').textContent = shipCam.mode === 'chase' ? 'cockpit view' : 'chase view';
   $('#btnFree').setAttribute('aria-pressed', String(!tour.on && orbit.lock < 0 && !flight));
   $('#btnTour').setAttribute('aria-pressed', String(tour.on)); $('#btnTour').textContent = tour.on ? 'pause tour' : 'resume ' + tourName();
   if (typeof tourRows !== 'undefined') tourRows.forEach(r => r.b.setAttribute('aria-current', String(tour.on && r.id === TOUR_ID)));
@@ -296,7 +303,7 @@ function updateLabels(){
     let pr = null;
     const zs = Math.max(orbit.dist, 1e-30);
     const inScale = o.marker ? (zs > o.labelMin && zs < o.labelRange && o.dist < zs*12) : (o.dist < o.labelRange && o.dist > (o.labelMin || 0) && (o.dist < zs*(o.layer < 3 ? 25 : 60) || (o.rpx > 6 && o.dist < zs*3000)));
-    if (labelsOn && !o.noLabel && !o.hidden && inScale && (!o.inRange || o.inRange()) && !(i === shipId && SET.shipFinder)) pr = projectCSS(o.rel);
+    if (labelsOn && !o.noLabel && !o.hidden && inScale && (!o.inRange || o.inRange()) && i !== shipId) pr = projectCSS(o.rel);
     if (pr){
       const rpx = o.rad/(pr.z*tanY)*(viewHcss/2);
       let ok = pr.x > -40 && pr.x < innerWidth + 40 && pr.y > -20 && pr.y < innerHeight + 20 && (o.marker || rpx < viewHcss*0.3) && !(i === focus && rpx > 20);
@@ -320,19 +327,34 @@ function updateLabels(){
     const R = o.holeR || o.rad*o.solid, r = R/(pr.z*tanY)*(viewHcss/2); if (r > 3) occ.push({ x:pr.x, y:pr.y, r, z:pr.z, o, zf:o.holeR ? pr.z - R : pr.z*0.999, k:o.holeR ? 1.04 : 0.97 });
   }
   const hidden = c => occ.some(q => q.zf < c.pr.z && q.o.index !== c.i && Math.hypot(c.pr.x - q.x, c.pr.y - q.y) < q.r*q.k);
+  // the object you are looking at stays clean: no label from something behind it or beside it on the sky may sit on top of it.
+  // Its own parts (anything inside its bounding sphere) and things visibly in front of it keep their labels.
+  let fd = null; const fo = focus >= 0 ? OBJ[focus] : null;
+  if (fo && labelsOn){ const pr = projectCSS(fo.rel); if (pr){ const R = fo.holeR || fo.rad*(fo.solid || fo.labelDisc || 0.6); fd = { x:pr.x, y:pr.y, r:R/(pr.z*tanY)*(viewHcss/2), z:pr.z, R }; }
+    else if (fo.dist < fo.rad) fd = { x:0, y:0, r:1e9, z:0, R:fo.rad }; }
+  const overFocus = (c, lx, ly, w, h) => {
+    if (!fd || c.i === focus || fd.r < 10) return false;
+    const oc = c.i >= 0 ? OBJ[c.i] : null;
+    if (oc && !oc.marker && V.len(V.sub(oc.rel, fo.rel)) < fo.rad) return false;
+    if (oc && c.rpx > 2 && c.pr.z < fd.z - fd.R) return false;
+    const nx = clamp(fd.x, lx, lx + w), ny = clamp(fd.y, ly, ly + h);
+    return Math.hypot(nx - fd.x, ny - fd.y) < fd.r*0.95;
+  };
   cand.sort((a, b) => b.pri - a.pri);
   for (const c of cand){
     if (occ.length && hidden(c)) continue;
     const w = c.el.offsetWidth || 80, h = 16, off = Math.max(c.rpx*0.72, 5);
     const lx = Math.min(c.pr.x + off, innerWidth - w - 8), ly = c.pr.y - off - 16;
     if (avoid.some(r => lx < r.right + 6 && lx + w > r.left - 6 && ly < r.bottom + 4 && ly + h > r.top - 4)) continue;
+    if (overFocus(c, lx, ly, w, h)) continue;
     if (placed.some(p => lx < p.x + p.w + 6 && lx + w + 6 > p.x && ly < p.y + h && ly + h > p.y)) continue;
     if (placed.length > 31) break;
     placed.push({x:lx, y:ly, w}); c.el._show = true;
     c.el.style.transform = `translate3d(${lx.toFixed(1)}px, ${ly.toFixed(1)}px, 0)`;
   }
-  for (const el of labelEls){ const v = el._show ? 'visible' : 'hidden'; if (el.style.visibility !== v) el.style.visibility = v; }
-  for (const el of starEls){ const v = el._show ? 'visible' : 'hidden'; if (el.style.visibility !== v) el.style.visibility = v; }
+  // labels fade in and out (CSS) rather than popping
+  for (const el of labelEls) if (el.classList.contains('on') !== el._show) el.classList.toggle('on', el._show);
+  for (const el of starEls) if (el.classList.contains('on') !== el._show) el.classList.toggle('on', el._show);
 }
 function updateHUD(dt){
   roTimer -= dt;
@@ -413,7 +435,9 @@ function goLadder(m){
   if (tour.on) stopTour(false);
   const vp = viewParams(o, 0); vp.dist = Math.max(m.d, o.rad*o.minZoom*1.05); vp.off = [0, 0, 0]; vp.offFn = null;
   orbit.offFn = null;
-  setInfo(o.index); startFlight(o, vp, null); updateModeUI();
+  // the camera keeps moving on arrival: a slow circle at the chosen scale (pause stops it)
+  show.on = false; show.pending = true; motion.last = 'show';
+  setInfo(o.index); startFlight(o, vp, () => { if (show.pending) startShow(o.index, 0, true); }); updateModeUI();
   toast(m.name + ' · a view ' + fmtLen(viewWidth(vp.dist)*LY) + ' wide');
 }
 let ladDrag = null;
@@ -503,12 +527,12 @@ function updateTourTrack(){
   if (ladTxt.textContent !== txt){ ladTxt.textContent = txt; ladMark.setAttribute('aria-valuetext', 'tour stop ' + (k + 1) + ' of ' + n); }
 }
 
-// ---------------------------------------------------------------- ship finder: brackets around the Halo, or an arrow at the screen edge pointing to it
+// ---------------------------------------------------------------- the Halo indicator (off unless the ship button is on): brackets around the Halo, or an arrow at the screen edge pointing to it
 const shipMarkEl = $('#shipMark'), shipArrowEl = $('#shipArrow');
 function updateShipFinder(){
   const s = typeof ship !== 'undefined' ? ship : null;
   let showM = false, showA = false;
-  if (s && SET.shipFinder && s.S && s.S.target && !(orbit.lock === s.index && s.rpx > 40)){
+  if (s && SET.haloMark && s.S && s.S.target && !(orbit.lock === s.index && s.rpx > 40)){
     const W = innerWidth, H = innerHeight, dtxt = 'halo · ' + fmtLen(s.dist*LY);
     const pr = projectCSS(s.rel);
     if (pr && pr.x > 24 && pr.x < W - 24 && pr.y > 24 && pr.y < H - 24){
@@ -541,7 +565,10 @@ function updateShipFinder(){
   if (shipMarkEl.hidden === showM) shipMarkEl.hidden = !showM;
   if (shipArrowEl.hidden === showA) shipArrowEl.hidden = !showA;
 }
-const followShip = () => { if (typeof ship === 'undefined') return; hideHint(); goTo(ship.index); toast('following the Halo'); };
+// ride along with the Halo (chase camera); the flash when it folds space with you aboard
+const followShip = () => { if (typeof ship === 'undefined') return; hideHint(); if (shipCam.on) return; startShipCam('chase'); toast('riding along with the Halo · chase view (C switches to the cockpit)'); };
+const foldEl = $('#foldFlash');
+function foldFlash(){ foldEl.classList.remove('go'); void foldEl.offsetWidth; foldEl.classList.add('go'); }
 shipMarkEl.addEventListener('click', followShip);
 shipArrowEl.addEventListener('click', followShip);
 
@@ -553,6 +580,7 @@ function syncSettingsUI(){
   $('#volume').value = SET.volume;
   $('#btnSound').setAttribute('aria-pressed', String(SET.sound)); $('#btnSound').textContent = SET.sound ? 'sound' : (isCompact() ? 'muted' : 'sound off');
   $('#textSize').value = SET.textSize; $('#tsTxt').textContent = Math.round(SET.textSize*100) + '%';
+  $('#menuSize').value = SET.menuSize; $('#msTxt').textContent = Math.round(SET.menuSize*100) + '%';
   $('#detailInfo').textContent = `${cols} x ${rows} characters`;
 }
 function setOpt(key, v, quiet){
@@ -563,13 +591,14 @@ function setOpt(key, v, quiet){
     case 'glow': SET.glow = glowOn = !!v; break;
     case 'labels': SET.labels = labelsOn = !!v; break;
     case 'twinkle': SET.twinkle = !!v; break;
-    case 'shipFinder': SET.shipFinder = !!v; if (!quiet) toast(v ? 'ship finder on · the Halo is bracketed in blue' : 'ship finder off'); break;
+    case 'haloMark': SET.haloMark = !!v; if (!quiet) toast(v ? 'Halo indicator on · the ship is marked in blue (ride along from its card)' : 'Halo indicator off'); updateModeUI(); break;
     case 'sound': SET.sound = !!v; music.set(SET.sound); if (!quiet) toast(v ? 'music on' : 'music off'); break;
     case 'volume': SET.volume = clamp(+v, 0, 1); music.volume(); break;
     case 'musicStyle': SET.musicStyle = v; music.styleChanged(); if (!quiet) toast('music: ' + (v === 'mix' ? 'rotating mix of lofi, chill house and ambient' : v === 'house' ? 'chill house' : v)); break;
     case 'saverIdle': SET.saverIdle = +v || 0; if (!quiet) toast(SET.saverIdle ? `screensaver starts after ${SET.saverIdle} minutes without input` : 'screensaver only when you ask (Z)'); break;
     case 'dwell': SET.dwell = v; if (!quiet) toast('tour stops: ' + v + (v === 'short' ? ' · quicker tour' : v === 'long' ? ' · lingers on each view' : '')); break;
     case 'textSize': SET.textSize = clamp(+v, 0.85, 1.6); applyTextSize(); break;
+    case 'menuSize': SET.menuSize = clamp(+v, 0.9, 1.6); applyTextSize(); break;
     case 'fadeUI': SET.fadeUI = v; if (!quiet) toast(v === 'off' ? 'the interface stays put' : 'the interface fades ' + (v === 'quick' ? 'after a few seconds (sooner on tours)' : 'after a while') + ' · touch or move to bring it back'); break;
   }
   saveSet(); syncSettingsUI();
@@ -577,9 +606,10 @@ function setOpt(key, v, quiet){
 const cycle = (list, cur) => list[(list.indexOf(cur) + 1) % list.length];
 let toggleSettings = on => { settingsEl.hidden = !on; $('#btnSettings').setAttribute('aria-expanded', String(on)); if (on) syncSettingsUI(); };
 document.querySelectorAll('.seg[data-key] button').forEach(b => b.addEventListener('click', () => setOpt(b.parentElement.dataset.key, b.dataset.v)));
-function applyTextSize(){ document.documentElement.style.setProperty('--ts', String(SET.textSize)); roLast = ''; }
+function applyTextSize(){ const r = document.documentElement.style; r.setProperty('--ts', String(SET.textSize)); r.setProperty('--tsm', String(+(SET.textSize*SET.menuSize).toFixed(3))); roLast = ''; }
 applyTextSize();
 $('#textSize').addEventListener('input', e => { setOpt('textSize', e.target.value, true); });
+$('#menuSize').addEventListener('input', e => { setOpt('menuSize', e.target.value, true); });
 settingsEl.querySelectorAll('.tog button').forEach(b => b.addEventListener('click', () => setOpt(b.dataset.key, !SET[b.dataset.key])));
 $('#volume').addEventListener('input', e => setOpt('volume', e.target.value, true));
 $('#btnSettings').addEventListener('click', () => toggleSettings(settingsEl.hidden));
@@ -698,7 +728,11 @@ $('#prevObj').addEventListener('click', () => { hideHint(); stepObject(-1); });
 $('#nextObj').addEventListener('click', () => { hideHint(); stepObject(1); });
 $('#btnTour').addEventListener('click', () => { hideHint(); setTour(!tour.on); });
 $('#btnFree').addEventListener('click', () => { hideHint(); unlock(); toast('free camera · W A S D to fly, drag to look around'); });
-$('#btnShip').addEventListener('click', () => { if (typeof ship !== 'undefined' && orbit.lock === ship.index && !flight){ toast('already following the Halo'); return; } followShip(); });
+$('#btnShip').addEventListener('click', () => setOpt('haloMark', !SET.haloMark));
+const toggleRide = () => { if (shipCam.on || (shipCam.pending && flight)){ if (flight) finishFlightHere(); shipCam.pending = false; stopShipCam(); toast('stopped riding · the camera stays with the Halo'); updateModeUI(); } else followShip(); };
+$('#btnRide').addEventListener('click', toggleRide);
+$('#btnRideI').addEventListener('click', toggleRide);
+$('#btnCamI').addEventListener('click', () => setShipCamMode(shipCam.mode === 'chase' ? 'cockpit' : 'chase'));
 function playFlyby(o){
   hideHint(); if (cmp) endCompare(false);
   stopTour(false); tween = null; flyMove = null; if (show.on || show.pending){ show.on = show.pending = false; motion.last = 'show'; }
@@ -817,7 +851,7 @@ function startCompare(a, b){
 function endCompare(refly){
   if (!cmp) return; const A = cmp.a; cmp = null;
   $('#btnCompare').setAttribute('aria-pressed', 'false'); $('#btnCompare').textContent = 'compare size';
-  if (refly && orbit.lock === A.index){ orbit.off = [0, 0, 0]; const vp = viewParams(A, 0); vp.off = [0, 0, 0]; startFlight(A, vp, null); }
+  if (refly && orbit.lock === A.index){ orbit.off = [0, 0, 0]; const vp = viewParams(A, 0); vp.off = [0, 0, 0]; show.pending = true; motion.last = 'show'; startFlight(A, vp, () => { if (show.pending) startShow(A.index, 0); }); }
   updateModeUI();
 }
 function fmtRatio(r){ return r >= 100 ? fmtNum(r) : r >= 10 ? String(Math.round(r)) : r.toFixed(1); }
@@ -903,6 +937,7 @@ function applyHash(){
   else { orbit.yaw = vp.yaw; orbit.pitch = vp.pitch; orbit.dist = orbit.distT = vp.dist; }
   orbit.target = frel(o); setInfo(o.index); applyOrbit();
   const vs = BYKEY[p.get('vs')]; if (vs && !vs.marker) startCompare(o.index, vs.index);
+  else if (!reduceMotion) startShow(o.index, 0);   // a shared or reloaded view starts playing its angles, like any picked object
   return true;
 }
 async function share(){
@@ -919,6 +954,7 @@ function tick(dt){
   ssDays += sdt*ssRate;
   for (const o of OBJ){ o.t += sdt; if (o.update && (!o.sim || simActive(o))) o.update(sdt); if (o.parent && !o.selfPos) o.pos = V.add(o.parent.pos, o.offset); }
   if (flight) updateFlight(dt);
+  else if (shipCam.on) updateShipCam(dt);
   else {
     if (tween) updateTween(dt);
     if (tour.on) updateTour(dt);
@@ -972,7 +1008,8 @@ if (!applyHash()) tourGo(TOUR[0], true);
 tick(0);
 updateModeUI(); syncTimeUI();
 window.__cosmos = { startTour, playFlyby, setMove(o, v, f){ flight = null; tween = null; tourGo(o.index, true); tour.on = false; flyMove = { o, v, t:f*v.hold, frozen:true }; },  get flyMove(){ return flyMove; }, startCompare, endCompare, setDeep, viewHash, applyHash, get cmp(){ return cmp; }, get ssRate(){ return ssRate; }, dbg:{ imp, impSpec, get cols(){ return cols; }, get sceneH(){ return sceneH; }, get LODK(){ return LODK; }, PROGS }, OBJ, BYKEY, tourGo, lockOn, setTour, cam, orbit, tour, TOUR, SET, setOpt, music, LADDER, goLadder,
+  startShipCam, stopShipCam, setShipCamMode, get shipCam(){ return shipCam; }, get show(){ return show; }, togglePlay, get flight(){ return flight; },
   setDetail:i => setOpt('detail', i, true), render, zoomTo, tick, flightDur:() => flight ? flight.dur : 0, hud:() => { roTimer = 0; updateHUD(0.2); },
   simulate:(sec) => { for (let k=0; k<sec*30; k++) tick(1/30); return { obj:tour.obj, view:tour.view, phase:tour.phase, lock:orbit.lock }; },
-  view:(i, v) => { if (typeof i === 'string') i = BYKEY[i].index; const o = OBJ[i], vp = viewParams(o, v); flight = null; tween = null; cam.focus = i; orbit.lock = i; orbit.frame = o.R0; orbit.yaw = vp.yaw; orbit.pitch = vp.pitch; orbit.dist = orbit.distT = vp.dist; orbit.off = vp.off; orbit.offFn = vp.offFn; orbit.target = V.add(frel(o), vp.off); setInfo(i); applyOrbit(); tick(0); } };
+  view:(i, v) => { if (typeof i === 'string') i = BYKEY[i].index; const o = OBJ[i], vp = viewParams(o, v); flight = null; shipCam.on = false; tween = null; cam.focus = i; orbit.lock = i; orbit.frame = o.R0; orbit.yaw = vp.yaw; orbit.pitch = vp.pitch; orbit.dist = orbit.distT = vp.dist; orbit.off = vp.off; orbit.offFn = vp.offFn; orbit.target = V.add(frel(o), vp.off); setInfo(i); applyOrbit(); tick(0); } };
 requestAnimationFrame(frame);

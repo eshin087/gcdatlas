@@ -40,20 +40,34 @@ void main(){
     float base = smoothstep(-0.5, -0.82, p.y + 0.25*(edgeN - 0.5))*smoothstep(1., 0.6, r);
     sd = min(sd, mix(0.2, -0.05, base));
     float dust = smoothstep(0.012, -0.03, sd);
+    // the look of the JWST NIRCam image: translucent rust-and-gold columns with fine inner structure, their sunlit edges
+    // glowing orange-red where the ultraviolet boils them, set against a blue haze
+    float n2 = noise(p*26. + vec3(7., tm*0.02, 0.));
+    float dens = dust*(0.5 + 0.9*n1*n1 + 0.4*n2);
     float face = clamp(0.35 + 0.55*(p.y + 0.9) + 0.4*p.z, 0., 1.5);
-    float rim = exp(-pow((sd - 0.008)/0.018, 2.))*face;
-    float evap = sd > 0. && sd < 0.16 ? exp(-sd/0.045)*smoothstep(0.35, 0.8, fbm3(p*9. - Ld*tm*0.06))*face : 0.;
+    float depthIn = clamp(-sd/0.1, 0., 1.);
+    vec3 dustC = mix(vec3(0.42, 0.2, 0.08), vec3(1., 0.66, 0.32), clamp(face*0.7 - depthIn*0.45 + (n1 - 0.5)*0.7 + (n2 - 0.5)*0.3, 0., 1.));
+    // the ionisation front: a wavy bright skin that shimmers as the gas streams off it
+    float wav = noise(p*17. + vec3(tm*0.05, tm*0.3, 0.));
+    float rim = exp(-pow((sd - 0.004 - 0.014*wav)/(0.01 + 0.012*wav), 2.))*face;   // (wav is only needed near the surface, but one noise() is cheap)
+    // photo-evaporation: veils of gas peeling off the lit surfaces and drifting away from the cluster
+    float flow = 0., evap = 0.;
+    if(sd > 0. && sd < 0.2){ flow = fbm3(p*8. - Ld*tm*0.22 + vec3(0., 0., tm*0.05)); evap = exp(-sd/0.05)*smoothstep(0.35, 0.8, flow)*face; }
     float wall = smoothstep(0.05, -0.35, p.z)*smoothstep(-1., -0.55, p.z);
-    float g0 = fbm(p*2.3 + (vec3(fbm3(p*1.3), fbm3(p*1.3 + 4.), fbm3(p*1.3 + 8.)) - 0.5)*1.8 + vec3(0., 0., tm*0.008));
+    float g0 = fbm(p*2.3 + (vec3(fbm3(p*1.3), fbm3(p*1.3 + 4.), fbm3(p*1.3 + 8.)) - 0.5)*1.8 + vec3(tm*0.004, 0., tm*0.012));
     float soft = smoothstep(1., 0.3, r + 0.3*(edgeN - 0.5));   // a ragged, gradual edge that hands over to the Eagle Nebula around it
     float gas = soft*(0.15 + g0*g0*g0*2.2)*(0.03 + 6.*wall) + soft*0.25*g0*g0;
     float fore = smoothstep(0.57, 0.74, fbm3(p*3. + 2.))*smoothstep(-0.15, -0.95, p.y)*0.7;
-    vec3 gc = mix(vec3(0.18, 0.5, 0.85), vec3(0.42, 0.86, 0.48), fbm3(p*1.6 + 9.));
-    vec3 em = gc*gas*1.2 + vec3(1., 0.64, 0.28)*rim*7. + vec3(1., 0.75, 0.45)*evap*2.2;
+    float gv = fbm3(p*1.6 + 9.);
+    vec3 gc = mix(mix(vec3(0.16, 0.34, 0.78), vec3(0.36, 0.6, 0.92), gv), vec3(0.85, 0.55, 0.38), smoothstep(0.55, 0.8, edgeN)*0.5);
+    vec3 em = gc*gas*0.4 + dustC*dens*(0.25 + 0.9*face)*(1. - 0.6*depthIn)*14.
+      + mix(vec3(1., 0.28, 0.08), vec3(1., 0.62, 0.26), wav)*rim*7. + mix(vec3(1., 0.55, 0.3), vec3(1., 0.45, 0.55), flow)*evap*2.4;
     col += T*em*dt;
-    T *= exp(-(dust*30. + fore*6. + gas*0.3)*dt);
+    T *= exp(-(dens*16. + fore*6. + gas*0.3)*dt);
     if(T < 0.01) break;
   }
+  // young stars still wrapped in the tips, glowing red and slowly flickering
+  col += vec3(1., 0.32, 0.18)*(pblob(o, d, vec3(-0.31, 0.44, 0.06), 0.006)*(0.7 + 0.3*sin(tm*1.1)) + pblob(o, d, vec3(0.07, 0.12, -0.05), 0.005)*(0.7 + 0.3*sin(tm*1.4 + 2.)) + pblob(o, d, vec3(0.4, -0.07, 0.1), 0.005)*(0.7 + 0.3*sin(tm*0.9 + 4.)))*30.;
   // Herbig-Haro jets from protostars in the pillar tips (pulsing knots)
   col += jet(o - vec3(-0.3, 0.46, 0.02), d, normalize(vec3(1., 0.35, 0.25)), 0.22, 0.002, 0.012, 1., tm*0.6, vec3(1., 0.55, 0.45), vec3(1., 0.35, 0.4))*25.;
   col += jet(o - vec3(-0.3, 0.46, 0.02), d, -normalize(vec3(1., 0.35, 0.25)), 0.18, 0.002, 0.012, 1., tm*0.6 + 1.3, vec3(1., 0.55, 0.45), vec3(1., 0.35, 0.4))*18.;
