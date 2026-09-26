@@ -668,9 +668,9 @@ $('#settingsClose').addEventListener('click', () => toggleSettings(false));
 
 // ---------------------------------------------------------------- atlas and search
 const atlasList = $('#atlasList'), searchEl = $('#search'), atlasSearch = $('#atlasSearch');
-const GROUPS = [['solar', 'Solar System'], ['stars', 'Stars & stellar remnants'], ['nebulae', 'Nebulae & star clusters'], ['galaxies', 'Galaxies & black holes'], ['cosmic', 'The large-scale universe'], ['travel', 'Travellers']];
+const GROUPS = [['solar', 'Solar System'], ['comets', 'Comets & meteors'], ['stars', 'Stars & stellar remnants'], ['nebulae', 'Nebulae & star clusters'], ['galaxies', 'Galaxies & black holes'], ['cosmic', 'The large-scale universe'], ['travel', 'Travellers']];
 // categories for the atlas filter (black holes get their own, whatever group they are listed under)
-const CATS = [['all', 'all'], ['solar', 'solar system'], ['stars', 'stars'], ['bh', 'black holes'], ['nebulae', 'nebulae'], ['galaxies', 'galaxies'], ['cosmic', 'large-scale'], ['travel', 'spacecraft']];
+const CATS = [['all', 'all'], ['solar', 'solar system'], ['comets', 'comets & meteors'], ['stars', 'stars'], ['bh', 'black holes'], ['nebulae', 'nebulae'], ['galaxies', 'galaxies'], ['cosmic', 'large-scale'], ['travel', 'spacecraft']];
 const catOf = o => (o.prog === P.blackhole || o.isBH) ? 'bh' : o.group;
 // true size (radius in light-years): a black hole's event horizon, a star's surface, otherwise the object's extent
 const atlasSize = o => o.prog === P.blackhole ? o.rad/20 : (o.sizeR || (o.starR ? o.starR*o.rad : o.rad*(o.solid || 0.6)));

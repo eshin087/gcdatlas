@@ -84,7 +84,7 @@ function addRock(def){
 }
 const heliocentric = o => V.len(o.offset)/AU_LY;
 // 'Oumuamua: the first interstellar object ever seen (2017), on a hyperbolic path out of the Solar System
-const oumuamua = addRock({ key:'oumuamua', name:"'Oumuamua", label:"'Oumuamua", type:'the first interstellar object · passed the Sun in 2017', shape:0, rad:0.13*KM, spin:0.9, sortKey:40,
+const oumuamua = addRock({ key:'oumuamua', name:"'Oumuamua", label:"'Oumuamua", type:'the first interstellar object · passed the Sun in 2017', group:'comets', shape:0, rad:0.13*KM, spin:0.9, sortKey:40,
   el:{ a:-1.27234, e:1.20113, i:122.7417, om:24.5969, w:241.8105, tp:2458006.007 }, from:0.35, to:0.75, orbitCol:[0.7, 0.5, 0.45],
   fact:'A reddish object a few hundred metres long (its size and shape are uncertain) that came from another star, swung past the Sun and is leaving forever at 26 km/s. It tumbled end over end and sped up slightly, as a comet would, without showing any tail.',
   aka:'oumuamua 1i interstellar asteroid comet', farLum:0.2,
@@ -97,7 +97,7 @@ const arrokoth = addRock({ key:'arrokoth', name:'Arrokoth', label:'Arrokoth', ty
   readout:() => `${heliocentric(arrokoth).toFixed(1)} AU from the Sun · 36 km long\nits two lobes are called Wenu and Weeyo` });
 // Halley's Comet: nucleus with jets, plus its coma and tails (a separate volume that only appears when the comet is near the Sun)
 const halleyEl = { a:17.834, e:0.96714, i:162.262, om:58.42, w:111.33, tp:2446469.974 };
-const halley = addRock({ key:'halley', name:"Halley's Comet", label:'Halley', type:'periodic comet · returns every 76 years', shape:2, rad:8.5*KM, spin:0.25, sortKey:35,
+const halley = addRock({ key:'halley', name:"Halley's Comet", label:'Halley', type:'periodic comet · returns every 76 years', group:'comets', shape:2, rad:8.5*KM, spin:0.25, sortKey:35,
   el:halleyEl, orbitCol:[0.5, 0.75, 0.9],
   fact:'A dirty snowball about 15 km long on a 76-year orbit. Near the Sun it grows a glowing coma and two tails: curved dust and straight blue gas, pushed away from the Sun. It was last close in 1986 and returns in 2061.',
   aka:'1p halley comet', farColor:[0.7, 0.85, 1],
