@@ -138,6 +138,7 @@ const earth = (() => {
        k:2.6, hold:13, drift:0, flyby:'pulling back to the Moon', offW:'dist',
        to:{ dirFn:() => { const m = V.norm(moon.offset), L = sunDirFrom(o), c = V.norm(V.sub(L, V.mul(m, V.dot(L, m)))); return V.norm(V.add(c, V.mul(m, -0.12))); },
          k:74, off:() => V.mul(M3.applyT(o.R0, moon.offset), 0.5/o.rad) }},
+      sunBack('earth', 6, 0.27),
     ],
     update(){
       const jd = jdNow();

@@ -149,10 +149,10 @@ void main(){
   // and which slowly reshuffles, cell by cell, so gas and glow shimmer gently like distant stars
   const float th2 = 0.14;
   if(uDith > 0.5 && v > th && v < th2){
-    float p = pow((v - th)/(th2 - th), 0.9);
-    float ph = h21(c), rate = 0.12 + 0.3*h21(c + 7.1);
-    float k = floor(uT*rate + ph*9.);
-    if(h21(c + k*13.37 + 0.5) > p*1.1) g = 0.;
+    // (a steady pattern: calm, even density that follows the brightness, with no visible grid and no reshuffling flicker;
+    // interleaved gradient noise spreads the kept cells evenly)
+    float p = pow((v - th)/(th2 - th), 0.7);
+    if(fract(52.9829189*fract(dot(c, vec2(0.06711056, 0.00583715)))) > p*1.05) g = 0.;
   }
   if(uEdge > 0.5 && v > 0.09 && v < 0.9){
     float l00 = lum(tmAt(c + vec2(-1,-1))), l10 = lum(tmAt(c + vec2(0,-1))), l20 = lum(tmAt(c + vec2(1,-1)));

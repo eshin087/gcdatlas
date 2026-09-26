@@ -4,7 +4,7 @@ This file is read automatically by Claude Code at the start of every session. It
 
 ## Start here
 
-State on 2026-09-25: **v0.7.7** (Solar System sizes, smooth travel, Crab fix) is live once its PR is merged; check `package.json` and `docs/CHANGELOG.md` for the latest. Read `docs/HANDOFF.md`, which covers the owner's preferences, decisions not to undo, how the work is done and the open ideas. Then run `npm install` (first time only) and `npm test`. Use git and `gh` directly: branch `release/vX.Y.Z`, open a PR, check the Vercel preview, then merge with a merge commit.
+State on 2026-09-26: **v0.7.8** (galaxies, Sun views, Betelgeuse, ride, labels) is live once its PR is merged; the next versions are planned in the owner's roadmap (v0.7.9 Earth, v0.8.0 Halo, v0.8.1 comets); check `package.json` and `docs/CHANGELOG.md` for the latest. Read `docs/HANDOFF.md`, which covers the owner's preferences, decisions not to undo, how the work is done and the open ideas. Then run `npm install` (first time only) and `npm test`. Use git and `gh` directly: branch `release/vX.Y.Z`, open a PR, check the Vercel preview, then merge with a merge commit.
 
 ## What this is
 
@@ -58,7 +58,7 @@ Tests need `npm install` once (dev dependencies: playwright, sharp). Headless Ch
 ## Gotchas
 
 - Do not name a local variable `P` inside object files: `P` is the global shader program registry (`P.blackhole`, `P.ptBasic`…). This has bitten before (black holes silently vanished).
-- Labels show and hide with the `on` class (CSS fades them); do not set `style.visibility` on them. Labels of other objects are kept off the locked object's disc (`overFocus` in `updateLabels`).
+- Labels show and hide with the `on` class (CSS fades them); do not set `style.visibility` on them. No other label may sit on the disc of the object you are looking at, not even its own parts (`overFocus` in `updateLabels`; in free flight the object is `cam.focus`). The owner asked for this after Sgr A*'s label covered the Galactic Centre.
 - The Halo has its own camera (`shipCam` in `08-camera.js`): while riding, `updateShipCam` replaces the orbit camera, and any flight or manual input hands the camera back.
 - Objects added after start-up need a label element (`labelEls[o.index]`) because labels are created once at init.
 - `afterFrame` (in `09-render.js`) runs once right after a frame is drawn; use it to read the canvas (photo mode).
