@@ -1,5 +1,5 @@
 // Camera motion regression: the angle loop after picking an object, play / pause (button and space), flights that land
-// exactly on a moving destination (no jump on arrival), ladder picks that keep moving, and riding along with the Halo. Deterministic: steps the simulation with __cosmos.tick.
+// exactly on a moving destination (no jump on arrival), ladder picks that keep moving, riding along with the Halo, and tour trips without zoom dips. Deterministic: steps the simulation with __cosmos.tick.
 // Usage: node tests/motion.mjs
 import { openPage, report } from './lib.mjs';
 
@@ -97,5 +97,28 @@ if (nav.next !== 'earth' || nav.next2 !== 'jupiter') fail('next did not follow t
 if (nav.angle.to === nav.angle.from || !nav.angle.looping) fail('the angle arrows did not step the loop: ' + JSON.stringify(nav.angle));
 if (!(nav.fast < nav.slow)) fail('changing the speed mid-flight did not re-time it: ' + JSON.stringify(nav));
 
-report('motion', errors, `Saturn loops through ${loop.views} angles · pause, play and space work · universe to Earth, largest frame-to-frame change x${fl.worstFrameToFrameScale} · ladder picks keep moving · riding the Halo through a fold (camera within ${ride.farAfterFold} ship radii) · Moon → ${nav.next} → ${nav.next2} · mid-flight speed change ${nav.slow}s → ${nav.fast}s`);
+// 7. every grand tour trip is one smooth flight: the zoom never dips and comes back out on the way (that read as locking on to
+// something in the way), and the camera never flies through an object that is not one end of the trip (or around it)
+const trips = await page.evaluate(() => {
+  const C = __cosmos, T = C.TOUR, bad = []; let passes = 0;
+  C.setOpt('travel', 'cinematic', true);
+  for (let i=0;i<T.length - 1;i++){
+    const a = C.OBJ[T[i]], b = C.OBJ[T[i + 1]];
+    C.tourGo(T[i], true); C.tick(1/30); C.tourGo(T[i + 1]);
+    if (C.via) passes++;
+    const ws = [], inside = new Set(); let n = 0;
+    const around = o => [a, b].some(e => Math.hypot(o.pos[0] - e.pos[0], o.pos[1] - e.pos[1], o.pos[2] - e.pos[2]) < o.rad);
+    while (C.stepTarget && n++ < 3000){
+      C.tick(1/30); ws.push(C.orbit.dist);
+      for (const o of C.OBJ) if (o !== a && o !== b && !o.parent && o.prog && o.layer >= 2 && !o.marker && o.dist < o.rad && !around(o)) inside.add(o.key);
+    }
+    let dips = 0; for (let j=2;j<ws.length - 2;j++) if (ws[j] < ws[j - 1]*0.999 && ws[j] < ws[j + 1]*0.999 && ws[j] < ws[j - 2] && ws[j] < ws[j + 2]) dips++;
+    if (dips || inside.size) bad.push(`${a.key} -> ${b.key}: ${dips} zoom dips, inside ${[...inside].join(',') || '-'}`);
+  }
+  C.setOpt('travel', 'quick', true);
+  return { n:T.length - 1, bad, passes };
+});
+if (trips.bad.length) fail('tour trips that dip or fly through something: ' + trips.bad.join('; '));
+
+report('motion', errors, `Saturn loops through ${loop.views} angles · pause, play and space work · universe to Earth, largest frame-to-frame change x${fl.worstFrameToFrameScale} · ladder picks keep moving · riding the Halo through a fold (camera within ${ride.farAfterFold} ship radii) · Moon → ${nav.next} → ${nav.next2} · mid-flight speed change ${nav.slow}s → ${nav.fast}s · ${trips.n} tour trips without dips (${trips.passes} pass-bys)`);
 await browser.close();

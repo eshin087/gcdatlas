@@ -10,6 +10,11 @@ function addScaleRings(o, rings, col = [0.45, 0.62, 1], far = 1){
     addObj({ key:o.key + '-ring' + i, name:label, label, type:'', layer:3, parent:o, offset:M3.apply(o.R0, [r*Math.cos(a), 0, -r*Math.sin(a)]), rad:r/400, marker:true, noPick:true, noImpostor:true, atlas:false,
       labelMin:r*0.35, labelRange:r*40*far, labelClass:'ring' });
   });
+  // say what the rings are while they show (only the ones outside the star: the rest are hidden inside it)
+  const out = rings.filter(([r]) => r > o.rad*(o.solid || 1)), r0 = o.readout;
+  if (!out.length) return;
+  const names = out.map(([, l]) => l.replace(/'s orbit$/, "'s")), list = names.length > 1 ? names.slice(0, -1).join(', ') + ' and ' + names[names.length - 1] : names[0];
+  o.readout = () => (r0 ? r0() : '') + (smooth(out[0][0]*0.25, out[0][0]*0.9, orbit.dist) > 0.5 && orbit.lock === o.index ? `\nthe blue ${out.length > 1 ? 'rings are' : 'ring is'} ${list} orbit${out.length > 1 ? 's' : ''} around the Sun, drawn to scale for size` : '');
 }
 const SS_RINGS = { earth:[AU_LY, "Earth's orbit"], mars:[1.524*AU_LY, "Mars's orbit"], jupiter:[5.2*AU_LY, "Jupiter's orbit"], saturn:[9.54*AU_LY, "Saturn's orbit"], neptune:[30.1*AU_LY, "Neptune's orbit"], voyager:[171*AU_LY, 'Voyager 1 today'], mercury:[0.387*AU_LY, "Mercury's orbit"] };
 // a star at its catalogue position; `R` solar radii, `T` kelvin

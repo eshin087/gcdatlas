@@ -142,21 +142,28 @@ function drawDrift(){
 }
 // (EXTRAS draw hooks are declared in 04-world.js)
 // ---------------------------------------------------------------- the Solar System, magnified: at the scale of the whole system the Sun and planets would be
-// invisible specks, so while you look at the system itself each is drawn at a readable size on screen (orbits and positions stay true).
-// Picking a planet (or the Sun) brings everything back to true size. The readout says how much each is enlarged.
-// Each body gets a target size on screen, capped so it never reaches a neighbouring orbit (cap in AU: half the gap to the nearest orbit; the Sun stops at 70% of Mercury's).
-const SYSMAG = { k:0, list:[['sun', 0.045, 0.27], ['jupiter', 0.034, 1.84], ['saturn', 0.03, 2.2], ['uranus', 0.024, 4.7], ['neptune', 0.024, 4.7], ['earth', 0.022, 0.14], ['venus', 0.021, 0.14],
-  ['mars', 0.018, 0.26], ['mercury', 0.015, 0.16], ['pluto', 0.01, 4.7]].filter(([k]) => BYKEY[k]).map(([k, f, cap]) => ({ o:BYKEY[k], f, cap:cap*AU_LY })), moons:OBJ.filter(o => o.parent && o.parent !== sun && o.parent.parent === sun && !o.marker && o.key !== 'halo') };
+// invisible specks, so while you look at the system itself they are drawn enlarged (orbits and positions stay true).
+// The Sun is sized first, as a share of the screen height: SUN_F when the view is 50 AU tall, growing gently (power G) as you zoom in,
+// so zooming in never makes it shrink; it is never drawn smaller than it really is.
+// Each planet is then drawn at S*(r/rSun)^P (capped so it stays clear of its neighbours' orbits): the Sun is always the largest and
+// every planet keeps its real rank in size (Jupiter > Saturn > Uranus > Neptune > Earth > ...). A planet whose orbit falls inside the enlarged Sun steps aside.
+// Picking a planet (or the Sun) brings everything back to true size. The readout gives the real ratios.
+const SYSMAG = { k:0, SUN_F:0.04, G:0.15, P:0.3, list:[['sun', 0], ['jupiter', 1.84], ['saturn', 2.2], ['uranus', 4.7], ['neptune', 4.7], ['earth', 0.14], ['venus', 0.14],
+  ['mars', 0.26], ['mercury', 0.16], ['pluto', 4.7]].filter(([k]) => BYKEY[k]).map(([k, cap]) => ({ o:BYKEY[k], cap:cap*AU_LY })), moons:OBJ.filter(o => o.parent && o.parent !== sun && o.parent.parent === sun && !o.marker && o.key !== 'halo') };
+const coreOf = o => o.solid ? o.rad*o.solid : o.rad;
 function updateSysMag(dt){
   const fo = flight ? flight.obj : OBJ[tour.on ? tour.obj : orbit.lock];
-  const dSun = V.len(sun.rel)*(1/AU_LY);
-  const want = fo === BYKEY.solarsystem || (!fo && dSun > 1 && dSun < 2000) ? smooth(0.6, 2.5, dSun)*(1 - smooth(1500, 20000, dSun)) : 0;
+  const dSun = V.len(sun.rel)*(1/AU_LY), far = 1 - smooth(1500, 20000, dSun);
+  const want = fo === BYKEY.solarsystem ? far : !fo && dSun > 1 && dSun < 2000 ? smooth(0.6, 2.5, dSun)*far : 0;
   SYSMAG.k += (want - SYSMAG.k)*(1 - Math.exp(-dt*2.2));
   const k = SYSMAG.k < 0.002 ? 0 : SYSMAG.k;
+  const H = 2*tanY*Math.max(sun.dist, 1e-30), sunCore = coreOf(sun);   // screen height, in light-years, at the Sun's distance
+  const S = Math.max(sunCore, Math.min(SYSMAG.SUN_F*Math.pow(Math.max(H/(50*AU_LY), 1e-4), -SYSMAG.G), 0.12)*H);
   for (const e of SYSMAG.list){
-    const o = e.o, core = o.solid ? o.rad*o.solid : o.rad, want = Math.min(e.f*2*tanY*Math.max(o.dist, 1e-30), e.cap);   // the body's disc as a fraction of the screen height
-    o.mag = 1 + Math.max(want/core - 1, 0)*k;
+    const o = e.o, core = coreOf(o), size = o === sun ? S : Math.min(S*Math.pow(core/sunCore, SYSMAG.P), e.cap);
+    o.mag = 1 + Math.max(size/core - 1, 0)*k;
     o.outBoost = o === sun ? 0 : 1 + 2.2*k;   // lit by a Sun that is also in frame, a small planet would look dark: brighten it while enlarged
+    if (o !== sun) o.magHide = (1 - smooth(1.0, 1.3, V.len(V.sub(o.rel, sun.rel))/(S + size)))*k;
   }
   // moons would sit inside their enlarged planets: they step aside until the planets shrink back
   for (const m of SYSMAG.moons) m.magHide = k;
@@ -784,7 +791,7 @@ function toggleHelp(on){ $('#help').hidden = !on; if (on) $('#helpClose').focus(
 for (const ev of ['pointerdown', 'pointerup', 'touchend', 'click', 'keydown', 'wheel', 'touchstart']) addEventListener(ev, () => music.gesture(), { capture:true, passive:true });
 
 // ================================================================ main loop
-let tmT = 0, last = performance.now(), ema = 16, adaptCount = 0, runTime = 0, resizePending = false, refocusT = 0, lodT = 0;
+let tmT = 0, last = performance.now(), ema = 16, adaptCount = 0, raised = 0, calmT = 0, runTime = 0, resizePending = false, refocusT = 0, lodT = 0;
 addEventListener('resize', () => { if (resizePending) return; resizePending = true; requestAnimationFrame(() => { resizePending = false; resize(); ladTitles(); }); });
 // when zooming out from inside the galaxy, rise gently above the disk so the Milky Way unfolds instead of staying edge-on
 function riseAboveDisk(dt){
@@ -1002,6 +1009,7 @@ function frame(now){
   requestAnimationFrame(frame);
   if (window.__freeze){ last = now; return; }
   const dtR = Math.min((now - last)/1000, 0.25); last = now;
+  const hitch = progBusy > 0; progBusy = 0;   // the last frame compiled a shader: its time says nothing about how fast the scene draws
   const dt = Math.min(dtR, 0.05);
   tick(dt);
   render();
@@ -1009,15 +1017,20 @@ function frame(now){
   updateCaption(dtR); updateHash(dtR);
   tmT -= dtR; if (tmT <= 0){ tmT = 0.25; syncTimeUI(); }
   runTime += dtR;
-  ema = ema*0.95 + dtR*1000*0.05;
+  if (!hitch) ema = ema*0.95 + dtR*1000*0.05;
   if (runTime > 2.5) progIdle(1);
-  // keep motion smooth on slower devices: first trim ray-march steps, then (at most twice) use bigger characters
+  // keep motion smooth on slower devices: first trim ray-march steps, then (at most twice) use bigger characters;
+  // after 10 calm seconds at full steps the characters go back to the chosen detail (at most 3 times a session, so it cannot flip back and forth)
   lodT += dtR;
   if (!window.__noAdapt && lodT > 1 && document.visibilityState === 'visible'){
     lodT = 0;
     if (ema > 38) LODK = Math.max(0.5, LODK - 0.1); else if (ema < 24) LODK = Math.min(1, LODK + 0.05);
-    if (runTime > 5 && ema > 48 && LODK <= 0.5 && adaptCount < 2 && detailIdx < DETAIL.length - 1){
-      adaptCount++; runTime = 0; ema = 20; detailIdx++; resize(); toast('detail lowered to ' + DETAIL[detailIdx].name + ' for smoother motion');
+    if (runTime > 10 && ema > 48 && LODK <= 0.5 && adaptCount < 2 && detailIdx < DETAIL.length - 1){
+      adaptCount++; runTime = 0; ema = 20; calmT = 0; detailIdx++; resize(); toast('detail lowered to ' + DETAIL[detailIdx].name + ' for smoother motion');
+    }
+    calmT = detailIdx > SET.detail && ema < 20 && LODK >= 1 ? calmT + 1 : 0;
+    if (calmT >= 10 && raised < 3){
+      raised++; calmT = 0; runTime = 0; ema = 20; adaptCount = Math.max(0, adaptCount - 1); detailIdx--; resize(); toast('detail back to ' + DETAIL[detailIdx].name);
     }
   }
   if (!hintHidden && performance.now() > 18000) hideHint();
@@ -1036,7 +1049,7 @@ tick(0);
 updateModeUI(); syncTimeUI();
 window.__cosmos = { startTour, playFlyby, setMove(o, v, f){ flight = null; tween = null; tourGo(o.index, true); tour.on = false; flyMove = { o, v, t:f*v.hold, frozen:true }; },  get flyMove(){ return flyMove; }, startCompare, endCompare, setDeep, viewHash, applyHash, get cmp(){ return cmp; }, get ssRate(){ return ssRate; }, dbg:{ imp, impSpec, get cols(){ return cols; }, get sceneH(){ return sceneH; }, get LODK(){ return LODK; }, PROGS }, OBJ, BYKEY, tourGo, lockOn, setTour, cam, orbit, tour, TOUR, SET, setOpt, music, LADDER, goLadder,
   land:(extra = 0.2) => { let n = 0; while (flight && n < 60*180){ tick(1/60); n++; } for (let i=0;i<extra*60;i++) tick(1/60); return n/60; },
-  setDays:d => { ssDays = d; }, stepObject, stepAngle, get stepTarget(){ return flight ? (flight.dest || flight.obj).key : null; }, get via(){ return flight && flight.via ? flight.via.key : null; },
+  setDays:d => { ssDays = d; }, stepObject, stepAngle, get stepTarget(){ return flight ? (flight.dest || flight.obj).key : null; }, get via(){ return flight && flight.via ? flight.via.key : null; }, PASS,
   startShipCam, stopShipCam, setShipCamMode, get shipCam(){ return shipCam; }, get show(){ return show; }, togglePlay, get flight(){ return flight; },
   setDetail:i => setOpt('detail', i, true), render, zoomTo, tick, flightDur:() => flight ? flight.dur : 0, hud:() => { roTimer = 0; updateHUD(0.2); },
   simulate:(sec) => { for (let k=0; k<sec*30; k++) tick(1/30); return { obj:tour.obj, view:tour.view, phase:tour.phase, lock:orbit.lock }; },

@@ -26,14 +26,15 @@ This file carries the context of the chat sessions that built gcdatlas (v0.1 to 
 | The Sun | Warm yellow-orange with a boiling surface, on purpose; ACCURACY.md and the readout say its real light is white. |
 | Menus | Menu text has its own size (default 115%) on top of the page text size. |
 | Navigation | Arrows beside the name = camera angles. Top-right arrows = tour stops on a tour, otherwise the scale-bar markers. Every lock-on loops its angles. |
-| Travel | Default speed slow for new visitors; the chosen speed always wins (also with reduced motion); long trips pass a real object on the way (`flyTo` / `scenicWaypoint`). |
-| Solar System | Sun and planets enlarged in the overview (`SYSMAG`), true size close up; the readout says so. |
+| Travel | Default speed slow for new visitors; the chosen speed always wins (also with reduced motion). A trip is always one smooth flight. It may bend past an object that is really in view along the route (`flyTo` / `scenicWaypoint` / `passBy`), but never zooms in on it or stops there: the 0.7.5 version flew to the object and then on, which the owner saw as crashing into it and bouncing off. The motion test fails on any grand tour trip that dips in and out. |
+| Solar System | Sun and planets enlarged in the overview (`SYSMAG`), true size close up; the readout says so. Since 0.7.7 the Sun is always the largest and planets keep their true order of size (size = Sun x ratio^0.3); a version where Jupiter outgrew the Sun was reported as wrong by the owner. Zooming in must never make the Sun shrink. |
 | Social features | Planned only, behind the `social` flag (off). Design in `docs/ROADMAP.md`. |
 | Music | Generative "gcd radio": rotating mix of lofi, chill house and ambient. |
 
 ## Current state (2026-09-25)
 
-- **Live: v0.7.5** (PR #3 merged, commit `7855d40`). The local folder is on `main`, in sync with GitHub, with no leftover branches or uncommitted changes. The next version is **v0.7.6**.
+- Work moved to Claude Code on 2026-09-25: PR #4 (this handoff), #5 (v0.7.6, music starts right away), then v0.7.7 (Solar System sizes, smooth travel, Crab fix, detail recovery). `package.json` and `docs/CHANGELOG.md` hold the current version.
+- The owner reviews every PR on its Vercel preview URL before it is merged: always give that link.
 - Every version so far is a merged PR (#1 = 0.7.3, #2 = 0.7.4, #3 = 0.7.5), so any of them can be reverted.
 - Nothing is half-done. The open ideas are listed under *Open items and ideas* below.
 
@@ -68,7 +69,7 @@ Until 0.7.5 the code was pushed through the GitHub website from a cloud session,
 
 - Content still open (`docs/CONTENT.md`): Vesta, Bennu, human spaceflight sites (Apollo, Mars rovers, Parker Solar Probe, Tiangong), 51 Pegasi b, K2-18 b, planet surfaces. Some tour stops already name future keys (`apollo11`, `parker`, `olympus`, `perseverance`, `vesta`, `peg51b`, `k218b`); they are skipped until those objects exist.
 - Visual polish the owner asked for and may want more of: the Milky Way and the Pillars compared with the iconic images, and more ASCII fire and motion. The Einstein Cross images are subtle against the lens galaxy.
-- The scenic waypoint picker (`scenicWaypoint` in `src/08-camera.js`) only triggers on some trips. Its thresholds can be tuned so more trips pass something.
+- Pass-bys (`scenicWaypoint` / `passBy` in `src/08-camera.js`) only happen when an object is in view at the camera's natural height, which no grand tour trip has today. Making more trips pass something would need a different kind of route (lower cruising height), not a dive toward the object.
 - ASCII Earth phase 2 (landmarks, city scale), live sky events phase 2 (a toast when an ISS pass or launch is minutes away), Content Security Policy (`docs/ROADMAP.md`).
 - The live API functions work in production (checked 2026-09-25: 16,619 satellites, 15 launches).
 

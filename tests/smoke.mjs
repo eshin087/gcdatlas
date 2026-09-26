@@ -7,7 +7,9 @@ for (let i = 0; i < keys.length; i += 8){
   const chunk = keys.slice(i, i + 8);
   const r = await page.evaluate(ks => { const c = window.__cosmos, out = [];
     for (const k of ks){ c.setTour(false); c.view(k, 0); c.tick(1/30); c.render();
-      if (!isFinite(c.cam.rel[0]) || !isFinite(c.orbit.dist)) out.push(k + ': NaN camera'); }
+      if (!isFinite(c.cam.rel[0]) || !isFinite(c.orbit.dist)) out.push(k + ': NaN camera');
+      // every object that could be on screen must have a real size and visibility (a field named like an engine property, e.g. `mag`, once made the Crab vanish)
+      for (const o of c.OBJ) if ((o.vis !== undefined && !isFinite(o.vis)) || (o.mag !== undefined && typeof o.mag !== 'number')) out.push(`${o.key}: bad vis/mag while viewing ${k}`); }
     return out; }, chunk);
   bad.push(...r);
 }

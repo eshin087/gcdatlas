@@ -120,15 +120,15 @@ const crabPulsar = (() => {
   const o = addObj({ key:'crabpulsar', name:'Crab Pulsar', label:'Crab Pulsar', type:'neutron star · 1.4 Suns crushed into 20 km', group:'stars', sortKey:6500.1,
     fact:'A ball of neutrons as dense as an atomic nucleus, spinning 30 times a second. Beams from its magnetic poles sweep past Earth like a lighthouse.',
     parent:crab, offset:[0, 0, 0], rad:RAD, R0:crab.R0, prog:P.neutron, minZoom:0.02, pxMin:5, noImpostor:true, labelRange:2e-6, aka:'neutron star pulsar',
-    spin:0, mag:M3.I(), m:[0,1,0],
-    update(){ this.spin = this.t*OMEGA; this.mag = M3.mul(M3.rotY(this.spin), M3.rotZ(-AL)); this.m = M3.apply(this.mag, [0,1,0]); },
+    spin:0, magF:M3.I(), m:[0,1,0],   // magF: the magnetic axis frame (not `mag`, which is the on-screen enlargement)
+    update(){ this.spin = this.t*OMEGA; this.magF = M3.mul(M3.rotY(this.spin), M3.rotZ(-AL)); this.m = M3.apply(this.magF, [0,1,0]); },
     setU(pr){ gl.uniform4f(pr.u.uP0, this.m[0], this.m[1], this.m[2], 0); gl.uniform4f(pr.u.uP1, RN, 1.4, 12, 0); gl.uniform4f(pr.u.uP2, 0, 0, 0, 0); },
     views:[{d:[0.4, 0.3, 1], k:1.6, hold:8, drift:0.04}, {d:[0.64, 0.77, 0], k:0.25, hold:8, drift:0}, {d:[0.2, 0.05, 1], k:0.04, hold:7, drift:0.05}],
     particleVis:rpx => smooth(4, 14, rpx),
     particles:[
       {ps:spr, prog:'ptSprinkle', mode:1, sb:0.5, size:1.8, q0:()=>[OMEGA, Math.sin(AL), Math.cos(AL), 0]},
-      {ps:fld, prog:'ptDipole', mode:1, sb:0.35, size:1.6, q0:()=>[RN, 0, 0, 0], mat:()=>o.mag},
-      {ps:loopLines([0.12, 0.25, 0.45, 0.72], 8, 36, [0.5, 0.45, 1]), prog:'lnLoop', lines:true, mode:3, sb:0.8, size:1, q0:()=>[RN, 0, 0, 0], mat:()=>o.mag},
+      {ps:fld, prog:'ptDipole', mode:1, sb:0.35, size:1.6, q0:()=>[RN, 0, 0, 0], mat:()=>o.magF},
+      {ps:loopLines([0.12, 0.25, 0.45, 0.72], 8, 36, [0.5, 0.45, 1]), prog:'lnLoop', lines:true, mode:3, sb:0.8, size:1, q0:()=>[RN, 0, 0, 0], mat:()=>o.magF},
     ],
     readout:()=>'P = 33.7 ms (shown ~50x slower) · slowing 38 ns per day\nits spin-down powers the nebula: ~4.5x10^31 W' });
   return o;

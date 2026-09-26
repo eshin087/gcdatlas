@@ -4,6 +4,19 @@ All notable changes, newest first. Dates are UTC.
 
 ## Unreleased
 
+## 0.7.7 · 2026-09-25
+
+**Fixed**
+- Solar System lock-on: the Sun is now always the largest body, and the planets keep their true order of size (Jupiter, Saturn, Uranus, Neptune, Earth, Venus, Mars, Mercury). Before, Jupiter and Saturn were drawn bigger than the Sun.
+- Solar System zoom: zooming in never makes the Sun shrink any more; it grows gently from 4% to 10% of the screen height. The planets are drawn larger.
+- The Sun is a clear disc at every zoom of the system; its corona and ejections fade while it is enlarged, so they no longer cover the inner planets.
+- The Crab Nebula, the Crab Pulsar and the magnetar SGR 1806-20 were not drawn since 0.7.5 (a property name clash made their size "not a number"). They are back, and the smoke test now fails on any such object.
+- Travel no longer detours to an object on the way and zooms in on it before carrying on (it looked like the camera crashed into the Orion Nebula and bounced off). A trip is one smooth flight; it only bends past something that is really in view along the route, without slowing to a stop. The motion test checks that no grand tour trip dips in and out.
+- When the page lowered the detail level to keep motion smooth, it never raised it again. It now goes back to your chosen detail after 10 calm seconds, and shader compiling at start-up no longer counts as slow frames.
+- Stars with our Solar System's orbits drawn around them for scale (Betelgeuse, Antares, UY Scuti, Stephenson 2-18) now say so in the readout.
+- The asteroid belt dims as the view widens, so it reads as a faint ring instead of a bright blob in the middle.
+- Planets whose orbits fall inside the enlarged Sun step aside, and the readout names them.
+
 ## 0.7.6 · 2026-09-25
 
 **Fixed**

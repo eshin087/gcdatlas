@@ -178,9 +178,11 @@ const sun = (() => {
     },
     setU(pr){
       gl.uniform4f(pr.u.uP0, 5772, 40, 0.75, 0.22);
-      gl.uniform4f(pr.u.uP1, 1/bound, 0, 1, 1);
+      // enlarged in the Solar System overview, the corona and ejections would grow over the inner planets: they fade out instead
+      const kc = 1 - (typeof SYSMAG !== 'undefined' ? SYSMAG.k : 0);
+      gl.uniform4f(pr.u.uP1, 1/bound, 0, kc, kc);
       gl.uniform4f(pr.u.uP2, st.flareDir[0], st.flareDir[1], st.flareDir[2], st.flare);
-      gl.uniform4f(pr.u.uP3, st.cmeDir[0], st.cmeDir[1], st.cmeDir[2], st.cme);
+      gl.uniform4f(pr.u.uP3, st.cmeDir[0], st.cmeDir[1], st.cmeDir[2], kc > 0.05 ? st.cme : 0);
       gl.uniform4f(pr.u.uP4, clamp(1.5 - orbit.dist/(this.rad*1.2), 0, 1), 0.58, 0.5, -11);
     },
     readout:() => st.cmeT < 10 ? 'coronal mass ejection: a billion tonnes of plasma\nleaving at ~1,000 km/s; it would reach Earth in ~2 days' :
@@ -408,6 +410,7 @@ const solarSystem = (() => {
     belt.a.set([a, sc ? 0.2 + 0.5*rnd() : rnd()*0.12, rnd()*6.283, rnd()*6.283], b*4); belt.c.set([0.6, 0.66, 0.78, Math.abs(rndn())*(sc ? 0.4 : 0.1)], b*4); b++; }
   belt.upload('ac');
   const zoomVis = (lo, hi, lo2, hi2) => () => smooth(lo, hi, orbit.dist)*(1 - smooth(lo2, hi2, orbit.dist));
+  const beltVis = zoomVis(3e-5, 1.5e-4, 0.03, 0.4);
   const o = addObj({ key:'solarsystem', name:'the Solar System', label:'Solar System', type:'our planetary system · 8 planets, 5 dwarf planets, millions of small bodies', group:'solar', sortKey:-2, layer:2,
     fact:'Planets shown where they are today, on their true orbits. The asteroid belt hides gaps carved by Jupiter; two swarms of Trojans share its orbit.',
     pos:[0,0,0], rad:50*AU_LY, R0:ECL, minZoom:0.002, pxMin:3, noImpostor:true, labelRange:3e3, farLum:0, distEarth:'you are inside it', atlasDist:'here',
@@ -416,10 +419,16 @@ const solarSystem = (() => {
     particleVis:rpx => smooth(4, 20, rpx),
     particles:[
       {ps, prog:'lnBasic', lines:true, mode:3, sb:0.4, size:1, rad:AU_LY, rot:() => I3, vis:zoomVis(2.5e-5, 1.2e-4, 0.02, 0.2)},
-      {ps:belt, prog:'ptKepler', mode:3, sb:0.35, size:1.6, rad:AU_LY, rot:() => ECL, q0:() => [jdNow() - JD_NOW, 0, 0, 0], vis:zoomVis(3e-5, 1.5e-4, 0.03, 0.4)},
+      // (seen from far out the belt is a few characters wide and its dots pile up into a solid blob: it dims as the view widens)
+      {ps:belt, prog:'ptKepler', mode:3, sb:0.35, size:1.6, rad:AU_LY, rot:() => ECL, q0:() => [jdNow() - JD_NOW, 0, 0, 0], vis:() => beltVis()*(1 - 0.85*smooth(8e-5, 4e-4, orbit.dist))},
     ],
     readout:() => `Neptune orbits 30 AU out · light takes 4 hours to get there\nVoyager 1, our farthest probe, is ~171 AU away after 49 years` +
-      (typeof SYSMAG !== 'undefined' && SYSMAG.k > 0.5 && BYKEY.jupiter.mag > 2 ? `\nthe Sun and planets are drawn enlarged so you can see them (Jupiter ~${fmtNum(Math.round(BYKEY.jupiter.mag/100)*100)}x, the Sun ~${fmtNum(Math.round(sun.mag/10)*10)}x); their orbits are to scale` : '') });
+      (typeof SYSMAG !== 'undefined' && SYSMAG.k > 0.5 && BYKEY.jupiter.mag > 2 ? sysMagNote() : '') });
+  function sysMagNote(){
+    const hid = ['mercury', 'venus', 'earth', 'mars'].filter(k => BYKEY[k] && BYKEY[k].magHide > 0.5).map(k => BYKEY[k].name.replace(/^the /, ''));
+    return `\nthe Sun and planets are drawn enlarged, in their true order of size; really the Sun is 10x wider than Jupiter, and Jupiter 11x wider than Earth. Orbits are to scale` +
+      (hid.length ? `\n${hid.length > 1 ? hid.slice(0, -1).join(', ') + ' and ' + hid[hid.length - 1] + ' are' : hid[0] + ' is'} hidden behind the enlarged Sun at this scale: zoom in to see ${hid.length > 1 ? 'them' : 'it'}` : '');
+  }
   return o;
 })();
 const oort = (() => {

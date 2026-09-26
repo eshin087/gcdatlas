@@ -64,16 +64,17 @@ function program(vs, fs, eager){
   if (eager) progReady(pr, true);
   return pr;
 }
+let progBusy = 0;   // shader work done this frame: such frames can hitch, and the frame-time average ignores them
 function progStart(pr){
   if (pr.started) return;
-  pr.started = true;
+  pr.started = true; progBusy++;
   const p = gl.createProgram();
   const mk = (type, src) => { const s = gl.createShader(type); gl.shaderSource(s, src); gl.compileShader(s); gl.attachShader(p, s); return s; };
   pr.sv = mk(gl.VERTEX_SHADER, pr.vs); pr.sf = mk(gl.FRAGMENT_SHADER, pr.fs);
   gl.linkProgram(p); pr.p = p;
 }
 function progFinish(pr){
-  const p = pr.p;
+  const p = pr.p; progBusy++;
   if (!gl.getProgramParameter(p, gl.LINK_STATUS)){
     for (const [s, src] of [[pr.sv, pr.vs], [pr.sf, pr.fs]]) if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)){
       const log = gl.getShaderInfoLog(s); console.error(log + '\n' + src.split('\n').map((l,i)=>(i+1)+': '+l).join('\n')); throw new Error('shader compile failed: ' + log); }
