@@ -4,6 +4,12 @@ All notable changes, newest first. Dates are UTC.
 
 ## Unreleased
 
+## 0.7.9 · 2026-09-26
+
+**New**
+- Earth's night side shows the real lights seen from space (NASA's Black Marble satellite map): road networks, coasts, the Nile, India, the eastern US. Bright city cores burn whiter, suburbs and highways glow sodium orange, and clouds soften them.
+- Weather seen from space (illustrative, sped up): tropical cyclones with spiral bands and an eye in the basins active this month, thunderstorm clusters with lightning flickering on the night side over the stormiest places on Earth, Saharan dust over the Atlantic, and burning seasons glowing at night where they happen that month. The readout says what is going on.
+
 ## 0.7.8 · 2026-09-26
 
 **New**

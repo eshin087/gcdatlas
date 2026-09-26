@@ -73,7 +73,8 @@ async function rasterMW(W, H){
   for (let i=0;i<W*H;i++) out[i] = Math.round(255*Math.pow(acc[i]/mx, 0.9));
   return sharp(out, { raw:{ width:W, height:H, channels:1 } }).blur(1.2).png({ compressionLevel:9, palette:false }).toBuffer();
 }
-// ---------------------------------------------------------------- Earth: R land, G ice, B city lights
+// ---------------------------------------------------------------- Earth: R land, G ice, B city glows (B is no longer used by the page since 0.7.9:
+// night lights come from NASA's Black Marble via tools/earth-lights.mjs -> src/05l-lights.js)
 const CITIES = [
   [35.68,139.69,37],[28.61,77.21,32],[31.23,121.47,28],[23.81,90.41,22],[-23.55,-46.63,22],[19.43,-99.13,22],[30.04,31.24,21],[39.90,116.41,21],[19.08,72.88,21],[34.69,135.50,19],
   [29.56,106.55,16],[24.86,67.01,16],[41.01,28.98,15],[-34.60,-58.38,15],[22.57,88.36,15],[40.71,-74.01,19],[6.52,3.38,15],[14.60,120.98,14],[-4.44,15.27,14],[39.34,117.36,13],

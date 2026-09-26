@@ -5,3 +5,4 @@ tools/stars.json
 *.png
 .DS_Store
 tests/out/
+tools/cache/

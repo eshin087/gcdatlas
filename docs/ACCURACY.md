@@ -15,7 +15,7 @@ Suggested wording for the site or for sharing:
 | Positions of ~2,000 bright stars | **Real** | Hipparcos catalogue positions and parallax distances. Parallax errors grow with distance: a few percent within 100 light-years, 10–30% beyond several hundred. |
 | Star colours and sizes | **Real (rounded)** | Colour from measured temperature or colour index; radii for named stars from the literature. Many giant-star radii are uncertain by 10–50% (Betelgeuse, UY Scuti, Stephenson 2-18 especially). |
 | Planet positions | **Real, approximate** | JPL approximate Keplerian elements: arcminute-level from 1800 to 2050, degrading outside. Moon: a low-precision lunar theory (a fraction of a degree). |
-| Planet appearance | **Mixed** | Earth uses real coastlines (Natural Earth) and ice sheets; its night lights are glows around about 110 of the largest cities, scaled by population, not a satellite night map; clouds and weather are procedural. Other planets are procedural textures in their real colours and banding. |
+| Planet appearance | **Mixed** | Earth uses real coastlines (Natural Earth) and ice sheets; its night lights are NASA's Black Marble 2016 satellite map (real data, 2048 x 1024, about 20 km per pixel at the equator); clouds are procedural. Weather events are illustrative and sped up: tropical cyclones appear only in the ocean basins active in the current month and move along made-up tracks (their eyes are drawn a little wider than life so they show as characters); thunderstorm clusters and lightning sit over the real stormiest regions (Congo basin, Lake Maracaibo, the Amazon, Borneo, and seasonal ones); Saharan dust and fire seasons follow the months they really happen, but the individual storms, flashes and fires are made up. Other planets are procedural textures in their real colours and banding. |
 | Satellites | **Real (live) or representative** | With live data: every active satellite from CelesTrak, propagated with two-body motion plus J2 (a few km over hours; full SGP4 is not used). Without it: representative orbital shells. The ISS and Hubble use the live elements when available. |
 | Air traffic | **Simulated** | Aircraft on 55 real busy routes, timed from great-circle distances; not live flights. |
 | Rocket launches | **Real schedule, illustrative ascent** | Next launches and pads from Launch Library 2; the ascent trail is a generic eastward gravity turn, not the real trajectory. |
@@ -41,7 +41,7 @@ Suggested wording for the site or for sharing:
 
 - Stars: Hipparcos (ESA) via star-catalog-lite; d3-celestial for colours and constellation lines.
 - Planets and Moon: JPL (Standish) approximate elements; IAU WGCCRE rotation models; Meeus-style lunar series.
-- Earth: Natural Earth coastlines (via world-atlas); city glows from a list of large cities and their approximate populations (in `tools/gen-data.mjs`).
+- Earth: Natural Earth coastlines (via world-atlas); night lights from NASA Earth Observatory's Black Marble 2016 (Suomi NPP VIIRS, public domain), made into `src/05l-lights.js` by `tools/earth-lights.mjs`.
 - Satellites: CelesTrak GP data. Launches: The Space Devs Launch Library 2.
 - Named objects: NASA, ESA, ESO, the Event Horizon Telescope, LIGO, and the discovery papers (for example Gaia BH1: El-Badry et al. 2023; Cygnus X-1: Miller-Jones et al. 2021; AT2019qiz: Nicholl et al. 2020; WR 140: Lau et al. 2022).
 
