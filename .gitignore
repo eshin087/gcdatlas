@@ -8,3 +8,5 @@ tests/out/
 .env
 .env*
 .vercel/
+tools/cache/
+.claude/worktrees/
