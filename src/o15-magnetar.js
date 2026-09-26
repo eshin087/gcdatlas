@@ -28,12 +28,12 @@ const magnetar = (() => {
       st.flash = f > 0 ? (f < 0.25 ? f/0.25 : Math.exp(-(f - 0.25)/0.7))*1.5 : 0;
       st.ball = f > 0 ? Math.min(f*0.5, 2) : 0;
       st.twist = 1.3*(0.4 + 0.6*clamp(st.t/(CYCLE - 4), 0, 1))*(f > 0 ? Math.exp(-f*2) : 1);
-      this.m = M3.apply(this.mag, [0, 1, 0]); },
-    mag:M3.mul(M3.rotZ(0.3), M3.rotX(0.2)), m:[0, 1, 0],
+      this.m = M3.apply(this.magF, [0, 1, 0]); },
+    magF:M3.mul(M3.rotZ(0.3), M3.rotX(0.2)), m:[0, 1, 0],   // magnetic axis frame (`mag` is the on-screen enlargement)
     setU(pr){ gl.uniform4f(pr.u.uP0, this.m[0], this.m[1], this.m[2], 0); gl.uniform4f(pr.u.uP1, RN, 0.5, 3 + 20*st.flash, 0); gl.uniform4f(pr.u.uP2, st.flash, st.ball, 0, 0); },
     particleVis:rpx => smooth(4, 14, rpx),
-    particles:[{ ps:fld, prog:'ptTwist', mode:1, sb:0.45, size:1.6, q0:() => [RN, st.twist, st.flash, 0], mat:() => o.mag },
-      { ps:loopLines([0.06, 0.11, 0.18, 0.28, 0.42, 0.6], 9, 40, [0.45, 0.55, 1]), prog:'lnLoop', lines:true, mode:3, sb:0.7, size:1, q0:() => [RN, st.twist, st.flash, 0], mat:() => o.mag }],
+    particles:[{ ps:fld, prog:'ptTwist', mode:1, sb:0.45, size:1.6, q0:() => [RN, st.twist, st.flash, 0], mat:() => o.magF },
+      { ps:loopLines([0.06, 0.11, 0.18, 0.28, 0.42, 0.6], 9, 40, [0.45, 0.55, 1]), prog:'lnLoop', lines:true, mode:3, sb:0.7, size:1, q0:() => [RN, st.twist, st.flash, 0], mat:() => o.magF }],
     readout:() => st.flash > 0.05 ? 'GIANT FLARE: the crust fractures, the field snaps and reconnects\nthe 2004 flash briefly lit up Earth\'s upper atmosphere from 28,000 ly' :
       `field ~10^15 gauss: it would wipe credit cards from halfway to the Moon\nstress building in the twisted field · starquake in ${Math.max(0, CYCLE - 4 - st.t).toFixed(0)} s` });
   return o;

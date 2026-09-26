@@ -4,7 +4,7 @@ This file is read automatically by Claude Code at the start of every session. It
 
 ## Start here
 
-State on 2026-09-25: **v0.7.7** (Solar System sizes) is live once its PR is merged; check `package.json` and `docs/CHANGELOG.md` for the latest. Read `docs/HANDOFF.md`, which covers the owner's preferences, decisions not to undo, how the work is done and the open ideas. Then run `npm install` (first time only) and `npm test`. Use git and `gh` directly: branch `release/vX.Y.Z`, open a PR, check the Vercel preview, then merge with a merge commit.
+State on 2026-09-25: **v0.7.7** (Solar System sizes, smooth travel, Crab fix) is live once its PR is merged; check `package.json` and `docs/CHANGELOG.md` for the latest. Read `docs/HANDOFF.md`, which covers the owner's preferences, decisions not to undo, how the work is done and the open ideas. Then run `npm install` (first time only) and `npm test`. Use git and `gh` directly: branch `release/vX.Y.Z`, open a PR, check the Vercel preview, then merge with a merge commit.
 
 ## What this is
 
@@ -64,7 +64,8 @@ Tests need `npm install` once (dev dependencies: playwright, sharp). Headless Ch
 - `afterFrame` (in `09-render.js`) runs once right after a frame is drawn; use it to read the canvas (photo mode).
 - WebGL points/lines are not depth-tested against volumes. Black holes are handled for every particle system (`uHole` in `particleVS`); for other opaque bodies hide what should be behind them in the vertex shader (see the satellites in `src/objects/e1-earth-live.js`).
 - A volume is only drawn inside the screen rectangle around its bounding sphere (`rad`). Anything a shader draws beyond `rad` gets cut along that rectangle, which moves with the camera: fade effects out before they reach the bound (see the Sun's coronal mass ejections).
-- Long flights go through `flyTo` (it may add a leg past a real object, `scenicWaypoint`); tests should wait with `__cosmos.land()`, not a fixed flight duration. Objects that should never be a waypoint set `noWaypoint`.
+- Long flights go through `flyTo` (one flight that may bend past a real object in view, `scenicWaypoint` / `passBy`; never a separate leg to it); tests should wait with `__cosmos.land()`, not a fixed flight duration. Objects that should never be passed set `noWaypoint`.
+- Do not give an object a property the engine sets itself: `mag` (on-screen enlargement), `vis`, `pvis`, `rpx`, `rel`, `dist`, `magHide`. A matrix in `mag` once made the Crab vanish; the smoke test now checks.
 - In the Solar System overview bodies are enlarged (`SYSMAG`, `o.mag`); use `o.rad*magOf(o)` for anything drawn or picked on screen, and `o.rad` for physics. Inner planets can be hidden there (`o.magHide`) when the enlarged Sun covers their orbit.
 - Picked objects play their views in a loop (`show` in `08-camera.js`); give every object views that work one after another, not only as tour stops.
 - The artifact build (`dist/artifact.html`) runs without `/api`, so live features must degrade gracefully.

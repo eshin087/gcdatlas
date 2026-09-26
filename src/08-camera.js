@@ -67,10 +67,11 @@ function slerpDir(a, b, t){
   const s = Math.sin(th);
   return V.add(V.mul(a, Math.sin((1 - t)*th)/s), V.mul(b, Math.sin(t*th)/s));
 }
-function startFlight(o, vp, onDone, pass){
+function startFlight(o, vp, onDone, via){
   const A = orbit.target.slice(), w0 = Math.max(V.len(V.sub(cam.rel, A)), 1e-30);
   const B = V.add(frel(o), vp.off || [0,0,0]), w1 = vp.dist;
   const path = vwPath(V.len(V.sub(B, A)), w0, w1, 1.3);
+  const pass = via ? passBy(via.o, A, B, path) : null;
   const dirEnd = M3.apply(o.R0, sphL(vp.yaw, vp.pitch));
   // long journeys zoom far out: swing the camera over the galactic pole on the way, so the trip reads as a map
   let wMax = 0; for (let i=0;i<=24;i++) wMax = Math.max(wMax, path.w(path.S*i/24));
@@ -80,41 +81,60 @@ function startFlight(o, vp, onDone, pass){
   let sPeak = 0, wp = -1; for (let i=0;i<=48;i++){ const w = path.w(path.S*i/48); if (w > wp){ wp = w; sPeak = i/48; } }
   const tbl = [0]; let acc = 0;
   // (the floor falls from 0.15 at departure to 0.025 on arrival: the camera glides in and settles, rather than arriving at speed and stopping dead)
-  // (a leg that passes an object on the way keeps some speed at that end: it slows to look, then carries on)
-  const f0 = pass && pass.start ? 0.5 : 0.15, f1 = pass && pass.end ? 0.45 : 0.025;
-  for (let i=1;i<=64;i++){ const x = (i - 0.5)/64, ease = Math.sin(Math.PI*x)*0.85 + f0*(1 - x) + f1*x, hover = scenic ? 1 - 0.8*Math.exp(-Math.pow((x - sPeak)/0.07, 2)) : 1; acc += 1/(ease*hover); tbl.push(acc); }
+  // (passing an object on the way, the camera eases off a little as it goes by, but never stops)
+  const f0 = 0.15, f1 = 0.025;
+  for (let i=1;i<=64;i++){ const x = (i - 0.5)/64, ease = Math.sin(Math.PI*x)*0.85 + f0*(1 - x) + f1*x, hover = (scenic ? 1 - 0.8*Math.exp(-Math.pow((x - sPeak)/0.07, 2)) : 1)*(pass ? 1 - 0.4*Math.exp(-Math.pow((x - pass.e)/0.08, 2)) : 1); acc += 1/(ease*hover); tbl.push(acc); }
   const prog = tbl.map(v => v/acc);   // prog[i] = time fraction at which s/S = i/64
   // travel speed: cinematic (slow and scenic), quick (default), warp (near-instant, same path and effects compressed)
   // (the speed you pick always wins, also on computers that ask for reduced motion; changing it mid-flight re-times the rest of the trip)
   const durs = { cinematic:clamp(1.6 + path.S*0.42, 2.4, 13) + (scenic ? 3 : 0), quick:clamp(1.3 + path.S*0.2, 1.8, 6.5) + (scenic ? 1.4 : 0), warp:clamp(0.85 + path.S*0.03, 0.95, 1.6) };
-  if (pass) for (const k in durs) durs[k] *= 0.8;
+  if (pass) for (const k in durs) if (k !== 'warp') durs[k] += 1.2;
   const dur = durs[SET.travel] || durs.quick;
   shipCam.on = shipCam.pending = false;   // any flight takes the camera off the ship (riding along starts again when its own flight lands)
   // start compiling the destination's shaders now, so it is ready to draw on arrival
   if (o.prog) progReady(o.prog); for (const sp of o.particles || []) if (P[sp.prog]) progReady(P[sp.prog]);
   music.whoosh(dur);
   flight = { t:0, dur, durs, path, A, B, L0:V.len(V.sub(B, A)), dir0:V.norm(V.sub(cam.rel, A)), dir1:dirEnd, prog,
-    up0:cam.up.slice(), up1:vp.up || M3.apply(o.R0, [0,1,0]), obj:o, vp, onDone, switched:false, spin:scenic ? 0 : (rnd() < 0.5 ? -1 : 1)*0.5, scenic, dirMid, upMid };
+    up0:cam.up.slice(), up1:vp.up || M3.apply(o.R0, [0,1,0]), obj:o, vp, onDone, switched:false, spin:scenic || pass ? 0 : (rnd() < 0.5 ? -1 : 1)*0.5, scenic, dirMid, upMid,
+    pass, via:pass ? via.o : null };
   tween = null;
 }
-// ---------------------------------------------------------------- scenic travel: a long trip passes something real on the way (a nebula, a cluster, a galaxy near the route),
-// turning to look at it and slowing a little, before carrying on to where you are going
+// ---------------------------------------------------------------- scenic travel: a long trip goes past something real on the way (a nebula, a cluster, a galaxy near the route).
+// It is one continuous flight: the route bends so the object drifts through the frame beside the path, the camera eases off a little
+// while it goes by, then carries on. It never zooms in on it or stops there (that looked like locking on to the wrong object).
+// Only objects that will look the right size at that point of the trip qualify: big enough to see, small enough not to fill the screen.
+const PASS = { minR:0.05, maxR:0.3, side:1.5 };   // object radius / camera distance at the pass; how far beside the path (object radii)
+// where along `path` (A to B, relative positions) the object W is passed, and how the route must bend to go by it at a comfortable distance
+function passBy(W, A, B, path){
+  const AB = V.sub(B, A), L = V.len(AB); if (!(L > 0)) return null;
+  const WR = frel(W), t = V.dot(V.sub(WR, A), AB)/(L*L);
+  let e = 0.5, best = 1e9; for (let i=0;i<=64;i++){ const d = Math.abs(path.u(path.S*i/64)/L - t); if (d < best){ best = d; e = i/64; } }
+  const q = V.sub(WR, V.add(A, V.mul(AB, t))), ql = V.len(q), m = W.rad*PASS.side;
+  return { e, bend:ql > m ? V.mul(q, 1 - m/ql) : [0, 0, 0], w:path.w(path.S*e) };
+}
+// how much of the bend applies at progress e: 0 at both ends, 1 where the object is passed, smooth in between
+function passBump(p, e){
+  const e0 = Math.max(p.e - 0.35, 0), e1 = Math.min(p.e + 0.35, 1);
+  return e <= e0 || e >= e1 ? 0 : e < p.e ? smooth(0, 1, (e - e0)/(p.e - e0)) : smooth(0, 1, (e1 - e)/(e1 - p.e));
+}
 function scenicWaypoint(o, vp){
   if (SET.travel === 'warp' || cmp || SKYV.on) return null;
   const F = OBJ[cam.focus]; if (!F) return null;
-  const camW = V.add(F.pos, cam.rel), B = V.add(o.pos, vp.off || [0, 0, 0]), AB = V.sub(B, camW), L = V.len(AB);
-  const w0 = Math.max(V.len(V.sub(cam.rel, orbit.target)), 1e-30);
+  const A = orbit.target.slice(), B = V.add(frel(o), vp.off || [0, 0, 0]), AB = V.sub(B, A), L = V.len(AB);
+  const w0 = Math.max(V.len(V.sub(cam.rel, A)), 1e-30);
   if (!(L > 40*Math.max(w0, vp.dist))) return null;   // a short hop: nothing to see on the way
   if (L < 0.05) return null;   // (inside the Solar System the planets are the scenery)
-  const u = V.mul(AB, 1/L); let best = null, bs = -1e9;
+  const path = vwPath(L, w0, vp.dist, 1.3), u = V.mul(AB, 1/L); let best = null, bs = -1e9; if (PASS.log) PASS.log.length = 0;
   for (const c of OBJ){
     if (c === o || c === F || c.marker || c.noPick || c.hidden || !c.prog || c.parent || c.layer < 2 || c.noWaypoint || !c.views || !c.views.length) continue;
-    if (c.rad < L*0.0012) continue;                                  // too small to see at the scale of this trip
-    const r = V.sub(c.pos, camW), t = V.dot(r, u)/L; if (t < 0.18 || t > 0.82) continue;
-    if (V.len(r) < c.rad*1.2 || V.len(V.sub(c.pos, B)) < c.rad*1.2) continue;   // it contains one end of the trip (the Milky Way on a trip inside it)
-    if (V.len(V.sub(c.pos, o.pos)) < o.rad*4 || V.len(r) < F.rad*4) continue;    // part of either end
+    const r = V.sub(frel(c), A), t = V.dot(r, u)/L; if (t < 0.18 || t > 0.82) continue;
+    if (V.len(r) < c.rad*1.2 || V.len(V.sub(frel(c), B)) < c.rad*1.2) continue;   // it contains one end of the trip (the Milky Way on a trip inside it)
+    if (V.len(V.sub(c.pos, o.pos)) < o.rad*4 || V.len(V.sub(c.pos, F.pos)) < F.rad*4) continue;    // part of either end
     const perp = V.len(V.sub(r, V.mul(u, t*L))); if (perp > 0.4*L + c.rad) continue;
-    const sc = Math.log10(c.rad/L) - 3*perp/L - 1.5*Math.abs(t - 0.5);
+    // the size it would have on screen as the camera goes by: skip specks and anything that would fill the view
+    const p = passBy(c, A, B, path); if (!p) continue;
+    const ratio = c.rad/p.w; if (PASS.log) PASS.log.push(c.key + ':' + ratio.toFixed(3)); if (ratio < PASS.minR || ratio > PASS.maxR) continue;
+    const sc = -Math.abs(Math.log(ratio/0.15)) - 3*perp/L - 1.5*Math.abs(t - 0.5);
     if (sc > bs){ bs = sc; best = c; }
   }
   return best;
@@ -122,15 +142,8 @@ function scenicWaypoint(o, vp){
 // fly somewhere by way of whatever is worth seeing on the way (lockOn, tours, the scale bar)
 function flyTo(o, vp, onDone){
   const W = scenicWaypoint(o, vp);
-  if (!W){ startFlight(o, vp, onDone); return; }
-  // look at it from beside the route, facing roughly the way we are going
-  const go = V.norm(V.sub(o.pos, W.pos)); let side = V.cross(go, [0, 1, 0]); if (V.len(side) < 0.1) side = V.cross(go, [1, 0, 0]); side = V.norm(side);
-  const dW = V.norm(V.add(V.add(V.mul(go, -0.55), V.mul(side, 0.8)), [0, 0.3, 0])), dl = M3.applyT(W.R0, dW);
-  const vpW = { yaw:Math.atan2(dl[0], dl[2]), pitch:Math.asin(clamp(dl[1], -0.999, 0.999)), dist:viewParams(W, 0).dist*1.25, off:[0, 0, 0], offFn:null };
-  if (o.prog) progReady(o.prog);
-  startFlight(W, vpW, () => { startFlight(o, vp, onDone, { start:true }); flight.via = W; }, { end:true });
-  flight.via = W; flight.dest = o;
-  toast('on the way: ' + W.name);
+  startFlight(o, vp, onDone, W ? { o:W } : null);
+  if (W){ flight.dest = o; toast('passing ' + W.name); }
 }
 function updateFlight(dt){
   const f = flight; f.t += dt;
@@ -141,6 +154,7 @@ function updateFlight(dt){
   // and aiming at a stale point meant closing in on empty space and then jumping to the real object in the last frame
   const Bnow = V.add(frel(f.obj), f.vp.offFn ? f.vp.offFn() : (f.vp.off || [0, 0, 0]));
   const tgt = V.add(f.A, V.mul(V.sub(Bnow, f.A), f.L0 > 0 ? clamp(f.path.u(s)/f.L0, 0, 1) : 1));
+  if (f.pass){ const b = passBump(f.pass, e); tgt[0] += f.pass.bend[0]*b; tgt[1] += f.pass.bend[1]*b; tgt[2] += f.pass.bend[2]*b; }
   const w = x >= 1 ? f.vp.dist : f.path.w(s);
   if (!f.switched && x > 0.5){
     const D = frel(f.obj);
@@ -442,7 +456,7 @@ function pick(cx, cy){
   OBJ.forEach((o, i) => {
     if (o.noPick || o.marker || o.hidden || o.magHide > 0.5) return;
     const pr = projectCSS(o.rel); if (!pr) return;
-    const rpx = o.rad*(o.mag || 1)/(pr.z*tanY)*(viewHcss/2);
+    const rpx = o.rad*magOf(o)/(pr.z*tanY)*(viewHcss/2);
     if (rpx > viewHcss*0.8 || (o.layer < 3 && rpx > 60)) return;
     const d = Math.hypot(cx - pr.x, cy - pr.y);
     if (d < Math.max(rpx*0.8, 26) && pr.z < bz){ bz = pr.z; best = i; }
