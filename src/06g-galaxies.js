@@ -62,12 +62,12 @@ void main(){
       // cloudy structure: the arms are billowing star clouds, not lines; a soft envelope carries a haze of unresolved stars
       float cloud = fbm3(p*vec3(13., 36., 13.) + sd*1.7);
       float haze = m > 0.5 ? pow(0.5 + 0.5*cos(m*psi), 1.3) : 0.;
-      vec3 em = warm*barD*1.2 + mix(old, young, a)*disk*(0.05 + 2.3*a)*(0.35 + 1.3*cloud) + young*disk*haze*cloud*cloud*0.7;
+      vec3 em = warm*barD*1.2 + mix(old, young, a)*disk*(0.16 + 2.9*a)*(0.65 + 0.7*cloud) + young*disk*haze*(0.35 + 0.45*cloud)*0.8;
       // star-forming regions: pink hydrogen clouds strung along the arms
       float knots = smoothstep(0.55, 0.78, noise(p*vec3(34., 60., 34.) + sd)) + 0.6*smoothstep(0.7, 0.9, noise(p*vec3(80., 120., 80.) + sd + 3.));
       em += pink*disk*a*knots*sf*5.5*(0.6 + cloud);
       // dust: lanes on the inner edge of each arm, and feathery spurs crossing it
-      float lane = m > 0.5 ? armPat(psi + 0.22, m)*(0.3 + 1.4*fbm3(p*40. + sd)) + 0.45*a*smoothstep(0.55, 0.8, ridge(p*vec3(26., 60., 26.) + sd)) : fbm3(p*18. + sd)*0.6;
+      float lane = m > 0.5 ? 3.2*pow(0.5 + 0.5*cos(m*(psi + 0.24)), 10.)*(0.75 + 0.5*fbm3(p*30. + sd)) + 0.2*a*smoothstep(0.6, 0.85, ridge(p*vec3(26., 60., 26.) + sd)) : fbm3(p*18. + sd)*0.6;
       float dust = lane*exp(-ay/(H*0.45))*exp(-rho/(Rd*1.6))*smoothstep(bar*0.4, bar*0.9 + 0.03, rho);
       if(ringR > 0.) dust += exp(-pow((rho - ringR)/(ringR*0.08), 2.))*exp(-ay/(H*0.5))*(0.6 + 0.8*fbm3(p*30.))*3.;
       col += T*em*dt*uP4.x;

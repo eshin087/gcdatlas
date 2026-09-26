@@ -132,8 +132,8 @@ void main(){
   if(v.z <= 0.){ gl_Position = vec4(2.,2.,2.,1.); vC = vec3(0.); return; }
   float k = aC.w, b = min(uSB/(v.z*v.z), 3.)*aP.w*uQ0.x;
   vec2 dir = k < 0.5 ? vec2(0.) : (k < 1.5 ? vec2(1.,0.) : (k < 2.5 ? vec2(-1.,0.) : (k < 3.5 ? vec2(0.,1.) : vec2(0.,-1.))));
-  vec2 ndc = vec2(v.x/uTan.x, v.y/uTan.y) + dir*vec2(uTan.y/uTan.x, 1.)*uLen*sqrt(b);
-  gl_Position = vec4(ndc*v.z, 0., v.z);
+  vec2 ndc = v.xy/(uTan*v.z) + dir*vec2(uTan.y/uTan.x, 1.)*uLen*sqrt(b);   // (divided by depth: before 0.7.8 it was not, and spikes landed off-screen or at the centre)
+  gl_Position = vec4(ndc, 0., 1.);   // (w = 1: both ends share one depth, and a w as small as the Sun's distance in light-years is mangled by some GPUs)
   vC = aC.rgb*b*uOut*uVis*(k < 0.5 ? 1.2 : 0.);
 }`;
 // real stars: aP.xyz = position (local units), aP.w = luminosity (flux x distance^2, in the object's units), aC.rgb = colour

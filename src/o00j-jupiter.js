@@ -99,6 +99,7 @@ const jupiter = (() => {
       {dirFn:() => sunSide(o, 0.55, 0.12), k:3, hold:9, drift:0.03},
       {dirFn:() => sunSide(o, 0.3, -0.42), k:1.55, hold:8, drift:0.02},
       {dirFn:() => sunSide(o, 1.3, 0.05), k:40, hold:9, drift:0.003},
+      sunBack('jupiter', 6, 0.27),
     ],
     update(){ const jd = jdNow(); this.offset = planetPos(PLANET_EL.jupiter, jd); this.pos = V.add(this.parent.pos, this.offset); this.rot = bodyFrame(268.056595, 64.495303, 284.95 + 870.536*(jd - 2451545)); },
     setU(pr){ const L = sunDirFrom(this); gl.uniform4f(pr.u.uP1, L[0], L[1], L[2], 0);
