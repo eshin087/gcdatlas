@@ -4,6 +4,14 @@ All notable changes, newest first. Dates are UTC.
 
 ## Unreleased
 
+## 0.7.7 · 2026-09-25
+
+**Fixed**
+- Solar System lock-on: the Sun is now always the largest body, and the planets keep their true order of size (Jupiter, Saturn, Uranus, Neptune, Earth, Venus, Mars, Mercury). Before, Jupiter and Saturn were drawn bigger than the Sun.
+- The Sun is a clear disc at every zoom of the system; its corona and ejections fade while it is enlarged, so they no longer cover the inner planets.
+- The asteroid belt dims as the view widens, so it reads as a faint ring instead of a bright blob in the middle.
+- Planets whose orbits fall inside the enlarged Sun step aside, and the readout names them.
+
 ## 0.7.6 · 2026-09-25
 
 **Fixed**

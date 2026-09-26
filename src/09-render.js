@@ -142,21 +142,27 @@ function drawDrift(){
 }
 // (EXTRAS draw hooks are declared in 04-world.js)
 // ---------------------------------------------------------------- the Solar System, magnified: at the scale of the whole system the Sun and planets would be
-// invisible specks, so while you look at the system itself each is drawn at a readable size on screen (orbits and positions stay true).
-// Picking a planet (or the Sun) brings everything back to true size. The readout says how much each is enlarged.
-// Each body gets a target size on screen, capped so it never reaches a neighbouring orbit (cap in AU: half the gap to the nearest orbit; the Sun stops at 70% of Mercury's).
-const SYSMAG = { k:0, list:[['sun', 0.045, 0.27], ['jupiter', 0.034, 1.84], ['saturn', 0.03, 2.2], ['uranus', 0.024, 4.7], ['neptune', 0.024, 4.7], ['earth', 0.022, 0.14], ['venus', 0.021, 0.14],
-  ['mars', 0.018, 0.26], ['mercury', 0.015, 0.16], ['pluto', 0.01, 4.7]].filter(([k]) => BYKEY[k]).map(([k, f, cap]) => ({ o:BYKEY[k], f, cap:cap*AU_LY })), moons:OBJ.filter(o => o.parent && o.parent !== sun && o.parent.parent === sun && !o.marker && o.key !== 'halo') };
+// invisible specks, so while you look at the system itself they are drawn enlarged (orbits and positions stay true).
+// The Sun is sized first: SUN_F of the screen height, capped at half of Mercury's orbit, but never under SUN_ROWS character rows.
+// Each planet is then drawn at S*(r/rSun)^P, so the Sun is always the largest and every planet keeps its real rank in size
+// (Jupiter > Saturn > Uranus > Neptune > Earth > ...). A planet whose orbit falls inside the enlarged Sun steps aside.
+// Picking a planet (or the Sun) brings everything back to true size. The readout gives the real ratios.
+const SYSMAG = { k:0, SUN_F:0.09, SUN_ROWS:2, P:0.4, list:[['sun', 0.2], ['jupiter', 1.84], ['saturn', 2.2], ['uranus', 4.7], ['neptune', 4.7], ['earth', 0.14], ['venus', 0.14],
+  ['mars', 0.26], ['mercury', 0.16], ['pluto', 4.7]].filter(([k]) => BYKEY[k]).map(([k, cap]) => ({ o:BYKEY[k], cap:cap*AU_LY })), moons:OBJ.filter(o => o.parent && o.parent !== sun && o.parent.parent === sun && !o.marker && o.key !== 'halo') };
+const coreOf = o => o.solid ? o.rad*o.solid : o.rad;
 function updateSysMag(dt){
   const fo = flight ? flight.obj : OBJ[tour.on ? tour.obj : orbit.lock];
   const dSun = V.len(sun.rel)*(1/AU_LY);
   const want = fo === BYKEY.solarsystem || (!fo && dSun > 1 && dSun < 2000) ? smooth(0.6, 2.5, dSun)*(1 - smooth(1500, 20000, dSun)) : 0;
   SYSMAG.k += (want - SYSMAG.k)*(1 - Math.exp(-dt*2.2));
   const k = SYSMAG.k < 0.002 ? 0 : SYSMAG.k;
+  const H = 2*tanY*Math.max(sun.dist, 1e-30), sunCore = coreOf(sun);   // screen height, in light-years, at the Sun's distance
+  const S = Math.min(SYSMAG.SUN_F*H, Math.max(SYSMAG.list[0].cap, SYSMAG.SUN_ROWS*H/rows));
   for (const e of SYSMAG.list){
-    const o = e.o, core = o.solid ? o.rad*o.solid : o.rad, want = Math.min(e.f*2*tanY*Math.max(o.dist, 1e-30), e.cap);   // the body's disc as a fraction of the screen height
-    o.mag = 1 + Math.max(want/core - 1, 0)*k;
+    const o = e.o, core = coreOf(o), size = o === sun ? S : Math.min(S*Math.pow(core/sunCore, SYSMAG.P), e.cap);
+    o.mag = 1 + Math.max(size/core - 1, 0)*k;
     o.outBoost = o === sun ? 0 : 1 + 2.2*k;   // lit by a Sun that is also in frame, a small planet would look dark: brighten it while enlarged
+    if (o !== sun) o.magHide = (1 - smooth(1.0, 1.3, V.len(V.sub(o.rel, sun.rel))/(S + size)))*k;
   }
   // moons would sit inside their enlarged planets: they step aside until the planets shrink back
   for (const m of SYSMAG.moons) m.magHide = k;

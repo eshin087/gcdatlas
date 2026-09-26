@@ -27,13 +27,14 @@ This file carries the context of the chat sessions that built gcdatlas (v0.1 to 
 | Menus | Menu text has its own size (default 115%) on top of the page text size. |
 | Navigation | Arrows beside the name = camera angles. Top-right arrows = tour stops on a tour, otherwise the scale-bar markers. Every lock-on loops its angles. |
 | Travel | Default speed slow for new visitors; the chosen speed always wins (also with reduced motion); long trips pass a real object on the way (`flyTo` / `scenicWaypoint`). |
-| Solar System | Sun and planets enlarged in the overview (`SYSMAG`), true size close up; the readout says so. |
+| Solar System | Sun and planets enlarged in the overview (`SYSMAG`), true size close up; the readout says so. Since 0.7.7 the Sun is always the largest and planets keep their true order of size (size = Sun x ratio^0.4); a version where Jupiter outgrew the Sun was reported as wrong by the owner. |
 | Social features | Planned only, behind the `social` flag (off). Design in `docs/ROADMAP.md`. |
 | Music | Generative "gcd radio": rotating mix of lofi, chill house and ambient. |
 
 ## Current state (2026-09-25)
 
-- **Live: v0.7.5** (PR #3 merged, commit `7855d40`). The local folder is on `main`, in sync with GitHub, with no leftover branches or uncommitted changes. The next version is **v0.7.6**.
+- Work moved to Claude Code on 2026-09-25: PR #4 (this handoff), #5 (v0.7.6, music starts right away), then v0.7.7 (Solar System sizes). `package.json` and `docs/CHANGELOG.md` hold the current version.
+- The owner reviews every PR on its Vercel preview URL before it is merged: always give that link.
 - Every version so far is a merged PR (#1 = 0.7.3, #2 = 0.7.4, #3 = 0.7.5), so any of them can be reverted.
 - Nothing is half-done. The open ideas are listed under *Open items and ideas* below.
 
