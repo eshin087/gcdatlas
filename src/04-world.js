@@ -135,30 +135,6 @@ void main(){
   gl_Position = vec4(ndc, 0., 1.);   // (w = 1: both ends share one depth, and a w as small as the Sun's distance in light-years is mangled by some GPUs)
   vC = aC.rgb*b*uOut*uVis*(k < 0.5 ? 1.2 : 0.);
 }`;
-// a starburst for a blinding point of light (the Sun seen from a planet): many fine rays of different lengths around uRel, each
-// twinkling on its own, slowly turning, fading from the centre to the tip. aP.x = ray index, aC.w = 0 at the centre, 1 at the tip.
-// uQ0: x brightness, y longest ray (fraction of the half screen height), z seed
-const VS_BURST = `#version 300 es
-layout(location=0) in vec4 aP; layout(location=1) in vec4 aC;
-uniform mat3 uCamRot; uniform vec2 uTan; uniform vec3 uRel; uniform float uVis; uniform float uOut; uniform float uT; uniform vec4 uQ0;
-out vec3 vC;
-void main(){
-  vec3 v = uRel*uCamRot;
-  if(v.z <= 0.){ gl_Position = vec4(2.,2.,2.,1.); vC = vec3(0.); return; }
-  float i = aP.x, tip = aC.w;
-  float h1 = fract(sin(i*12.9898 + uQ0.z)*43758.5453), h2 = fract(sin(i*78.233 + uQ0.z*1.7)*12345.678);
-  float ang = i*2.39996 + uT*0.04 + (h1 - 0.5)*0.35;
-  float tw = 0.5 + 0.5*sin(uT*(1.1 + 2.3*h2) + h1*6.2831);
-  float len = uQ0.y*(0.2 + 0.8*h2*h2)*(0.65 + 0.35*tw);
-  vec2 ndc = v.xy/(uTan*v.z) + tip*vec2(cos(ang)*uTan.y/uTan.x, sin(ang))*len;
-  gl_Position = vec4(ndc, 0., 1.);
-  vC = aC.rgb*uQ0.x*uOut*uVis*(1. - tip)*(0.45 + 0.55*tw)*(0.6 + 0.4*h1);
-}`;
-function makeBurst(n, col){
-  const ps = makePS(n*2);
-  for (let i=0;i<n;i++) for (let e=0;e<2;e++){ ps.a.set([i, 0, 0, 1], (i*2 + e)*4); ps.c.set([col[0], col[1], col[2], e], (i*2 + e)*4); }
-  ps.upload('ac'); return ps;
-}
 // real stars: aP.xyz = position (local units), aP.w = luminosity (flux x distance^2, in the object's units), aC.rgb = colour
 // apparent brightness follows the true inverse-square law, then a perceptual curve so both Sirius and 5th-magnitude stars read
 const VS_CATSTAR = `#version 300 es
@@ -189,7 +165,6 @@ const P = {
   ptBasic: program(particleVS(PB_BASIC), FS_POINT),
   lnBasic: program(particleVS(PB_BASIC), FS_LINE),
   spike: program(VS_SPIKE, FS_LINE),
-  burst: program(VS_BURST, FS_LINE),
   catStar: program(VS_CATSTAR, FS_POINT),
   driftLn: program(VS_DRIFT, FS_LINE),
   driftPt: program(VS_DRIFT, FS_POINT),

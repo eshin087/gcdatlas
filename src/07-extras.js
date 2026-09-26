@@ -331,25 +331,24 @@ const comets = (() => {
 })();
 
 // ---------------------------------------------------------------- the Sun seen from the planets: at its true size it is a small disc there (about 1% of the screen from Earth),
-// so it gets the glare a camera sees looking at it: a soft round glow and a sparkle of fine, short, twinkling rays. It fades as its disc
-// grows large enough to speak for itself, and when a planet or moon moves in front of it (sun.occ, from updateSunOcc).
-// The same sparkle marks Alpha Centauri B seen from beside A (the brightest star in A's sky).
+// so it gets a soft round glare: a tight bright glow hugging the disc and a much fainter, wider halo around it (no rays, so the
+// Sun stays round). It fades as its disc grows large enough to speak for itself, and when a planet or moon moves in front of it
+// (sun.occ, from updateSunOcc). The same glow marks Alpha Centauri B seen from beside A (the brightest star in A's sky).
 const glowPS = makePS(1); glowPS.a.set([0, 0, 0, 1], 0); glowPS.c.set([1, 0.88, 0.68, 0], 0); glowPS.upload('ac');
-const sunBurst = makeBurst(18, [1, 0.9, 0.72]), kBurst = makeBurst(10, [1, 0.8, 0.6]);
-function sparkle(o, a, burst, len, glow){
+function glare(o, a, k){
   if (a < 0.01) return;
-  drawParticles(null, { ps:glowPS, prog:'ptBasic', mode:3, sb:a*glow, size:9, rad:1, rel:() => o.rel, rot:() => I3 });
-  drawParticles(o, { ps:burst, prog:'burst', lines:true, mode:3, sb:1, size:1, rad:1, rel:() => o.rel, q0:() => [a*6, len, o.index, 0] });
+  drawParticles(null, { ps:glowPS, prog:'ptBasic', mode:3, sb:a*1.8, size:9*k, rad:1, rel:() => o.rel, rot:() => I3 });
+  drawParticles(null, { ps:glowPS, prog:'ptBasic', mode:3, sb:a*0.42, size:34*k, rad:1, rel:() => o.rel, rot:() => I3 });
 }
 EXTRAS.push(() => {
   if (SKYV.on) return;
   const S = sun, d = S.dist;
   if (!S.hidden && d > 0 && V.dot(S.rel, cam.fwd) > 0){
     const rpxS = coreOf(S)*magOf(S)/d*(sceneH*0.5/tanY);
-    sparkle(S, (1 - smooth(12, 45, rpxS))*(1 - smooth(60*AU_LY, 600*AU_LY, d))*(1 - SYSMAG.k)*(S.occ ?? 1), sunBurst, 0.14, 2.2);
+    glare(S, (1 - smooth(12, 45, rpxS))*(1 - smooth(60*AU_LY, 600*AU_LY, d))*(1 - SYSMAG.k)*(S.occ ?? 1), 1);
   }
   const B = alphaCenB;
-  if (orbit.lock === alphaCen.index && B.dist > 0 && V.dot(B.rel, cam.fwd) > 0 && B.dist < 60*AU_LY) sparkle(B, 0.75*(1 - smooth(8, 30, B.rpx || 0)), kBurst, 0.06, 1.4);
+  if (orbit.lock === alphaCen.index && B.dist > 0 && V.dot(B.rel, cam.fwd) > 0 && B.dist < 60*AU_LY) glare(B, 0.8*(1 - smooth(8, 30, B.rpx || 0)), 0.7);
 });
 
 // ---------------------------------------------------------------- meteors burning up in Earth's atmosphere, and distant gamma-ray bursts

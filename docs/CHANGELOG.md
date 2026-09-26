@@ -7,7 +7,7 @@ All notable changes, newest first. Dates are UTC.
 ## 0.7.8 · 2026-09-26
 
 **New**
-- Every planet has an angle from its night side looking back at the Sun, which sits just past the planet's edge at its true size, with a soft glow and a sparkle of short, twinkling rays. The glare hides when a planet or moon passes in front of the Sun.
+- Every planet has an angle from its night side looking back at the Sun, which sits just past the planet's edge at its true size, with a soft round glow: a bright core and a faint wider halo, no rays. The glare hides when a planet or moon passes in front of the Sun.
 - The Solar System view zooms in much closer, until the Sun fills the screen (2.7 Sun radii from its centre); its corona returns as it nears true size.
 - Betelgeuse up close: a boiling surface of dark lanes, granules and bright filaments inside its giant convection cells. Its dusty plumes now drift outward and fray, and fade out before the edge (no more ring-like boundary).
 - Alpha Centauri's third angle looks past A at B, the brightest star in its sky, and follows B along its orbit.
