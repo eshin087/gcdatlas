@@ -4,6 +4,17 @@ All notable changes, newest first. Dates are UTC.
 
 ## Unreleased
 
+## 0.8.1 · 2026-09-26
+
+**New**
+- Comets and meteors, with their own atlas category (Halley's Comet and 'Oumuamua moved there too):
+  - Comets Hale-Bopp (1997), NEOWISE (2020), Tsuchinshan-ATLAS (2024), the interstellar comet 3I/ATLAS (2025) and Rosetta's rubber-duck comet 67P, each on its real orbit at the moment it was at its best (the readout gives the date and where it is now). Each has a nucleus with jets, a glowing coma, a straight blue ion tail and a curved dust tail that point away from the Sun; seen from Earth's direction, Tsuchinshan-ATLAS shows its anti-tail.
+  - Comet Shoemaker-Levy 9 hitting Jupiter in July 1994, replayed: the string of fragments falling in, plumes rising 3,000 km over the limb, and dark scars about the size of Earth turning into view.
+  - The Kreutz sungrazers: a family of small comets diving through the Sun's corona on real parabolic orbits, replayed 15,000 times faster; most boil away.
+  - The Perseids and the Leonids: the dust of Comets Swift-Tuttle and Tempel-Tuttle spread along their real orbits, flowing across Earth's path where the showers happen. The readout counts the days until Earth gets there.
+- A new tour, *comets & meteors*.
+- Now and then on a tour (about one trip in three) a comet or a meteor zips past the camera on the way to the next stop: a short streak with a glowing head and a fading tail, away from the middle of the screen. Flights are unchanged.
+
 ## 0.7.9 · 2026-09-26
 
 **New**

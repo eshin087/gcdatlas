@@ -22,6 +22,15 @@ Status: `planned`, `in progress`, `done` (then it appears in CATALOG.md and can 
 | Vesta | Rheasilvia impact basin with its central peak |
 | Bennu | rubble-pile asteroid sampled by OSIRIS-REx |
 
+### Comets and meteors · first pack done in 0.8.1 (`src/objects/p6-comets.js`), more planned
+| Object | Notes |
+| --- | --- |
+| 2I/Borisov | the second interstellar object (2019), a clearly active comet |
+| Tempel 1 and Wild 2 | Deep Impact's crater (2005) and Stardust's sample (2004) |
+| Comet Lovejoy (C/2011 W3) | the Kreutz sungrazer that survived the Sun, then broke up |
+| Geminids and 3200 Phaethon | a meteor shower from an asteroid-like parent |
+| Orionids and Eta Aquariids | the two showers from Halley's Comet (its orbit is already drawn) |
+
 ### Human spaceflight · planned
 | Object | Notes |
 | --- | --- |

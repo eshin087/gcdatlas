@@ -89,6 +89,19 @@ const TOURS = [
     ['elgordo', 'El Gordo, "the fat one": two of the heaviest galaxy clusters known, colliding.'],
     ['bullet', 'Another cluster collision, where the dark matter and the gas came apart: the clearest evidence that dark matter is real.'],
   ] },
+  { id:'comets', name:'comets & meteors', blurb:'dirty snowballs, their tails and their dust', stops:[
+    ['halley', 'The most famous comet swings past the Sun every 76 years. It was last here in 1986 and returns in 2061.'],
+    ['halebopp', 'Hale-Bopp, the great comet of 1997, stayed visible to the naked eye for about 18 months. Its tails point away from the Sun.'],
+    ['neowise', 'Comet NEOWISE lit up the summer of 2020 with a long, curved tail of dust.'],
+    ['tsuchinshan', 'In October 2024 Earth crossed the plane of this comet\'s orbit, and its dust showed as a spike pointing toward the Sun.'],
+    ['67p', 'Up close a comet is a dark, crumbly lump of ice and dust. ESA\'s Rosetta orbited this one for two years.'],
+    ['sl9', 'In July 1994 the pieces of Comet Shoemaker-Levy 9 hit Jupiter, one after another, leaving dark scars the size of Earth.'],
+    ['kreutz', 'Some comets dive straight through the Sun\'s corona. Most of these sungrazers boil away.'],
+    ['perseids', 'Comets leave dust along their orbits. Every August Earth runs through the dust of Swift-Tuttle: the Perseid meteors.'],
+    ['leonids', 'Tempel-Tuttle\'s dust makes the Leonids. When Earth hits a fresh trail they become a storm: in 1966, thousands of meteors a minute.'],
+    ['oumuamua', 'Some visitors come from other stars. \'Oumuamua was the first one found, in 2017.'],
+    ['3iatlas', '3I/ATLAS, found in 2025, was the third. It passed the Sun and is heading back to interstellar space.'],
+  ] },
 ];
 let TOUR_ID = 'grand', TOUR_CAP = {};
 function tourStops(id){ const t = TOURS.find(t => t.id === id) || TOURS[0]; return t.stops.filter(([k]) => BYKEY[k] && !BYKEY[k].marker).map(([k, cap]) => ({ i:BYKEY[k].index, cap })); }

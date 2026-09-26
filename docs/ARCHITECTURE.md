@@ -45,7 +45,7 @@ The glyph atlas is built from printable ASCII in the page font at the current ce
 
 ```js
 addObj({
-  key:'crab', name:'Crab Nebula', label:'Crab', type:'supernova remnant · M1', group:'nebulae',  // group: solar, stars, nebulae, galaxies, cosmic, travel
+  key:'crab', name:'Crab Nebula', label:'Crab', type:'supernova remnant · M1', group:'nebulae',  // group: solar, comets, stars, nebulae, galaxies, cosmic, travel
   fact:'One or two true sentences a visitor reads.',
   pos:radec(hms(5,34,31.9), dms(22,0,52), 6500), rad:5.5, R0:facingEarth(pos, [0,0,1], 0),
   prog:program(VS_RECT, FS_MY_SHADER),           // optional volume shader
@@ -60,7 +60,9 @@ addObj({
 
 Views: `d` direction in the object frame, `k` distance in bounding radii, `off` look-at offset, `hold` seconds, `drift` orbit speed. A view with `to:{...}` is a camera move (flyby) played over its hold; `offW:'dist'` keeps the subject in frame on long pull-backs.
 
-Helpers: `addStar`, `namedStar`, `addBody` (planets and moons with IAU rotation), `addGalaxy` (parametric spiral/elliptical/ring), `addProbe` (spacecraft models), `addMarker` (labels only), `clusterPS`, `makeSpikes`, `orbitLine`.
+Helpers: `addStar`, `namedStar`, `addBody` (planets and moons with IAU rotation), `addGalaxy` (parametric spiral/elliptical/ring), `addProbe` (spacecraft models), `addMarker` (labels only), `clusterPS`, `makeSpikes`, `orbitLine`, `addComet` and `addShower` (`src/objects/p6-comets.js`).
+
+Objects that stand for a past moment or a replay (the comets frozen at their best, Shoemaker-Levy 9, the Kreutz sungrazers) only show while you visit them: `presence(o, [...])` eases `o.present` toward 1 when the camera is about the object, and `inRange` hides it otherwise. Such an object can give `distNow()` (light-years from Earth today), which the atlas and the catalogue use instead of its drawn position.
 
 ## 6. Camera, flights, tours
 
