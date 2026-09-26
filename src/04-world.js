@@ -15,12 +15,13 @@ const SET = (() => {
   return d;
 })();
 // feature flags: experiments can ship switched off, or be switched off without touching the code that uses them.
-// Override per visitor with ?flags=name,-other in the URL (remembered) or localStorage 'gcdatlas.flags'. See docs/FEATURE_FLAGS.md.
+// Override per visitor with ?flags=name,-other in the URL (for that visit only) or localStorage 'gcdatlas.flags'. See docs/FEATURE_FLAGS.md.
+// (a link someone else shares must not change your settings for good, so URL flags are not saved; only known flag names count)
 const FLAGS = (() => {
   const f = { live:true, launches:true, planes:true, backyard:true, earthStory:true, social:false };
-  try { Object.assign(f, JSON.parse(localStorage.getItem('gcdatlas.flags') || '{}')); } catch (e) {}
+  try { const saved = JSON.parse(localStorage.getItem('gcdatlas.flags') || '{}'); for (const k of Object.keys(f)) if (typeof saved[k] === 'boolean') f[k] = saved[k]; } catch (e) {}
   const q = new URLSearchParams(location.search).get('flags');
-  if (q){ for (const s of q.split(',')){ const k = s.replace(/^[-+]/, ''); if (k in f) f[k] = !s.startsWith('-'); } try { localStorage.setItem('gcdatlas.flags', JSON.stringify(f)); } catch (e) {} }
+  if (q){ for (const s of q.split(',')){ const k = s.replace(/^[-+]/, ''); if (Object.hasOwn(f, k)) f[k] = !s.startsWith('-'); } }
   return f;
 })();
 // shared state for two special modes: looking up from your own backyard, and Earth's story through deep time
@@ -170,7 +171,7 @@ const P = {
   driftPt: program(VS_DRIFT, FS_POINT),
 };
 const R0of = (rx, ry, rz) => M3.mul(M3.rotY(ry), M3.mul(M3.rotX(rx), M3.rotZ(rz)));
-const OBJ = [], BYKEY = {};
+const OBJ = [], BYKEY = Object.create(null);   // (no prototype: a share link with #o=constructor or __proto__ must not find anything)
 // layer: 0 universe, 1 large-scale context, 2 galaxy context, 3 objects (drawn in that order, far to near within a layer)
 function addObj(o){
   o.R0 = o.R0 || R0of(...(o.tilt || [0,0,0])); o.rot = o.rot || o.R0; o.t = 0; o.particles = o.particles || [];

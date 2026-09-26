@@ -4,6 +4,12 @@ All notable changes, newest first. Dates are UTC.
 
 ## Unreleased
 
+**Security**
+- The API functions refuse query strings (they bypassed the edge cache and made every request hit CelesTrak or Launch Library), keep their last good answer, share one upstream fetch, and no longer echo upstream error text.
+- A crafted share link (`#o=constructor`, `#o=__proto__`, or a non-numeric date or camera) could stop the page from starting. Links are now checked.
+- `?flags=` in a link applies to that visit only; it is no longer saved in the visitor's browser.
+- `.gitignore` covers `.env` files and `.vercel/`; dev dependency sharp updated to 0.35 (security advisory in its image libraries; it never ships to visitors).
+
 ## 0.7.8 · 2026-09-26
 
 **New**
