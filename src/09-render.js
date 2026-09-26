@@ -959,14 +959,16 @@ function updateHash(dt){
 function applyHash(){
   let p; try { p = new URLSearchParams(location.hash.slice(1)); } catch (e) { return false; }
   const o = BYKEY[p.get('o')]; if (!o || o.marker) return false;
-  if (p.get('jd')) ssDays = +p.get('jd') - JD_NOW;
-  if (p.get('deep')) setDeep(clamp(+p.get('deep'), -200, 200));
+  // (values from a link are checked: anything that is not a sensible number is ignored)
+  const jd = +p.get('jd'), deep = +p.get('deep');
+  if (p.get('jd') && isFinite(jd)) ssDays = clamp(jd, JD_NOW - 4e6, JD_NOW + 4e6) - JD_NOW;
+  if (p.get('deep') && isFinite(deep)) setDeep(clamp(deep, -200, 200));
   if (p.get('tour')){ useTour(p.get('tour')); if (TOUR.includes(o.index)){ tour.on = true; tourGo(o.index, true); return true; } }
   tour.on = false;
   const c = (p.get('c') || '').split(',').map(Number);
   const vp = viewParams(o, 0);
   cam.focus = o.index; orbit.lock = o.index; orbit.frame = o.R0; orbit.off = [0, 0, 0]; orbit.offFn = null;
-  if (c.length === 3 && c.every(isFinite)){ orbit.yaw = c[0]; orbit.pitch = c[1]; orbit.dist = orbit.distT = Math.max(c[2]*o.rad, o.rad*o.minZoom); }
+  if (c.length === 3 && c.every(isFinite) && c[2] > 0){ orbit.yaw = c[0]; orbit.pitch = clamp(c[1], -1.55, 1.55); orbit.dist = orbit.distT = clamp(c[2]*o.rad, o.rad*o.minZoom, MAX_DIST); }
   else { orbit.yaw = vp.yaw; orbit.pitch = vp.pitch; orbit.dist = orbit.distT = vp.dist; }
   orbit.target = frel(o); setInfo(o.index); applyOrbit();
   const vs = BYKEY[p.get('vs')]; if (vs && !vs.marker) startCompare(o.index, vs.index);
