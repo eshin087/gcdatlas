@@ -29,9 +29,15 @@ function orbitAround(host, a, P, incl = 0, phase = 0){ return function(){ const 
 // ---------------------------------------------------------------- the nearest stars
 const alphaCen = namedStar('alphacen', 'Alpha Centauri', hms(14,39,36.5), dms(-60,50,2), 4.37, 1.2234, 5790, { label:'α Centauri A',
   type:'nearest Sun-like star · a triple system', fact:'Two Sun-like stars circle each other every 80 years, 4.37 light-years away. The red dwarf Proxima, the closest star of all, orbits them far out.',
-  star:{ cells:38, act:0.35 }, bound:40, farLum:0.9, labelRange:600, aka:'rigil kentaurus alpha centauri a',
-  views:[{d:[0.35, 0.3, 1], k:0.3, hold:9, drift:0.03}, {d:[0.2, 0.3, 1], k:0.07, hold:8, drift:0.04}, {d:[0.5, 0.8, 0.3], k:180, hold:9, drift:0.02}],
+  star:{ cells:38, act:0.35 }, bound:40, farLum:1.3, noImpostor:false, labelRange:600, aka:'rigil kentaurus alpha centauri a',
+  views:[{d:[0.35, 0.3, 1], k:0.3, hold:9, drift:0.03}, {d:[0.2, 0.3, 1], k:0.07, hold:8, drift:0.04}, {d:[0.35, 0.9, 0.25], k:300, hold:9, drift:0.02}],
   readout:() => 'A and B are 11 to 35 AU apart (like Saturn to Neptune)\nfrom here our Sun is a bright star in Cassiopeia' });
+// B's orbit around A, drawn when zoomed out far enough to see both stars as points (the third angle)
+{ const n = 180, ps = makePS(n*2), inc = 0.3;
+  for (let i=0;i<n;i++) for (let k=0;k<2;k++){ const th = (i + k)/n*Math.PI*2; ps.a.set([Math.cos(th), Math.sin(th)*Math.sin(inc), -Math.sin(th)*Math.cos(inc), 1], (i*2 + k)*4); ps.c.set([1, 0.82, 0.55, 0], (i*2 + k)*4); }
+  ps.upload('ac');
+  alphaCen.particleVis = () => 1;
+  alphaCen.particles.push({ ps, prog:'lnBasic', lines:true, mode:3, sb:0.35, size:1, rad:23.5*AU_LY, rot:() => alphaCen.R0, vis:() => smooth(3*AU_LY, 15*AU_LY, orbit.dist)*(1 - smooth(3000*AU_LY, 20000*AU_LY, orbit.dist)) }); }
 const alphaCenB = addStar({ key:'alphacenb', name:'Alpha Centauri B', label:'α Cen B', parent:alphaCen, offset:[0, 0, 0], R:0.8632, T:5260, star:{ cells:36, act:0.5 }, atlas:false, labelRange:0.05, labelMin:1e-5, noImpostor:false, farLum:0.8,
   update:orbitAround(alphaCen, 23.5*AU_LY, 70, 0.3, 1), fact:'The smaller, oranger partner of Alpha Centauri A.', type:'K1 dwarf star', readout:() => '0.9 solar masses · 5,260 K' });
 const proxima = namedStar('proxima', 'Proxima Centauri', hms(14,29,43), dms(-62,40,46), 4.2465, 0.1542, 3042, { type:'red dwarf · the closest star to the Sun',

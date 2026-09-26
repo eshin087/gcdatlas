@@ -4,6 +4,24 @@ All notable changes, newest first. Dates are UTC.
 
 ## Unreleased
 
+## 0.7.8 · 2026-09-26
+
+**New**
+- Every planet has an angle from its night side looking back at the Sun, which sits just past the planet's edge at its true size, with a bright glare and diffraction spikes. The glare hides when a planet or moon passes in front of the Sun.
+- The Solar System view zooms in much closer, until the Sun fills the screen (2.7 Sun radii from its centre); its corona returns as it nears true size.
+- Betelgeuse up close: a boiling surface of dark lanes, granules and bright filaments inside its giant convection cells.
+- Alpha Centauri's third angle shows B's orbit around A and both stars as points.
+
+**Improved**
+- Galaxies: brighter, more continuous spiral arms, a soft glow between them and thin dust lanes on the inner edge of each arm.
+- Faint glow and haze no longer flicker: dim areas use a steady, even pattern of characters instead of random dots that reshuffle.
+- Riding the Halo: the ship shows as an engine glint from afar and fades in gradually as you fly up behind it, with a slower final glide.
+- Labels never sit on the object you are looking at (locked on or free flight): no more Sgr A* text across the Galactic Centre.
+
+**Fixed**
+- Star spikes (bright nebula stars, supernova flashes, gamma-ray bursts, Eta Carinae) were never drawn: their shader did not divide by distance, so they landed off-screen. They show now.
+- Betelgeuse's scale rings are gone (they distracted from the star).
+
 ## 0.7.7 · 2026-09-25
 
 **Fixed**

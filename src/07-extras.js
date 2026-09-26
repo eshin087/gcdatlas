@@ -166,7 +166,8 @@ const ship = (() => {
   const S = { state:'observe', t:0, T:26, target:null, basis:null, th0:0, dir:1, spool:0, visits:0, fromFold:null };
   const o = addObj({ key:'halo', name:'the Halo', label:'Halo', labelClass:'ship', type:'long-range cruiser · a wandering starship that folds space', group:'travel', sortKey:0, layer:3,
     fact:'A long-range cruiser from a civilisation that learned to fold space. Its heart, seen through an open reactor bay mid-ship, is a captured sliver of star plasma held in spinning containment rings; when it surges, arcs leap across the bay. It hops between the wonders of the universe for a look. (It is the only made-up thing in this atlas.)',
-    pos:[0, 0, 0], rad:RAD, prog:P.ship, minZoom:1.2, pxMin:3, noImpostor:true, labelRange:1, selfPos:true, aka:'ship starship spaceship ring halo follow',
+    // (seen from afar it is an engine glint; its hull fades in over a wide range of sizes, so flying up to it never pops it into view)
+    pos:[0, 0, 0], rad:RAD, prog:P.ship, minZoom:1.2, pxMin:3, visFn:rpx => smooth(1.5, 12, rpx), noImpostor:false, farColor:[0.55, 0.8, 1], farLum:0.7, labelRange:1, selfPos:true, aka:'ship starship spaceship ring halo follow',
     views:[{d:[-0.72, 0.3, 0.62], k:2.4, hold:10, drift:0.05}, {d:[-0.32, -0.9, 0.25], k:2.1, hold:9, drift:0.03}, {d:[0.8, 0.12, 0.55], k:3.4, hold:8, drift:0.04}],
     setU(pr){ const L = S.target ? V.norm(V.sub(sun.rel, this.rel)) : [0, 1, 0]; gl.uniform4f(pr.u.uP0, S.spool, 0, 0, this.t*0.15); gl.uniform4f(pr.u.uP1, L[0], L[1], L[2], 0); },
     readout:() => S.state === 'spool' ? 'fold drive spooling up · space ahead is about to fold' :
@@ -323,6 +324,21 @@ const comets = (() => {
   o.list = list;
   return o;
 })();
+
+// ---------------------------------------------------------------- the Sun seen from the planets: at its true size it is a small disc there (about 1% of the screen from Earth),
+// so it gets the glare a camera sees looking at it: a hot core, a soft halo and spikes. It fades as its disc grows large enough to speak for itself,
+// and when a planet or moon moves in front of it (sun.occ, from updateSunOcc)
+const sunGlarePS = makePS(1), sunSpikes = makeSpikes([{ p:[0, 0, 0], w:1.5, c:[1, 0.93, 0.8] }]);
+sunGlarePS.a.set([0, 0, 0, 1], 0); sunGlarePS.c.set([1, 0.88, 0.68, 0], 0); sunGlarePS.upload('ac');
+EXTRAS.push(() => {
+  const S = sun, d = S.dist;
+  if (S.hidden || SKYV.on || !(d > 0) || V.dot(S.rel, cam.fwd) <= 0) return;
+  const rpxS = coreOf(S)*magOf(S)/d*(sceneH*0.5/tanY);
+  const a = (1 - smooth(12, 45, rpxS))*(1 - smooth(60*AU_LY, 600*AU_LY, d))*(1 - SYSMAG.k)*(S.occ ?? 1);
+  if (a < 0.01) return;
+  drawParticles(null, { ps:sunGlarePS, prog:'ptBasic', mode:3, sb:a*2.4, size:10, rad:1, rel:() => S.rel, rot:() => I3 });
+  drawParticles(null, { ps:sunSpikes, prog:'spike', lines:true, mode:1, sb:1, size:1, len:0.075, rad:1, rel:() => S.rel, rot:() => I3, q0:() => [a*1.7, 0, 0, 0] });
+});
 
 // ---------------------------------------------------------------- meteors burning up in Earth's atmosphere, and distant gamma-ray bursts
 const meteorPS = makePS(12), grbPS = makePS(1), grbSp = makeSpikes([{ p:[0, 0, 0], w:1, c:[0.85, 0.9, 1] }]);

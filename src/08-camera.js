@@ -67,7 +67,7 @@ function slerpDir(a, b, t){
   const s = Math.sin(th);
   return V.add(V.mul(a, Math.sin((1 - t)*th)/s), V.mul(b, Math.sin(t*th)/s));
 }
-function startFlight(o, vp, onDone, via){
+function startFlight(o, vp, onDone, via, glide){
   const A = orbit.target.slice(), w0 = Math.max(V.len(V.sub(cam.rel, A)), 1e-30);
   const B = V.add(frel(o), vp.off || [0,0,0]), w1 = vp.dist;
   const path = vwPath(V.len(V.sub(B, A)), w0, w1, 1.3);
@@ -83,12 +83,14 @@ function startFlight(o, vp, onDone, via){
   // (the floor falls from 0.15 at departure to 0.025 on arrival: the camera glides in and settles, rather than arriving at speed and stopping dead)
   // (passing an object on the way, the camera eases off a little as it goes by, but never stops)
   const f0 = 0.15, f1 = 0.025;
-  for (let i=1;i<=64;i++){ const x = (i - 0.5)/64, ease = Math.sin(Math.PI*x)*0.85 + f0*(1 - x) + f1*x, hover = (scenic ? 1 - 0.8*Math.exp(-Math.pow((x - sPeak)/0.07, 2)) : 1)*(pass ? 1 - 0.4*Math.exp(-Math.pow((x - pass.e)/0.08, 2)) : 1); acc += 1/(ease*hover); tbl.push(acc); }
+  // (glide: a long, slow final approach, used to come up behind the Halo)
+  for (let i=1;i<=64;i++){ const x = (i - 0.5)/64, ease = (Math.sin(Math.PI*x)*0.85 + f0*(1 - x) + f1*x)*(glide ? 1 - 0.55*smooth(0.6, 1, x) : 1), hover = (scenic ? 1 - 0.8*Math.exp(-Math.pow((x - sPeak)/0.07, 2)) : 1)*(pass ? 1 - 0.4*Math.exp(-Math.pow((x - pass.e)/0.08, 2)) : 1); acc += 1/(ease*hover); tbl.push(acc); }
   const prog = tbl.map(v => v/acc);   // prog[i] = time fraction at which s/S = i/64
   // travel speed: cinematic (slow and scenic), quick (default), warp (near-instant, same path and effects compressed)
   // (the speed you pick always wins, also on computers that ask for reduced motion; changing it mid-flight re-times the rest of the trip)
   const durs = { cinematic:clamp(1.6 + path.S*0.42, 2.4, 13) + (scenic ? 3 : 0), quick:clamp(1.3 + path.S*0.2, 1.8, 6.5) + (scenic ? 1.4 : 0), warp:clamp(0.85 + path.S*0.03, 0.95, 1.6) };
   if (pass) for (const k in durs) if (k !== 'warp') durs[k] += 1.2;
+  if (glide) for (const k in durs) if (k !== 'warp') durs[k] += 2.5;
   const dur = durs[SET.travel] || durs.quick;
   shipCam.on = shipCam.pending = false;   // any flight takes the camera off the ship (riding along starts again when its own flight lands)
   // start compiling the destination's shaders now, so it is ready to draw on arrival
@@ -254,7 +256,7 @@ function startShipCam(mode){
   // fly in first, landing exactly on the chase pose, then take over
   const p = shipPose('chase'), dl = M3.applyT(ship.R0, V.norm(V.sub(p.eye, p.look)));
   const vp = { yaw:Math.atan2(dl[0], dl[2]), pitch:Math.asin(clamp(dl[1], -0.999, 0.999)), dist:V.len(V.sub(p.eye, p.look)), off:p.look, offFn:null, up:p.up };
-  startFlight(ship, vp, () => { shipCam.on = true; shipCam.pending = false; shipCamSnap(shipPose('chase')); updateShipCam(0); updateModeUI(); });
+  startFlight(ship, vp, () => { shipCam.on = true; shipCam.pending = false; shipCamSnap(shipPose('chase')); updateShipCam(0); updateModeUI(); }, null, true);
   shipCam.pending = true;
   updateModeUI();
 }

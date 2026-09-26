@@ -107,6 +107,7 @@ const saturn = (() => {
       {dirFn:() => sunSide(o, 0.45, 0.28), k:2.1, hold:8, drift:0.04},
       {d:[0.25, 0.07, -1], k:0.05, off:[0.6, 0, 0.3], hold:8, drift:0.004},
       {dirFn:() => sunSide(o, 2.9, 0.3), k:2.7, hold:7, drift:0.02},
+      sunBack('saturn', 5, 0.34),
     ],
     update(){ const jd = jdNow(); this.offset = planetPos(PLANET_EL.saturn, jd); this.pos = V.add(this.parent.pos, this.offset); this.rot = bodyFrame(40.589, 83.537, 38.90 + 810.7939024*(jd - 2451545)); },
     setU(pr){ const L = sunDirFrom(this); gl.uniform4f(pr.u.uP1, L[0], L[1], L[2], 0); },

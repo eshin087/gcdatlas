@@ -179,7 +179,8 @@ const sun = (() => {
     setU(pr){
       gl.uniform4f(pr.u.uP0, 5772, 40, 0.75, 0.22);
       // enlarged in the Solar System overview, the corona and ejections would grow over the inner planets: they fade out instead
-      const kc = 1 - (typeof SYSMAG !== 'undefined' ? SYSMAG.k : 0);
+      // (zoomed in close it is nearly true size again, and the corona comes back)
+      const kc = 1 - (typeof SYSMAG !== 'undefined' ? SYSMAG.k*smooth(1.3, 3, this.mag || 1) : 0);
       gl.uniform4f(pr.u.uP1, 1/bound, 0, kc, kc);
       gl.uniform4f(pr.u.uP2, st.flareDir[0], st.flareDir[1], st.flareDir[2], st.flare);
       gl.uniform4f(pr.u.uP3, st.cmeDir[0], st.cmeDir[1], st.cmeDir[2], kc > 0.05 ? st.cme : 0);
@@ -363,10 +364,15 @@ function addBody(def){
       const sh = def.shadowOf;
       if (sh){ const c = M3.applyT(this.rot, V.mul(V.sub(sh.rel, this.rel), 1/this.rad)); gl.uniform4f(pr.u.uP2, c[0], c[1], c[2], sh.rad*(sh.bodyFrac || 0.9)/this.rad); }
       else gl.uniform4f(pr.u.uP2, 0, 0, 0, 0); } }, def));
+  if (def.el && !def.noSunView) o.views = [...o.views, sunBack(o)];
   o.update(0);
   return o;
 }
 // a view direction (in the body's R0 frame) that shows the sunlit side: `ang` radians around from the Sun, `up` elevation
+// a view from a planet's night side looking back at the Sun, which sits just beyond the planet's edge (true size, with its glare)
+// k: distance in planet radii (the planet's disc then spans about asin(0.9/k)); a: how far from the planet's centre the Sun appears (radians)
+// (ref: the object, or its key when the view is written inside the object's own definition)
+const sunBack = (ref, k = 6, a = 0.27) => ({ dirFn:() => sunSide(typeof ref === 'string' ? BYKEY[ref] : ref, Math.PI - a, 0.05), k, hold:9, drift:0.004 });
 function sunSide(o, ang, up){
   const L = M3.applyT(o.R0, o.lightFrom ? V.norm(V.sub(o.lightFrom.pos, o.pos)) : sunDirFrom(o)), Lh = V.norm([L[0], 0, L[2]]);
   const c = Math.cos(ang), s = Math.sin(ang), d = [Lh[0]*c - Lh[2]*s, 0, Lh[0]*s + Lh[2]*c];
@@ -413,7 +419,7 @@ const solarSystem = (() => {
   const beltVis = zoomVis(3e-5, 1.5e-4, 0.03, 0.4);
   const o = addObj({ key:'solarsystem', name:'the Solar System', label:'Solar System', type:'our planetary system · 8 planets, 5 dwarf planets, millions of small bodies', group:'solar', sortKey:-2, layer:2,
     fact:'Planets shown where they are today, on their true orbits. The asteroid belt hides gaps carved by Jupiter; two swarms of Trojans share its orbit.',
-    pos:[0,0,0], rad:50*AU_LY, R0:ECL, minZoom:0.002, pxMin:3, noImpostor:true, labelRange:3e3, farLum:0, distEarth:'you are inside it', atlasDist:'here',
+    pos:[0,0,0], rad:50*AU_LY, R0:ECL, minZoom:0.00025, pxMin:3, noImpostor:true, labelRange:3e3, farLum:0, distEarth:'you are inside it', atlasDist:'here',
     // all eight orbits (Neptune's fills the screen), then out to Saturn, then the inner planets and the asteroid belt from above
     views:[{d:[0.35, 0.62, 1], k:1.0, hold:10, drift:0.025}, {d:[0.3, 0.45, 1], k:0.3, hold:9, drift:0.03}, {d:[0.5, 1, 0.2], k:0.055, hold:9, drift:0.03}],
     particleVis:rpx => smooth(4, 20, rpx),

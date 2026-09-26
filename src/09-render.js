@@ -169,6 +169,23 @@ function updateSysMag(dt){
   for (const m of SYSMAG.moons) m.magHide = k;
 }
 const magOf = o => o.mag || 1;
+// how much of the Sun is not hidden behind a planet or moon, seen from the camera (0 to 1): hides its glow dot and glare during an eclipse
+let sunOccluders = null;
+function updateSunOcc(){
+  sunOccluders = sunOccluders || OBJ.filter(o => o.group === 'solar' && o.solid && o !== sun && o.prog && !o.marker);
+  const d = sun.dist; let vis = 1;
+  if (d > 0 && d < 2000*AU_LY){
+    const u = V.mul(sun.rel, 1/d), rS = coreOf(sun)*magOf(sun);
+    for (const b of sunOccluders){
+      if (b.hidden || b.magHide > 0.5 || !(b.dist < d)) continue;
+      const t = V.dot(b.rel, u); if (t <= 0) continue;
+      const r = coreOf(b)*magOf(b), m = V.len(V.sub(b.rel, V.mul(u, t))), rs = rS*t/d;   // the Sun's radius, scaled to the occluder's distance
+      vis *= smooth(Math.max(r - rs, 0), r + rs, m);
+      if (vis < 0.01){ vis = 0; break; }
+    }
+  }
+  sun.occ = vis;
+}
 function render(){
   camRot = [...cam.right, ...cam.up, ...cam.fwd];
   pickHole();
@@ -214,7 +231,7 @@ function render(){
     if (!o.noImpostor && (vis < 0.999 || o.mag > 1.5) && ni < imp.n){
       // (a dot only stands in for something small: once an object spans the screen, no dot at its centre)
       // (an enlarged planet keeps a soft glow at its centre too, so a disc a few characters wide still reads at a glance)
-      const b = o.mag > 1.5 ? o.farLum*SYSMAG.k*(1 - smooth(8, 30, rpx))*1.1 : o.farLum*(1 - vis)*clamp(Math.pow(rpx/1.2, 0.33), 0, 1.2)*(1 - smooth(40, 120, rpx));
+      const b = (o.mag > 1.5 ? o.farLum*SYSMAG.k*(1 - smooth(8, 30, rpx))*1.1 : o.farLum*(1 - vis)*clamp(Math.pow(rpx/1.2, 0.33), 0, 1.2)*(1 - smooth(40, 120, rpx)))*(o.occ ?? 1);
       if (b > 0.015 && V.dot(o.rel, cam.fwd) > 0){ imp.a.set([o.rel[0], o.rel[1], o.rel[2], b], ni*4); imp.c.set([o.farColor[0], o.farColor[1], o.farColor[2], 0], ni*4); ni++; }
     }
   }
@@ -328,6 +345,7 @@ function uiRects(){
 }
 function updateLabels(){
   const focus = tour.on ? tour.obj : orbit.lock;
+  const clean = focus >= 0 ? focus : cam.focus;   // the object whose disc stays free of other labels (in free flight: the one the camera is centred on)
   const avoid = uiRects(), placed = [];
   const cand = [];
   const shipId = typeof ship !== 'undefined' ? ship.index : -1;
@@ -360,16 +378,15 @@ function updateLabels(){
     const R = o.holeR || o.rad*o.solid*magOf(o), r = R/(pr.z*tanY)*(viewHcss/2); if (r > 3) occ.push({ x:pr.x, y:pr.y, r, z:pr.z, o, zf:o.holeR ? pr.z - R : pr.z*0.999, k:o.holeR ? 1.04 : 0.97 });
   }
   const hidden = c => occ.some(q => q.zf < c.pr.z && q.o.index !== c.i && Math.hypot(c.pr.x - q.x, c.pr.y - q.y) < q.r*q.k);
-  // the object you are looking at stays clean: no label from something behind it or beside it on the sky may sit on top of it.
-  // Its own parts (anything inside its bounding sphere) and things visibly in front of it keep their labels.
-  let fd = null; const fo = focus >= 0 ? OBJ[focus] : null;
+  // the object you are looking at stays clean: no other label may sit on top of it, not even its own parts (Sgr A* on the
+  // Galactic Centre, a satellite over Earth). Only a big body visibly in front of it (a moon crossing a planet) keeps its label.
+  let fd = null; const fo = clean >= 0 ? OBJ[clean] : null;
   if (fo && labelsOn){ const pr = projectCSS(fo.rel); if (pr){ const R = fo.holeR || fo.rad*(fo.solid || fo.labelDisc || 0.6); fd = { x:pr.x, y:pr.y, r:R/(pr.z*tanY)*(viewHcss/2), z:pr.z, R }; }
     else if (fo.dist < fo.rad) fd = { x:0, y:0, r:1e9, z:0, R:fo.rad }; }
   const overFocus = (c, lx, ly, w, h) => {
-    if (!fd || c.i === focus || fd.r < 10) return false;
+    if (!fd || c.i === clean || fd.r < 10) return false;
     const oc = c.i >= 0 ? OBJ[c.i] : null;
-    if (oc && !oc.marker && V.len(V.sub(oc.rel, fo.rel)) < fo.rad) return false;
-    if (oc && c.rpx > 2 && c.pr.z < fd.z - fd.R) return false;
+    if (oc && !oc.marker && c.rpx > 12 && c.pr.z < fd.z - fd.R) return false;
     const nx = clamp(fd.x, lx, lx + w), ny = clamp(fd.y, ly, ly + h);
     return Math.hypot(nx - fd.x, ny - fd.y) < fd.r*0.95;
   };
@@ -1001,7 +1018,7 @@ function tick(dt){
     refocus(dt);
   }
   for (const o of OBJ){ o.rel = V.sub(frel(o), cam.rel); o.dist = V.len(o.rel); }
-  updateSysMag(dt);
+  updateSysMag(dt); updateSunOcc();
   if (cmp) placeCompare(dt);
   updateDrift(dt);
 }
