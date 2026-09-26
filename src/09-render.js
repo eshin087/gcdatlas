@@ -46,7 +46,8 @@ function setCommon(pr, o){
   gl.uniform1i(pr.u.uTex, 5); gl.uniform1i(pr.u.uMW, 6);
   gl.uniform4f(pr.u.uGC, gcDir[0], gcDir[1], gcDir[2], nearSun);
   if (o){ gl.uniform1f(pr.u.uTime, o.t); gl.uniform1f(pr.u.uRad, o.rad); gl.uniformMatrix3fv(pr.u.uRot, false, o.rot);
-    gl.activeTexture(gl.TEXTURE5); gl.bindTexture(gl.TEXTURE_2D, o.tex ? TEX[o.tex] : TEX.mw); }
+    gl.activeTexture(gl.TEXTURE5); gl.bindTexture(gl.TEXTURE_2D, o.tex ? TEX[o.tex] : TEX.mw);
+    if (o.tex2 && pr.u.uTex2){ gl.uniform1i(pr.u.uTex2, 7); gl.activeTexture(gl.TEXTURE7); gl.bindTexture(gl.TEXTURE_2D, TEX[o.tex2]); } }
 }
 function sphereRect(c, r){
   if (V.len(c) < r*1.05) return [-1,-1,1,1];
