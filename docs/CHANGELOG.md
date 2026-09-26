@@ -7,10 +7,11 @@ All notable changes, newest first. Dates are UTC.
 ## 0.7.8 · 2026-09-26
 
 **New**
-- Every planet has an angle from its night side looking back at the Sun, which sits just past the planet's edge at its true size, with a bright glare and diffraction spikes. The glare hides when a planet or moon passes in front of the Sun.
+- Every planet has an angle from its night side looking back at the Sun, which sits just past the planet's edge at its true size, with a soft glow and a sparkle of short, twinkling rays. The glare hides when a planet or moon passes in front of the Sun.
 - The Solar System view zooms in much closer, until the Sun fills the screen (2.7 Sun radii from its centre); its corona returns as it nears true size.
-- Betelgeuse up close: a boiling surface of dark lanes, granules and bright filaments inside its giant convection cells.
-- Alpha Centauri's third angle shows B's orbit around A and both stars as points.
+- Betelgeuse up close: a boiling surface of dark lanes, granules and bright filaments inside its giant convection cells. Its dusty plumes now drift outward and fray, and fade out before the edge (no more ring-like boundary).
+- Alpha Centauri's third angle looks past A at B, the brightest star in its sky, and follows B along its orbit.
+- Locked on the Halo, the camera always trails the ship from behind (three angles: above, low to one side, pulled back) and turns with it.
 
 **Improved**
 - Galaxies: brighter, more continuous spiral arms, a soft glow between them and thin dust lanes on the inner edge of each arm.

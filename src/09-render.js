@@ -982,7 +982,7 @@ function applyHash(){
   tour.on = false;
   const c = (p.get('c') || '').split(',').map(Number);
   const vp = viewParams(o, 0);
-  cam.focus = o.index; orbit.lock = o.index; orbit.frame = o.R0; orbit.off = [0, 0, 0]; orbit.offFn = null;
+  cam.focus = o.index; orbit.lock = o.index; orbit.frame = camFrameOf(o); orbit.off = [0, 0, 0]; orbit.offFn = null;
   if (c.length === 3 && c.every(isFinite)){ orbit.yaw = c[0]; orbit.pitch = c[1]; orbit.dist = orbit.distT = Math.max(c[2]*o.rad, o.rad*o.minZoom); }
   else { orbit.yaw = vp.yaw; orbit.pitch = vp.pitch; orbit.dist = orbit.distT = vp.dist; }
   orbit.target = frel(o); setInfo(o.index); applyOrbit();
@@ -1013,6 +1013,8 @@ function tick(dt){
     updateKeys(dt);
     if (!tween) orbit.dist = Math.exp(Math.log(orbit.dist) + (Math.log(orbit.distT) - Math.log(orbit.dist))*(1 - Math.exp(-dt*7)));
     riseAboveDisk(dt);
+    // locked on the Halo, the orbit frame turns with the ship, so the camera keeps trailing it as it steers
+    if (orbit.lock >= 0 && orbit.lock === ship.index) orbit.frame = camFrameOf(ship);
     if (orbit.lock >= 0){ if (orbit.offFn && !tween) orbit.off = orbit.offFn(); orbit.target = V.add(frel(OBJ[orbit.lock]), orbit.off); }
     applyOrbit();
     refocus(dt);
@@ -1070,5 +1072,5 @@ window.__cosmos = { startTour, playFlyby, setMove(o, v, f){ flight = null; tween
   startShipCam, stopShipCam, setShipCamMode, get shipCam(){ return shipCam; }, get show(){ return show; }, togglePlay, get flight(){ return flight; },
   setDetail:i => setOpt('detail', i, true), render, zoomTo, tick, flightDur:() => flight ? flight.dur : 0, hud:() => { roTimer = 0; updateHUD(0.2); },
   simulate:(sec) => { for (let k=0; k<sec*30; k++) tick(1/30); return { obj:tour.obj, view:tour.view, phase:tour.phase, lock:orbit.lock }; },
-  view:(i, v) => { if (typeof i === 'string') i = BYKEY[i].index; const o = OBJ[i], vp = viewParams(o, v); flight = null; shipCam.on = false; tween = null; cam.focus = i; orbit.lock = i; orbit.frame = o.R0; orbit.yaw = vp.yaw; orbit.pitch = vp.pitch; orbit.dist = orbit.distT = vp.dist; orbit.off = vp.off; orbit.offFn = vp.offFn; orbit.target = V.add(frel(o), vp.off); setInfo(i); applyOrbit(); tick(0); } };
+  view:(i, v) => { if (typeof i === 'string') i = BYKEY[i].index; const o = OBJ[i], vp = viewParams(o, v); flight = null; shipCam.on = false; tween = null; cam.focus = i; orbit.lock = i; orbit.frame = camFrameOf(o); orbit.yaw = vp.yaw; orbit.pitch = vp.pitch; orbit.dist = orbit.distT = vp.dist; orbit.off = vp.off; orbit.offFn = vp.offFn; orbit.target = V.add(frel(o), vp.off); setInfo(i); applyOrbit(); tick(0); } };
 requestAnimationFrame(frame);

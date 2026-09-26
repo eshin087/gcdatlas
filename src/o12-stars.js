@@ -30,7 +30,9 @@ function orbitAround(host, a, P, incl = 0, phase = 0){ return function(){ const 
 const alphaCen = namedStar('alphacen', 'Alpha Centauri', hms(14,39,36.5), dms(-60,50,2), 4.37, 1.2234, 5790, { label:'α Centauri A',
   type:'nearest Sun-like star · a triple system', fact:'Two Sun-like stars circle each other every 80 years, 4.37 light-years away. The red dwarf Proxima, the closest star of all, orbits them far out.',
   star:{ cells:38, act:0.35 }, bound:40, farLum:1.3, noImpostor:false, labelRange:600, aka:'rigil kentaurus alpha centauri a',
-  views:[{d:[0.35, 0.3, 1], k:0.3, hold:9, drift:0.03}, {d:[0.2, 0.3, 1], k:0.07, hold:8, drift:0.04}, {d:[0.35, 0.9, 0.25], k:300, hold:9, drift:0.02}],
+  views:[{d:[0.35, 0.3, 1], k:0.3, hold:9, drift:0.03}, {d:[0.2, 0.3, 1], k:0.07, hold:8, drift:0.04}, // third angle: from just beyond A, looking back past it at B, the brightest star in its sky (23 AU away, so a sparkling point);
+    // B's orbit is sped up (70 s a lap), so the camera keeps turning to follow it (track)
+    { track:() => { const A = BYKEY.alphacen, B = BYKEY.alphacenb, u = V.norm(V.sub(B.pos, A.pos)), p = V.norm(V.cross(u, [0, 1, 0])); return V.norm(V.add(V.add(V.mul(u, -Math.cos(0.3)), V.mul(p, Math.sin(0.3))), [0, 0.08, 0])); }, k:0.3, hold:10, drift:0 }],
   readout:() => 'A and B are 11 to 35 AU apart (like Saturn to Neptune)\nfrom here our Sun is a bright star in Cassiopeia' });
 // B's orbit around A, drawn when zoomed out far enough to see both stars as points (the third angle)
 { const n = 180, ps = makePS(n*2), inc = 0.3;

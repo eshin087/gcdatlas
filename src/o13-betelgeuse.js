@@ -33,12 +33,17 @@ void main(){
       if(i >= N) break;
       vec3 p = o + d*(t0 + jit + dt*float(i)); float r = length(p)/RS; vec3 u = p/length(p);
       if(r < 1.) continue;
-      // MOLsphere: warm molecular gas hugging the star
-      float mol = exp(-(r - 1.)/0.25)*(0.6 + 0.8*fbm3(p*18. + uTime*0.02));
-      // dust: clumpy plumes and shells launched from the surface, the 2019 veil over the south
-      float plume = pow(fbm3(u*3. + vec3(0., 0., -r*0.6) + 7.), 2.)*smoothstep(1.4, 2.2, r)*exp(-(r - 2.)/1.8);
-      float veil = uP0.x*exp(-pow((u.y + 0.55)/0.35, 2.))*exp(-pow((r - 1.35)/0.25, 2.))*(0.5 + fbm3(p*12.));
-      float dust = plume*1.2 + veil*3.;
+      // MOLsphere: warm molecular gas hugging the star, churning slowly
+      float mol = exp(-(r - 1.)/0.25)*(0.6 + 0.8*fbm3(p*18. + vec3(0., uTime*0.03, -uTime*0.02)));
+      // dust: clumpy plumes launched from the surface that drift outward and fray (as in the VLT/VISIR images), and the 2019 veil
+      // over the south. The pattern moves out along the radius with time; everything fades out well before the edge of the volume.
+      float tm = uTime*0.05;
+      vec3 w = u*2.6 + 0.35*vec3(fbm3(u*2. + 3.1 + tm*0.3), fbm3(u*2. + 8.4 - tm*0.2), fbm3(u*2. + 5.7));
+      float flow = fbm3(w + vec3(0., 0., -(r - tm*3.)*0.55) + 7.);
+      float fil = ridge(w*1.7 + vec3(0., -(r - tm*3.)*0.9, 0.) + 2.);
+      float plume = pow(flow, 2.2)*(0.55 + 0.9*fil)*smoothstep(1.25, 2., r)*exp(-(r - 1.8)/1.5)*smoothstep(4.9, 3.4, r);
+      float veil = uP0.x*exp(-pow((u.y + 0.55)/0.35, 2.))*exp(-pow((r - 1.35)/0.25, 2.))*(0.5 + fbm3(p*12. + tm));
+      float dust = plume*1.5 + veil*3.;
       vec3 lit = vec3(1., 0.5, 0.25)/(r*r);          // starlight scattered by dust
       col += T*(vec3(1., 0.32, 0.12)*mol*0.9 + lit*dust*0.5)*dt*6.;
       T *= exp(-(dust*0.6 + mol*0.15)*dt*10.);
