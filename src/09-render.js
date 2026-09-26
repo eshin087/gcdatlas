@@ -618,7 +618,8 @@ function updateShipFinder(){
 // ride along with the Halo (chase camera); the flash when it folds space with you aboard
 const followShip = () => { if (typeof ship === 'undefined') return; hideHint(); if (shipCam.on) return; startShipCam('chase'); toast('riding along with the Halo · chase view (C switches to the cockpit)'); };
 const foldEl = $('#foldFlash');
-function foldFlash(){ foldEl.classList.remove('go'); void foldEl.offsetWidth; foldEl.classList.add('go'); }
+// (kind 'ls': the quicker, whiter flash of a jump to light speed)
+function foldFlash(kind){ foldEl.classList.remove('go', 'ls'); void foldEl.offsetWidth; foldEl.classList.add('go'); if (kind === 'ls') foldEl.classList.add('ls'); }
 shipMarkEl.addEventListener('click', followShip);
 shipArrowEl.addEventListener('click', followShip);
 

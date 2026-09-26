@@ -4,6 +4,16 @@ All notable changes, newest first. Dates are UTC.
 
 ## Unreleased
 
+**New: the Halo at work** (all of it fictional, and its readout says so)
+- The Halo always travels in a direction. Each visit is one smooth pass: it flies in, does one job on the way past, turns toward its next stop on a wide arc while still moving, and leaves. It no longer circles a body or turns on the spot.
+- Two ways to travel. Short hops (around a planet, across the Solar System, to a neighbouring star, now and then inside the Milky Way) are light-speed jumps: riding along, the stars stretch into streaks rushing out of a point ahead, with a flash as it jumps and drops out; from outside, the ship stretches into a streak of light. Long hops are folds through space, now bigger: the drive spools up inside a shield of light with arcs leaping from the reactor, the ship collapses into a point with a flash and a ring, and bursts out at the other end.
+- Five jobs, one per visit: a sensor scan; a probe that drifts out of the belly bay, loops round the body taking pictures (small flashes) and comes back to dock; a weapons test on any body (rail gun, plasma lance, antimatter pulse: blasts that flash, swell and cool from white to orange to dark, with sparks, a shock ring and a little smoke, then fade completely); a skim just above the cloud tops of Jupiter or the surface of a star, gas streaming into the bow and a glowing trail behind; and a tractor beam that catches a passing rock beside the ship, drills a core sample (sparks) and lets it go.
+- Scan beams now end exactly where they first meet the body's surface (for a black hole, the edge of its shadow; for a nebula or galaxy, its heart). They fan across the body like a scanner, paint a band of light on it, and a faint rim of scan light traces the body's edge at the start of each sweep. Beams are only drawn from a ship you can see: no more lines appearing from nowhere, from behind a planet, or through the ship's hull.
+- While it works, the ship banks toward the body, and the camera trailing it (locked on, or riding along) turns to keep the job in the picture; from the bridge the pilot's gaze turns toward it. The readout and a short note say what it is doing.
+
+**Fixed**
+- Riding along: the camera's fly-in now lands exactly on the chase view even though the ship keeps moving (it used to swing into place at the end).
+
 **Security**
 - The API functions refuse query strings (they bypassed the edge cache and made every request hit CelesTrak or Launch Library), keep their last good answer, share one upstream fetch, and no longer echo upstream error text.
 - A crafted share link (`#o=constructor`, `#o=__proto__`, or a non-numeric date or camera) could stop the page from starting. Links are now checked.
