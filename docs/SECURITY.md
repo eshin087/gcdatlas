@@ -12,7 +12,8 @@
 | --- | --- |
 | Cross-site scripting | All visitor-visible text is set with `textContent`, never `innerHTML` with external data. Launch and satellite names from the APIs are length-limited on the server and inserted as text. Keep it that way. |
 | Server-side request forgery | The API functions fetch fixed URLs only; nothing from the request (query, headers, body) is used to build a URL. |
-| Abuse of the API functions / upstream rate limits | Responses are cached at the Vercel edge (`s-maxage` 6 h for satellites, 1 h for launches) so upstream sees a few requests a day however much traffic arrives. Errors are cached briefly (5–10 min). |
+| Abuse of the API functions / upstream rate limits | Responses are cached at the Vercel edge (`s-maxage` 6 h for satellites, 1 h for launches) so upstream sees a few requests a day however much traffic arrives. The edge cache keys on the full URL, so any query string is refused with a 404 before anything is fetched (`api/_lib/guard.js`); otherwise `?x=1`, `?x=2`… would each run the function and hit the upstream. A warm function keeps its last good answer (2 h for satellites, 30 min for launches), parallel requests share one fetch, and if the upstream fails the last good answer is served. Error replies do not repeat upstream details. Optional extra: a Vercel Firewall rate limit on `/api/*`. |
+| Crafted share links | Values from the URL hash are checked: object keys are looked up in `BYKEY`, which has no prototype (`#o=constructor` finds nothing), and numbers (`jd`, `deep`, camera) must be finite and are clamped. `?flags=` applies to that visit only and is never saved, so a shared link cannot change a visitor's settings for good. |
 | Clickjacking | `X-Frame-Options: DENY` (see `vercel.json`). The claude.ai artifact build is a separate page. |
 | MIME sniffing, referrer leaks | `X-Content-Type-Options: nosniff`, `Referrer-Policy: strict-origin-when-cross-origin`. |
 | Powerful browser features | `Permissions-Policy` disables camera, microphone and payment; geolocation only for this origin, and only on request. |
@@ -35,4 +36,4 @@ Comments, likes or listings mean storing visitor content. Plan in `docs/ROADMAP.
 
 ## Reporting a problem
 
-Open a GitHub issue (or contact the owner privately for anything sensitive).
+Open a GitHub issue. For anything sensitive, use GitHub's *Report a vulnerability* button on the repository's Security tab (private vulnerability reporting).

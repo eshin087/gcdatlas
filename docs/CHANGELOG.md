@@ -10,6 +10,12 @@ All notable changes, newest first. Dates are UTC.
 - Earth's night side shows the real lights seen from space (NASA's Black Marble satellite map): road networks, coasts, the Nile, India, the eastern US. Bright city cores burn whiter, suburbs and highways glow sodium orange, and clouds soften them.
 - Weather seen from space (illustrative, sped up): tropical cyclones with spiral bands and an eye in the basins active this month, thunderstorm clusters over the stormiest places on Earth where, now and then, lightning briefly lights a patch of cloud from inside on the night side (a quick flicker of 2 to 4 strokes), Saharan dust over the Atlantic, and burning seasons glowing at night where they happen that month. The readout says what is going on.
 
+**Security**
+- The API functions refuse query strings (they bypassed the edge cache and made every request hit CelesTrak or Launch Library), keep their last good answer, share one upstream fetch, and no longer echo upstream error text.
+- A crafted share link (`#o=constructor`, `#o=__proto__`, or a non-numeric date or camera) could stop the page from starting. Links are now checked.
+- `?flags=` in a link applies to that visit only; it is no longer saved in the visitor's browser.
+- `.gitignore` covers `.env` files and `.vercel/`; dev dependency sharp updated to 0.35 (security advisory in its image libraries; it never ships to visitors).
+
 ## 0.7.8 · 2026-09-26
 
 **New**
