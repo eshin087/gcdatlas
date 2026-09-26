@@ -134,6 +134,8 @@ body.ui-idle .caption{background:rgba(5,7,14,.4);border-color:transparent;border
 .fold-flash{position:fixed;inset:0;pointer-events:none;z-index:1;opacity:0;background:radial-gradient(ellipse at 50% 50%,rgba(235,250,255,.95) 0%,rgba(143,230,255,.55) 35%,rgba(20,40,70,.0) 80%)}
 .fold-flash.go{animation:foldFlash 1.1s ease-out}
 @keyframes foldFlash{0%{opacity:0}12%{opacity:.9}100%{opacity:0}}
+.fold-flash.ls{background:radial-gradient(ellipse at 50% 50%,rgba(255,255,255,.9) 0%,rgba(200,225,255,.35) 30%,rgba(20,40,70,0) 70%)}
+.fold-flash.go.ls{animation:foldFlash .5s ease-out}
 @media (prefers-reduced-motion:reduce){.fold-flash.go{animation-duration:.4s}}
 .btn:focus-visible,.lab:focus-visible,.arow:focus-visible,.tick:focus-visible,.nav:focus-visible,.seg button:focus-visible,.tog button:focus-visible,.ladmark:focus-visible{outline:1px solid var(--flare);outline-offset:2px}
 .search{position:relative;display:flex;align-items:center}

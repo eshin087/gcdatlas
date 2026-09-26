@@ -53,11 +53,14 @@ float map(vec3 p, out float id){
   return d;
 }
 vec3 nrm(vec3 p){ float id; vec2 e = vec2(0.0015, 0.); return normalize(vec3(map(p + e.xyy, id) - map(p - e.xyy, id), map(p + e.yxy, id) - map(p - e.yxy, id), map(p + e.yyx, id) - map(p - e.yyx, id))); }
+// uP0: x fold-drive spool, y jump glow (light speed and folds), z scale (1; it shrinks to a point as it folds away and grows back on arrival)
+// uP1: xyz light direction, w ram-scoop glow (uP3.rgb its colour)   uP2: glow of the scan array, tractor emitter, bow gun / drill, probe bay
 void main(){
   vec3 o, d; localRay(o, d);
+  o /= max(uP0.z, 0.01);
   vec2 hb = sphIsect(o, d, vec3(0.), 1.);
   if(hb.y < 0.) discard;
-  float spool = uP0.x, tm = uTime, S = surge(tm);
+  float spool = uP0.x, jg = uP0.y, tm = uTime, S = surge(tm);
   float power = 1. + spool*1.6 + S*2.5;
   vec3 L = normalize(uP1.xyz*uRot);
   vec3 cyan = vec3(0.35, 0.85, 1.), gold = vec3(0.96, 0.72, 0.33), steel = vec3(0.6, 0.63, 0.7), fire = vec3(1., 0.45, 0.16), mag = vec3(0.95, 0.35, 1.);
@@ -106,6 +109,9 @@ void main(){
       float tr = smoothstep(0.03, 0., abs(fract(p.y*14. + step(0.5, fract(p.z*9.))*0.5) - 0.5) - 0.45)*step(abs(n.z), 0.5);
       col = base*1.3*(dif*1.1 + fill + 0.1) + gold*spec*1.2 + steel*rim*0.3 + vec3(1., 0.88, 0.6)*port*1.3 + mix(cyan, fire, 0.35*S)*coreLit*power + cyan*tr*(0.12 + pulse*(0.4 + 2.2*S));
     }
+    // jumping: the hull flares white-blue; skimming: the bow glows with the gas it rams through
+    col += vec3(0.72, 0.9, 1.)*jg*(0.4 + 2.4*rim);
+    col += uP3.rgb*uP1.w*pow(max(n.y, 0.), 2.)*(1.2 + 0.8*noise(p*40. + tm*3.));
     alpha = 1.;
   }
   float front = hit ? t : 1e9;
@@ -144,145 +150,53 @@ void main(){
   }
   // engine plumes streaming aft, running lights on the wingtips, and the heart's glow
   float tk = 1. + spool + S;
-  col += jet(o - vec3(0.005, -0.92, 0.), d, vec3(0., -1., 0.), 0.3, 0.03, 0.06, 1., tm*5., vec3(0.75, 0.95, 1.), vec3(0.2, 0.5, 1.))*(2.4 + 3.*spool);
+  col += jet(o - vec3(0.005, -0.92, 0.), d, vec3(0., -1., 0.), 0.3, 0.03, 0.06, 1., tm*5., vec3(0.75, 0.95, 1.), vec3(0.2, 0.5, 1.))*(2.4 + 3.*spool + 7.*jg);
   for(int k=0;k<2;k++){
     float sg = k == 0 ? 1. : -1.;
-    col += jet(o - vec3(0.025, -0.88, 0.22*sg), d, vec3(0., -1., 0.), 0.2, 0.02, 0.04, 1., tm*5. + sg, vec3(0.75, 0.95, 1.), vec3(0.2, 0.5, 1.))*(1.8 + 3.*spool);
+    col += jet(o - vec3(0.025, -0.88, 0.22*sg), d, vec3(0., -1., 0.), 0.2, 0.02, 0.04, 1., tm*5. + sg, vec3(0.75, 0.95, 1.), vec3(0.2, 0.5, 1.))*(1.8 + 3.*spool + 5.*jg);
     col += (sg > 0. ? vec3(0.4, 1., 0.5) : vec3(1., 0.3, 0.25))*pblob(o, d, vec3(0.015, -0.47, 0.57*sg), 0.008)*30.*pow(0.5 + 0.5*sin(tm*2.7 + sg*1.3), 10.);
   }
   col += vec3(0.8, 0.95, 1.)*pblob(o, d, vec3(-0.02, 1.0, 0.), 0.006)*25.*pow(0.5 + 0.5*sin(tm*1.9), 12.);
   col += vec3(1., 0.9, 0.8)*(blob(o, d, CORE, 0.07)*2.2 + blob(o, d, CORE, 0.32)*0.22)*power*(1. - alpha*0.5);
   vec2 hf = sphIsect(o, d, vec3(0.), 0.96);
   if(hf.y > 0. && spool > 0.){ vec3 qn = normalize(o + d*max(hf.x, 0.)); col += vec3(0.5, 0.85, 1.)*pow(1. - abs(dot(qn, d)), 3.)*spool*1.3*(0.7 + 0.3*noise(qn*9. + tm)); }
+  // the working lights on the belly: scan array, tractor emitter, bow gun (and drill), probe bay; the scoop's plasma sheath; the jump flare
+  col += vec3(0.45, 0.9, 1.)*pblob(o, d, vec3(0.145, 0.18, 0.), 0.012)*45.*uP2.x;
+  col += vec3(0.5, 1., 0.75)*pblob(o, d, vec3(0.145, -0.25, 0.), 0.014)*45.*uP2.y;
+  col += vec3(1., 0.8, 0.55)*pblob(o, d, vec3(0.05, 0.93, 0.), 0.016)*55.*uP2.z;
+  col += vec3(0.7, 1., 0.8)*pblob(o, d, vec3(0.145, -0.42, 0.), 0.01)*35.*uP2.w;
+  if(uP1.w > 0.01) col += uP3.rgb*(blob(o, d, vec3(0.03, 0.82, 0.), 0.14)*5. + pblob(o, d, vec3(0.02, 0.96, 0.), 0.02)*30.)*uP1.w;
+  if(jg > 0.01) col += vec3(0.75, 0.9, 1.)*blob(o, d, vec3(0.), 0.3)*jg*4.;
   outCol(col, alpha);
 }`;
 
 P.ship = program(VS_RECT, FS_SHIP);
 const SHIP_TARGETS = ['earth', 'moon', 'jupiter', 'saturn', 'titan', 'sun', 'mars', 'sgra', 'betelgeuse', 'pillars', 'crab', 'etacar', 'catseye', 'hltau', 'omegacen', 'm87bh', 'andromeda',
   'm51', 'antennae', 'ton618', 'milkyway', 'antares', 'alphacen', 'trappist1', 'magnetar', 'sn1987a', 'galcentre', 'rsoph', 'europa', 'io', 'lmc', 'm104', '3c273', 'proxima', 'sirius', 'pleiades', 'casa', 'bubble', 'halley', 'ceres', 'southernring'];
-const folds = [];   // space-fold effects: { pos (world), t, kind: 0 departure / 1 arrival, size }
+// the ship itself. How it travels (light speed, folds) and what it does on each visit (scan, probe, weapons test, skim, tractor and drill) is in 07h-halo.js.
+const shipOff = () => ship.viewOff || [0, 0, 0];
 const ship = (() => {
   const RAD = 2.5*KM;
-  const S = { state:'observe', t:0, T:26, target:null, basis:null, th0:0, dir:1, spool:0, visits:0, fromFold:null };
+  // S: phase ('pass' | 'align' | 'light' | 'fold'), target (the body it is visiting: its parent), shader state (spool, jg jump glow, scale, scoop), em (belly lights)
+  const S = { phase:'pass', t:0, target:null, spool:0, jg:0, scale:1, scoop:0, scoopC:[1, 0.6, 0.3], em:[0, 0, 0, 0], visits:0 };
   const o = addObj({ key:'halo', name:'the Halo', label:'Halo', labelClass:'ship', type:'long-range cruiser · a wandering starship that folds space', group:'travel', sortKey:0, layer:3,
-    fact:'A long-range cruiser from a civilisation that learned to fold space. Its heart, seen through an open reactor bay mid-ship, is a captured sliver of star plasma held in spinning containment rings; when it surges, arcs leap across the bay. It hops between the wonders of the universe for a look. (It is the only made-up thing in this atlas.)',
+    fact:'A long-range cruiser from a civilisation that learned to fold space. Its heart, seen through an open reactor bay mid-ship, is a captured sliver of star plasma held in spinning containment rings. It hops between the wonders of the universe: light speed for short hops, a fold through space for long ones. On each visit it does one job: a sensor scan, a probe launch, a weapons test, a skim through a gas giant or a star, or drilling a passing rock. (It is the only made-up thing in this atlas.)',
     // (seen from afar it is an engine glint; its hull fades in over a wide range of sizes, so flying up to it never pops it into view)
     pos:[0, 0, 0], rad:RAD, prog:P.ship, minZoom:1.2, pxMin:3, visFn:rpx => smooth(1.5, 12, rpx), noImpostor:false, farColor:[0.55, 0.8, 1], farLum:0.7, labelRange:1, selfPos:true, aka:'ship starship spaceship ring halo follow',
     // locked on, the camera always trails the ship (its frame turns with the ship: see the lock-follow in tick): from behind and above, lower and to one side, then pulled back
     // (camera frame, camFrame: +y is up from the deck, +z is behind the stern)
-    views:[{d:[0, 0.32, 1], k:2.6, hold:10, drift:0}, {d:[0.5, -0.08, 1], k:2.2, hold:9, drift:0}, {d:[-0.4, 0.22, 1], k:4.2, hold:9, drift:0}],
-    setU(pr){ const L = S.target ? V.norm(V.sub(sun.rel, this.rel)) : [0, 1, 0]; gl.uniform4f(pr.u.uP0, S.spool, 0, 0, this.t*0.15); gl.uniform4f(pr.u.uP1, L[0], L[1], L[2], 0); },
-    readout:() => S.state === 'spool' ? 'fold drive spooling up · space ahead is about to fold' :
-      (S.target ? `visiting ${S.target.name} · visit ${S.visits}\n~2.5 km wingtip to wingtip · a captured star-heart powers its fold drive` : 'between the stars') });
+    // (off: while it works on something below its belly, the camera aims a little below the ship, so the job shows beneath it)
+    views:[{d:[0, 0.32, 1], k:2.6, hold:10, drift:0, off:shipOff}, {d:[0.5, -0.08, 1], k:2.2, hold:9, drift:0, off:shipOff}, {d:[-0.4, 0.22, 1], k:4.2, hold:9, drift:0, off:shipOff}],
+    setU(pr){ const L = S.target ? V.norm(V.sub(sun.rel, this.rel)) : [0, 1, 0], c = S.scoopC, e = S.em;
+      gl.uniform4f(pr.u.uP0, S.spool, S.jg, S.scale, 0); gl.uniform4f(pr.u.uP1, L[0], L[1], L[2], S.scoop); gl.uniform4f(pr.u.uP2, e[0], e[1], e[2], e[3]); gl.uniform4f(pr.u.uP3, c[0], c[1], c[2], 0); },
+    readout:() => haloReadout() });
   o.S = S;
-  // the camera's frame for the ship: x = its starboard side, y = up from the deck (-x in the ship's own frame), z = behind the stern (-y)
+  // the camera's frame for the ship: x = its starboard side, y = up from the deck (-x in the ship's own frame), z = behind the stern (-y).
+  // It follows viewR, the ship's frame turned part of the way toward whatever the ship is working on, so a trailing camera keeps the job in the picture.
   const CAMQ = [0, 0, 1, -1, 0, 0, 0, -1, 0];
-  o.camFrame = () => M3.mul(o.R0, CAMQ);
-  const pathPos = (s) => {
-    const tg = S.target, R = tg.rad*(tg.layer < 3 ? 1.5 : 3.1)*(1 - 0.42*Math.sin(Math.PI*s)), th = S.th0 + S.dir*2.6*s, el = 0.32*Math.sin(2*Math.PI*s);
-    const [u, v, w] = S.basis;
-    return V.add(V.mul(u, R*Math.cos(th)*Math.cos(el)), V.add(V.mul(w, R*Math.sin(th)*Math.cos(el)), V.mul(v, R*Math.sin(el))));
-  };
-  function place(){
-    const s = clamp(S.t/S.T, 0, 1);
-    const p = pathPos(s), p2 = pathPos(Math.min(s + 0.004, 1)), fwd = V.norm(V.sub(p2, p));
-    o.parent = S.target; o.offset = p; o.pos = V.add(S.target.pos, p);
-    const toT = V.norm(V.mul(p, -1));
-    const R = frameY(fwd, toT);
-    o.R0 = M3.mul(R, M3.rotY(Math.sin(S.t*0.35)*0.22)); o.rot = o.R0;
-  }
-  function pickTarget(){
-    const cur = OBJ[tour.on ? tour.obj : (orbit.lock >= 0 ? orbit.lock : cam.focus)];
-    let tg = null;
-    if (cur && cur !== o && SHIP_TARGETS.includes(cur.key) && S.target !== cur && rnd() < 0.45) tg = cur;
-    while (!tg || tg === S.target) tg = BYKEY[SHIP_TARGETS[Math.floor(rnd()*SHIP_TARGETS.length)]];
-    return tg;
-  }
-  function arrive(tg){
-    S.target = tg; S.t = 0; S.T = 24 + rnd()*10; S.dir = rnd() < 0.5 ? -1 : 1; S.th0 = rnd()*6.283; S.visits++;
-    const u = V.norm(randDir()), v0 = V.norm(V.cross(u, randDir())), w = V.cross(u, v0);
-    S.basis = [u, v0, w];
-    place();
-    o.labelRange = Math.max(tg.rad*40, RAD*1e4);
-    folds.push({ pos:o.pos.slice(), parent:tg, off:o.offset.slice(), t:0, kind:1, size:Math.max(RAD*30, tg.rad*0.05) });
-  }
-  o.update = function(dt){
-    if (!S.target) arrive(BYKEY.saturn);
-    // hold position at the arrival point while a following camera is still flying in
-    if (flight && flight.obj === o){ place(); return; }
-    S.t += dt;
-    if (S.state === 'observe'){ if (S.t > S.T - 2.5){ S.state = 'spool'; } }
-    S.spool = S.state === 'spool' ? smooth(S.T - 2.5, S.T, S.t) : Math.max(0, S.spool - dt);
-    if (S.t >= S.T){
-      folds.push({ pos:o.pos.slice(), parent:S.target, off:o.offset.slice(), t:0, kind:0, size:Math.max(RAD*30, S.target.rad*0.05) });
-      // riding along (or locked on the ship): the camera folds with it and simply stays attached; a flash covers the jump.
-      // Otherwise re-anchor the camera on the old target so it stays put while the ship folds away.
-      const riding = shipCam.on || (!tour.on && orbit.lock === o.index && cam.focus === o.index);
-      if (!riding && cam.focus === o.index){ const D = frel(S.target); cam.rel = V.sub(cam.rel, D); orbit.target = V.sub(orbit.target, D); cam.focus = S.target.index; }
-      S.state = 'observe'; S.spool = 0;
-      arrive(pickTarget());
-      if (riding){ place(); foldFlash(); toast('the Halo folds space · arriving at ' + S.target.name); }
-      return;
-    }
-    place();
-  };
+  o.camFrame = () => M3.mul(o.viewR || o.R0, CAMQ);
   return o;
 })();
-// fold effects, scan beams and the ship's beacon, drawn after everything else
-const foldRing = ringPS(96, [0.55, 0.9, 1]), beaconPS = makePS(1), beamPS = makePS(16), hitPS = makePS(8);
-beaconPS.c.set([0.6, 0.95, 1, 0], 0); beaconPS.upload('c');
-function camFacing(){ return [...cam.right, ...V.mul(cam.fwd, -1), ...cam.up]; }   // local xz plane faces the camera
-EXTRAS.push(() => {
-  const dt = 1/60;
-  for (let i=folds.length - 1; i>=0; i--){
-    const f = folds[i]; f.t += dt*timeScale;
-    if (f.t > 3){ folds.splice(i, 1); continue; }
-    const rel = V.sub(V.add(frel(f.parent), f.off), cam.rel), dist = V.len(rel);
-    if (V.dot(rel, cam.fwd) <= 0) continue;
-    const scale = Math.max(f.size, dist*0.03);
-    // departure: space folds inward to a point; arrival: a flash and rings rippling outward
-    for (let k=0;k<3;k++){
-      const u = clamp(f.t/1.6 - k*0.18, 0, 1); if (u <= 0 || u >= 1) continue;
-      const r = f.kind ? scale*(0.2 + 3.2*u) : scale*(3.2*(1 - u) + 0.05), b = (f.kind ? (1 - u) : u*(1 - u)*3)*(0.8 - k*0.2);
-      drawParticles(null, { ps:foldRing, prog:'lnBasic', lines:true, mode:3, sb:b*1.2, size:1, rad:r, rel:() => rel, rot:camFacing });
-    }
-    const fl = f.kind ? Math.exp(-f.t*3) : smooth(0.9, 1.3, f.t)*Math.exp(-(f.t - 1.3)*4);
-    if (fl > 0.01){ beaconPS.a.set([0, 0, 0, 1], 0); beaconPS.upload('a'); drawParticles(null, { ps:beaconPS, prog:'ptBasic', mode:3, sb:fl*3, size:6, rad:1, rel:() => rel, rot:() => I3 }); }
-  }
-  // the ship's beacon when it is too small to see, and its scanning beams toward what it is studying
-  const S = ship.S;
-  if (S.target && ship.dist < ship.labelRange && V.dot(ship.rel, cam.fwd) > 0){
-    if (ship.rpx < 3){ beaconPS.a.set([0, 0, 0, 1], 0); beaconPS.upload('a'); drawParticles(null, { ps:beaconPS, prog:'ptBasic', mode:3, sb:0.7 + 0.3*Math.sin(ship.t*5), size:2.4, rad:1, rel:() => ship.rel, rot:() => I3 }); }
-    const s = S.t/S.T;
-    if (s > 0.35 && s < 0.7){
-      // the beams land where the ship can actually see: on the near side of a planet's or star's surface, at the edge of a black hole's shadow
-      // (the light falls in, so no glow), or inside the near half of a cloud. None passes through the body to its far side.
-      const tg = S.target, tr = tg.rel, amp = Math.sin((s - 0.35)/0.35*Math.PI);
-      const toShip = V.sub(ship.rel, tr), L = Math.max(V.len(toShip), 1e-30), sh = V.mul(toShip, 1/L);
-      const surfR = tg.holeR || (tg.solid ? tg.rad*tg.solid : 0), cloud = !surfR;
-      const thMax = cloud ? 0 : Math.acos(clamp(surfR/L, 0, 1))*0.82;   // the part of the surface in view from the ship
-      let nHit = 0;
-      for (let k=0;k<8;k++){
-        const jk = V.norm([Math.sin(k*2.3 + ship.t), Math.cos(k*1.7 + ship.t*1.3), Math.sin(k*3.1 + 0.4)]);
-        let end;
-        if (cloud) end = V.add(tr, V.mul(V.norm(V.add(V.mul(sh, 0.7), V.mul(jk, 0.6))), tg.rad*0.45*(0.4 + 0.6*Math.abs(Math.sin(k*1.1 + ship.t*0.5)))));
-        else {
-          let pp = V.sub(jk, V.mul(sh, V.dot(jk, sh))); const pl = V.len(pp); pp = pl > 1e-6 ? V.mul(pp, 1/pl) : V.norm(V.cross(sh, [0, 1, 0]));
-          const th = thMax*(0.15 + 0.85*Math.abs(Math.sin(k*1.93 + ship.t*0.7)));
-          end = V.add(tr, V.mul(V.add(V.mul(sh, Math.cos(th)), V.mul(pp, Math.sin(th))), surfR));
-          if (!tg.holeR){ const h = V.sub(end, ship.rel); hitPS.a.set([h[0], h[1], h[2], 1], nHit*4); hitPS.c.set([0.55, 0.95, 1, 0], nHit*4); nHit++; }
-        }
-        const b = V.sub(end, ship.rel);
-        beamPS.a.set([0, 0, 0, 1], k*8); beamPS.a.set([b[0], b[1], b[2], 0], k*8 + 4);
-        beamPS.c.set([0.45, 0.9, 1, 0], k*8); beamPS.c.set([0.45, 0.9, 1, 0], k*8 + 4);
-      }
-      beamPS.upload('ac');
-      drawParticles(null, { ps:beamPS, prog:'lnBasic', lines:true, mode:3, sb:0.35*amp*(0.6 + 0.4*Math.sin(ship.t*13)), size:1, rad:1, rel:() => ship.rel, rot:() => I3 });
-      // where a beam meets a surface it lights a small spot
-      if (nHit){ hitPS.count = nHit; hitPS.upload('ac'); drawParticles(null, { ps:hitPS, prog:'ptBasic', mode:3, sb:0.9*amp*(0.7 + 0.3*Math.sin(ship.t*17)), size:3, rad:1, rel:() => ship.rel, rot:() => I3 }); }
-    }
-  }
-});
 
 // ---------------------------------------------------------------- comets: new visitors dropping in from the Oort cloud, with an ion tail and a curved dust tail
 const comets = (() => {

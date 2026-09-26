@@ -4,7 +4,7 @@ This file is read automatically by Claude Code at the start of every session. It
 
 ## Start here
 
-State on 2026-09-26: **v0.7.9** (Earth night lights and weather) is live once its PR is merged; next in the owner's roadmap: v0.8.0 the Halo, v0.8.1 comets (see `docs/HANDOFF.md`); check `package.json` and `docs/CHANGELOG.md` for the latest. Read `docs/HANDOFF.md`, which covers the owner's preferences, decisions not to undo, how the work is done and the open ideas. Then run `npm install` (first time only) and `npm test`. Use git and `gh` directly: branch `release/vX.Y.Z`, open a PR, check the Vercel preview, then merge with a merge commit.
+State on 2026-09-26: **v0.8.0** (the Halo at work) and **v0.8.1** (comets and meteors) are in review as separate PRs; check `package.json` and `docs/CHANGELOG.md` for the latest. Read `docs/HANDOFF.md`, which covers the owner's preferences, decisions not to undo, how the work is done and the open ideas. Then run `npm install` (first time only) and `npm test`. Use git and `gh` directly: branch `release/vX.Y.Z`, open a PR, check the Vercel preview, then merge with a merge commit.
 
 ## What this is
 
@@ -60,6 +60,7 @@ Tests need `npm install` once (dev dependencies: playwright, sharp). Headless Ch
 - Do not name a local variable `P` inside object files: `P` is the global shader program registry (`P.blackhole`, `P.ptBasic`…). This has bitten before (black holes silently vanished).
 - Labels show and hide with the `on` class (CSS fades them); do not set `style.visibility` on them. No other label may sit on the disc of the object you are looking at, not even its own parts (`overFocus` in `updateLabels`; in free flight the object is `cam.focus`). The owner asked for this after Sgr A*'s label covered the Galactic Centre.
 - The Halo has its own camera (`shipCam` in `08-camera.js`): while riding, `updateShipCam` replaces the orbit camera, and any flight or manual input hands the camera back.
+- The Halo's life is in `src/07h-halo.js` (the ship and its shader stay in `07-extras.js`): passes, light-speed legs, folds, the five jobs and their effects. While it works, `ship.viewR` / `ship.gazeR` / `ship.viewOff` / `ship.chaseOff` turn the lock-on, cockpit and chase cameras toward the job; use `o.camFrame` (not `R0`) for anything that frames the ship. It never jumps while a camera is flying up to it. Its effects are drawn camera-relative through one point, line and smoke buffer (`P_`, `L_`, `SM_`); anything near the 2.5 km ship must be kept relative to the ship (at galaxy scale a target-relative float64 is only good to ~100 km), anything on the body relative to the body. Beams are cut exactly where the body or the hull hides them (`pathLine`), and lines need about 4x the light of points to read as characters (`LK`). Tests steer it with `ship.dbg` (`force`, `replan`, `skip`).
 - Objects added after start-up need a label element (`labelEls[o.index]`) because labels are created once at init.
 - `afterFrame` (in `09-render.js`) runs once right after a frame is drawn; use it to read the canvas (photo mode).
 - WebGL points/lines are not depth-tested against volumes. Black holes are handled for every particle system (`uHole` in `particleVS`); for other opaque bodies hide what should be behind them in the vertex shader (see the satellites in `src/objects/e1-earth-live.js`).

@@ -160,6 +160,8 @@ function updateFlight(dt){
   const tgt = V.add(f.A, V.mul(V.sub(Bnow, f.A), f.L0 > 0 ? clamp(f.path.u(s)/f.L0, 0, 1) : 1));
   if (f.pass){ const b = passBump(f.pass, e); tgt[0] += f.pass.bend[0]*b; tgt[1] += f.pass.bend[1]*b; tgt[2] += f.pass.bend[2]*b; }
   const w = x >= 1 ? f.vp.dist : f.path.w(s);
+  // flying up to the Halo: it turns as it goes, so the final framing follows its frame (no swing on landing)
+  if (f.obj.camFrame){ f.dir1 = M3.apply(camFrameOf(f.obj), sphL(f.vp.yaw, f.vp.pitch)); f.up1 = f.vp.upFn ? f.vp.upFn() : M3.apply(camFrameOf(f.obj), [0, 1, 0]); }
   if (!f.switched && x > 0.5){
     const D = frel(f.obj);
     f.A = V.sub(f.A, D); tgt[0] -= D[0]; tgt[1] -= D[1]; tgt[2] -= D[2];
@@ -242,10 +244,14 @@ function trackView(o, v, dt){
 // When the ship folds space the camera folds with it: it stays attached, and a flash covers the jump.
 const shipCam = { on:false, pending:false, mode:'chase', zoom:1, eye:null, fwd:null, up:null };
 const SHIP_POSE = { chase:{ eye:[-0.95, -3.0, 0], look:[-0.2, 1.4, 0], lag:3.2 }, cockpit:{ eye:[-0.27, 0.3, 0], look:[-0.05, 2.2, 0], lag:14 } };
+// (while the Halo works on a body below it, ship.viewR turns the chase rig toward the body and ship.chaseOff aims it at the ship's belly,
+// so the job shows beside and beneath it; on the bridge the eye stays put and the pilot's gaze, ship.gazeR, turns toward the body)
 function shipPose(mode){
   const q = SHIP_POSE[mode], R = ship.R0, r = ship.rad;
-  const z = mode === 'chase' ? shipCam.zoom : 1, eye = V.mul(M3.apply(R, V.mul(q.eye, z)), r), look = V.mul(M3.apply(R, q.look), r);
-  return { eye, look, fwd:V.norm(V.sub(look, eye)), up:M3.apply(R, [-1, 0, 0]) };
+  if (mode === 'chase'){ const Rv = ship.viewR || R, o = ship.chaseOff || [0, 0, 0], eye = V.mul(M3.apply(Rv, V.mul(q.eye, shipCam.zoom)), r), look = V.mul(M3.apply(Rv, V.add(q.look, o)), r);
+    return { eye, look, fwd:V.norm(V.sub(look, eye)), up:M3.apply(Rv, [-1, 0, 0]) }; }
+  const Rg = ship.gazeR || R, eye = V.mul(M3.apply(R, q.eye), r), look = V.add(eye, V.mul(M3.apply(Rg, V.sub(q.look, q.eye)), r));
+  return { eye, look, fwd:V.norm(V.sub(look, eye)), up:M3.apply(Rg, [-1, 0, 0]) };
 }
 function shipCamSnap(p){ shipCam.eye = p.eye; shipCam.fwd = p.fwd; shipCam.up = p.up; }
 function startShipCam(mode){
@@ -255,9 +261,9 @@ function startShipCam(mode){
   setInfo(ship.index);
   const near = cam.focus === ship.index && orbit.lock === ship.index && V.len(cam.rel) < ship.rad*30 && !flight;
   if (near){ shipCam.on = true; shipCam.eye = cam.rel.slice(); shipCam.fwd = cam.fwd.slice(); shipCam.up = cam.up.slice(); updateModeUI(); return; }
-  // fly in first, landing exactly on the chase pose, then take over
-  const p = shipPose('chase'), dl = M3.applyT(ship.R0, V.norm(V.sub(p.eye, p.look)));
-  const vp = { yaw:Math.atan2(dl[0], dl[2]), pitch:Math.asin(clamp(dl[1], -0.999, 0.999)), dist:V.len(V.sub(p.eye, p.look)), off:p.look, offFn:null, up:p.up };
+  // fly in first, landing exactly on the chase pose, then take over (the ship keeps moving and turning: the flight follows its pose as it goes)
+  const p = shipPose('chase'), dl = M3.applyT(camFrameOf(ship), V.norm(V.sub(p.eye, p.look)));
+  const vp = { yaw:Math.atan2(dl[0], dl[2]), pitch:Math.asin(clamp(dl[1], -0.999, 0.999)), dist:V.len(V.sub(p.eye, p.look)), off:p.look, offFn:() => shipPose('chase').look, up:p.up, upFn:() => shipPose('chase').up };
   startFlight(ship, vp, () => { shipCam.on = true; shipCam.pending = false; shipCamSnap(shipPose('chase')); updateShipCam(0); updateModeUI(); }, null, true);
   shipCam.pending = true;
   updateModeUI();

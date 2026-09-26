@@ -34,7 +34,7 @@ Suggested wording for the site or for sharing:
 | Star surfaces | **Physically inspired** | Stars cooler than about 7,000 K have convective surfaces; they are drawn with churning granulation and flame-like spicules at the limb, much faster than real (granules last about 10 minutes). |
 | The Sun's colour | **Artistic tint** | Drawn warm yellow-orange with boiling, pulsing granulation, the way filtered solar photos look. Its real light (5,772 K) is white when seen from space; the atmosphere makes it look yellow from the ground. The readout says so. |
 | New worlds (0.7.5) | **Real orbits, sped-up years** | Comets and small bodies use JPL small-body elements; exoplanet orbits keep their real sizes but their periods are shortened so you can see them move (the readout gives the real period). Planet surfaces and 'Oumuamua's shape are illustrative. Tabby's Star's dust clouds are drawn where they could be; nobody has seen them. |
-| The Halo | **Fiction** | The only invented object. |
+| The Halo | **Fiction** | The only invented object, and everything it does is invented too: its light-speed jumps and folds through space, scans, probe, weapons tests, skims and the rock it drills. Weapons tests are purely visual: nothing about the body changes and every blast fades completely. Its path and speed are cinematic, scaled to the body it visits, not physical. What is real: it flies round the real bodies at their true positions and sizes, and its scan beams end on each body's real surface. |
 | Music | **Fiction** | Space is silent. |
 
 ## Where the numbers come from
