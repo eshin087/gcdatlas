@@ -4,6 +4,8 @@ All notable changes, newest first. Dates are UTC.
 
 ## Unreleased
 
+## 0.8.1 · 2026-09-26
+
 **New**
 - Comets and meteors, with their own atlas category (Halley's Comet and 'Oumuamua moved there too):
   - Comets Hale-Bopp (1997), NEOWISE (2020), Tsuchinshan-ATLAS (2024), the interstellar comet 3I/ATLAS (2025) and Rosetta's rubber-duck comet 67P, each on its real orbit at the moment it was at its best (the readout gives the date and where it is now). Each has a nucleus with jets, a glowing coma, a straight blue ion tail and a curved dust tail that point away from the Sun; seen from Earth's direction, Tsuchinshan-ATLAS shows its anti-tail.
