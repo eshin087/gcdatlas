@@ -674,7 +674,7 @@ const CATS = [['all', 'all'], ['solar', 'solar system'], ['comets', 'comets & me
 const catOf = o => (o.prog === P.blackhole || o.isBH) ? 'bh' : o.group;
 // true size (radius in light-years): a black hole's event horizon, a star's surface, otherwise the object's extent
 const atlasSize = o => o.prog === P.blackhole ? o.rad/20 : (o.sizeR || (o.starR ? o.starR*o.rad : o.rad*(o.solid || 0.6)));
-const earthDist = o => o.key === 'earth' ? 0 : V.len(V.sub(o.pos, earth.pos));
+const earthDist = o => o.key === 'earth' ? 0 : o.distNow ? o.distNow() : V.len(V.sub(o.pos, earth.pos));   // (distNow: drawn at a past moment, sorted by where it is now)
 const SEEN = new Set((() => { try { return JSON.parse(localStorage.getItem('gcdatlas.seen') || '[]'); } catch (e) { return []; } })());
 const catMatch = r => ATL.cat === 'all' || (ATL.cat === 'unseen' ? !SEEN.has(r.o.key) : r.cat === ATL.cat);
 const ATL_DEF = { sort:'distance', dir:1, cat:'all' };

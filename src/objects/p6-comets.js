@@ -7,9 +7,6 @@
 // a private random sequence, so this pack does not shift the shared rnd() that other objects draw from
 const cRnd = (() => { let s = 20260926; return () => { s = (s*1664525 + 1013904223) >>> 0; return s/4294967296; }; })();
 const cRndn = () => { let u = 0; while (!u) u = cRnd(); return Math.sqrt(-2*Math.log(u))*Math.cos(6.2831853*cRnd()); };
-const jdOf = (y, m, d) => Date.UTC(y, m - 1, 1)/86400000 + 2440587.5 + d - 1;   // Julian date (d may carry a fraction of a day)
-const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
-const fmtDay = jd => { const t = new Date((jd - 2440587.5)*86400000); return `${t.getUTCDate()} ${MONTHS[t.getUTCMonth()]} ${t.getUTCFullYear()}`; };
 // what the camera is about: the destination of a flight, the tour stop, or the object you are locked on
 const cFocus = () => flight ? flight.obj : tour.on ? OBJ[tour.obj] : orbit.lock >= 0 ? OBJ[orbit.lock] : null;
 // objects that stand for a past moment (or a replay) are only drawn while you visit them: `present` eases between 0 and 1
@@ -27,7 +24,7 @@ function orbitAtNu(el, nu){
 }
 
 // ---------------------------------------------------------------- a comet's nucleus: two lumpy lobes of dark ice and dust, lit by the Sun, puffing jets from its sunlit side
-// uP0: x activity, y jet strength, z terraces, w how smoothly the lobes merge   uP1: Sun direction (world), w: jet seed
+// uP0: x activity, y jet strength, w how smoothly the lobes merge   uP1: Sun direction (world), w: jet seed
 // uP2: lobe A centre, w: surface roughness   uP3: lobe A radii   uP4: lobe B centre   uM0: [lobe B radii, lobe B tilt (x, y, z angles), tint]
 const FS_NUC = COMMON + `
 float sdEll(vec3 p, vec3 r){ float k0 = length(p/r), k1 = length(p/(r*r)); return k0*(k0 - 1.)/max(k1, 1e-5); }
@@ -40,8 +37,6 @@ float mapN(vec3 p, mat3 RB){
   d += (n - 0.5)*uP2.w + (noise(p*23. + uP1.w) - 0.5)*0.01;
   // pits where the ice has sublimated away, and scattered boulders
   d += smoothstep(0.6, 0.78, noise(p*8.5 + 4.1 + uP1.w))*0.022 - smoothstep(0.78, 0.92, noise(p*34. + uP1.w))*0.006;
-  // layered ground: flat terraces and cliffs, as Rosetta saw on 67P
-  if(uP0.z > 0.){ float h = p.y*11. + n*3.; d -= uP0.z*smoothstep(0.35, 0.65, fract(h))*0.012; }
   return d;
 }
 vec3 nrmN(vec3 p, mat3 RB){ vec2 e = vec2(0.002, 0.); return normalize(vec3(mapN(p + e.xyy, RB) - mapN(p - e.xyy, RB), mapN(p + e.yxy, RB) - mapN(p - e.yxy, RB), mapN(p + e.yyx, RB) - mapN(p - e.yyx, RB))); }
@@ -77,12 +72,12 @@ void main(){
   if(act > 0.01){
     for(int j=0;j<5;j++){
       float fj = float(j);
-      vec3 jd = normalize(L*1.1 + 0.7*vec3(sin(fj*2.1 + uP1.w), cos(fj*1.7 + uP1.w*1.3), sin(fj*3.3 + uP1.w*0.7)));
+      vec3 jd = normalize(L*1.1 + 0.85*vec3(sin(fj*2.1 + uP1.w), cos(fj*1.7 + uP1.w*1.3), sin(fj*3.3 + uP1.w*0.7)));
       vec3 base = jd*0.19;
       float flick = 0.55 + 0.45*sin(uTime*0.5 + fj*1.9);
-      col += jet(o - base, d, jd, 0.74, 0.004, 0.07, 0.8, uTime*0.5 + fj*1.3, vec3(1., 0.98, 0.95), vec3(0.6, 0.75, 1.))*act*uP0.y*flick*(1. - alpha*0.85)*2.6*fwd;
+      col += jet(o - base, d, jd, 0.74, 0.004, 0.07, 0.8, uTime*0.5 + fj*1.3, vec3(1., 0.98, 0.95), vec3(0.6, 0.75, 1.))*act*uP0.y*flick*(1. - alpha*0.85)*3.*fwd;
     }
-    col += vec3(0.75, 0.85, 1.)*blob(o, d, L*0.15, 0.55)*act*0.05*fwd*(1. - alpha*0.6);
+    col += vec3(0.75, 0.85, 1.)*blob(o, d, L*0.15, 0.55)*act*0.09*fwd*(1. - alpha*0.6);
   }
   outCol(col*smoothstep(1., 0.8, length(o + d*max(-dot(o, d), 0.))), alpha);
 }`;
@@ -170,7 +165,7 @@ P.tailv = program(VS_RECT, FS_TAILV);
 
 // ---------------------------------------------------------------- a comet frozen at one moment: nucleus (pickable) + head and tails (drawn around it)
 // def: key, name, label, type, fact, aka, readout, sortKey; el (orbital elements, JPL/Horizons), jd (the moment shown); R (nucleus radius, km)
-// shape: { a:[centre], ra:[radii], b:[centre], rb:[radii], tilt:[x, y, z], k (merge), rough, terrace, tint }; spinH (hours), pole
+// shape: { a:[centre], ra:[radii], b:[centre], rb:[radii], tilt:[x, y, z], k (merge), rough, seed, tint }; spinH (hours), pole (RA, Dec)
 // tail: { Rc (head radius, km), ion, dust (tail lengths, AU), bend, act, shells, jets, ionK, dustK, trail (old dust along the orbit), trailLen (AU) }; views(o, F) -> view list
 const NUCF = 0.45;   // the nucleus fills this fraction of its bounding sphere
 function addComet(def){
@@ -197,7 +192,7 @@ function addComet(def){
     },
     setU(pr){
       const L0 = sunDirFrom(this), k = NUCF/Math.max(...S.ra.map((r, i) => Math.abs(S.a[i]) + r), ...S.rb.map((r, i) => Math.abs(S.b[i]) + r));
-      gl.uniform4f(pr.u.uP0, T.act, T.jets ?? 1, S.terrace || 0, (S.k ?? 0.1)*k);
+      gl.uniform4f(pr.u.uP0, T.act, T.jets ?? 1, 0, (S.k ?? 0.1)*k);
       gl.uniform4f(pr.u.uP1, L0[0], L0[1], L0[2], S.seed || 0);
       gl.uniform4f(pr.u.uP2, S.a[0]*k, S.a[1]*k, S.a[2]*k, S.rough ?? 0.05);
       gl.uniform4f(pr.u.uP3, S.ra[0]*k, S.ra[1]*k, S.ra[2]*k, 0);
@@ -234,6 +229,11 @@ function addComet(def){
     vis:() => o.present*smooth(0.02*AU_LY, 0.3*AU_LY, orbit.dist) });
   o.particleVis = () => 1;
   o.tail = tail; o.F = F; o.el = def.el; o.elNow = def.elNow || def.el; o.jd = def.jd;
+  // it is drawn where it was then, but its distance in the info panel and the atlas is where it is now
+  o.distNow = () => V.len(V.sub(orbitTp(o.elNow, jdNow()), earth.pos));
+  const nowFromEarth = () => fmtDist(o.distNow());
+  Object.defineProperty(o, 'distEarth', { get:() => nowFromEarth() + ' from Earth today' });
+  o.atlasDist = nowFromEarth();
   return o;
 }
 // where a comet is now (on the Solar System clock), for the readouts
@@ -245,10 +245,10 @@ const haleBopp = addComet({ key:'halebopp', name:'Comet Hale-Bopp', label:'Hale-
   el:{ a:187.7713, e:0.99513147, i:89.43017, om:282.47060, w:130.58725, tp:2450539.6331 }, jd:2450539.63, R:30, spinH:11.3,
   shape:{ a:[-0.1, 0, 0], ra:[1, 0.85, 0.8], b:[0.55, 0.12, 0.1], rb:[0.6, 0.55, 0.5], k:0.25, rough:0.07, seed:3.1 },
   tail:{ Rc:1.6e6, ion:0.55, dust:0.42, bend:0.55, act:1, shells:1, jets:1.1 },
-  fact:'One of the brightest comets of the last century: seen with the naked eye for about 18 months, a record. Its nucleus, about 60 km across, is several times bigger than most comets\'.',
+  fact:'Found in July 1995 by Alan Hale and Thomas Bopp, it became one of the brightest comets of the last century, visible to the naked eye for about 18 months, a record. Its nucleus is about 60 km across, several times bigger than most.',
   aka:'hale bopp c/1995 o1 great comet 1997',
   views:(o, F) => [
-    { dirFn:() => F.dir(0.3, 0.85, -0.4), k:0.66*F.L/o.rad, off:() => M3.applyT(o.R0, V.mul(V.add(V.mul(F.X, 0.4*F.L), V.mul(F.Z, 0.14*F.L)), 1/o.rad)), hold:10, drift:0.01 },
+    { dirFn:() => F.dir(0.3, 0.85, -0.4), k:0.66*F.L/o.rad, off:() => M3.applyT(o.R0, V.mul(V.add(V.mul(F.X, 0.3*F.L), V.mul(F.Z, 0.14*F.L)), 1/o.rad)), hold:10, drift:0.01 },
     { dirFn:() => F.dir(-0.55, 0.7, 0.35), k:3.2*F.Rc/o.rad, hold:9, drift:0.02 },
     { dirFn:() => F.dir(-0.35, 0.6, 0.7), k:1.7, hold:9, drift:0.04 } ],
   readout:() => `shown as on 1 April 1997, at its closest to the Sun (0.91 AU)\nnow ${auTxt(cometNow(haleBopp))} AU out, dark and frozen · back in about 2,500 years` });
@@ -261,7 +261,7 @@ const neowise = addComet({ key:'neowise', name:'Comet NEOWISE', label:'NEOWISE',
   fact:'Found by NASA\'s NEOWISE space telescope on 27 March 2020, it became a naked-eye comet with a long curved dust tail in July 2020. Its nucleus is about 5 km across.',
   aka:'neowise c/2020 f3 comet 2020',
   views:(o, F) => [
-    { dirFn:() => F.dir(0.25, 0.85, -0.45), k:0.62*F.L/o.rad, off:() => M3.applyT(o.R0, V.mul(V.add(V.mul(F.X, 0.4*F.L), V.mul(F.Z, 0.18*F.L)), 1/o.rad)), hold:10, drift:0.01 },
+    { dirFn:() => F.dir(0.25, 0.85, -0.45), k:0.62*F.L/o.rad, off:() => M3.applyT(o.R0, V.mul(V.add(V.mul(F.X, 0.3*F.L), V.mul(F.Z, 0.18*F.L)), 1/o.rad)), hold:10, drift:0.01 },
     { dirFn:() => F.dir(-0.45, 0.35, 0.8), k:3*F.Rc/o.rad, hold:9, drift:0.02 },
     { dirFn:() => F.dir(-0.3, 0.55, 0.75), k:1.6, hold:9, drift:0.04 } ],
   readout:() => `shown as on 3 July 2020, at its closest to the Sun (0.29 AU)\nit passed Earth at 103 million km on 23 July · now ${auTxt(cometNow(neowise))} AU out\nback in about 6,800 years` });
@@ -271,10 +271,10 @@ const tsuchinshan = addComet({ key:'tsuchinshan', name:'Comet Tsuchinshan-ATLAS'
   el:{ a:-19384.24, e:1.00002019, i:139.11055, om:21.55946, w:308.49131, tp:2460581.2421 }, jd:2460597.5, R:2.5, spinH:9,
   shape:{ a:[0, 0, 0], ra:[1, 0.8, 0.7], b:[0.7, -0.15, 0.1], rb:[0.5, 0.45, 0.45], tilt:[0.3, 0, -0.3], k:0.2, rough:0.07, seed:12.3 },
   tail:{ Rc:4e5, ion:0.22, dust:0.17, bend:0.5, act:0.85, shells:0.3, jets:1, trail:1.4, trailLen:0.1 },
-  fact:'Found by China\'s Purple Mountain Observatory in January 2023 and by the ATLAS survey a month later. In mid-October 2024 Earth passed through the plane of its orbit, and dust spread along that orbit showed as a thin spike pointing toward the Sun: an anti-tail.',
+  fact:'Found by China\'s Purple Mountain Observatory in January 2023, and on its own by the ATLAS survey in February. In mid-October 2024 Earth passed through the plane of its orbit, and dust spread along that orbit showed as a thin spike pointing toward the Sun: an anti-tail.',
   aka:'tsuchinshan atlas c/2023 a3 comet 2024 anti-tail purple mountain',
   views:(o, F) => [
-    { dirFn:() => F.dir(0.2, 0.9, -0.35), k:0.62*F.L/o.rad, off:() => M3.applyT(o.R0, V.mul(V.add(V.mul(F.X, 0.35*F.L), V.mul(F.Z, 0.12*F.L)), 1/o.rad)), hold:10, drift:0.01 },
+    { dirFn:() => F.dir(0.2, 0.9, -0.35), k:0.62*F.L/o.rad, off:() => M3.applyT(o.R0, V.mul(V.add(V.mul(F.X, 0.27*F.L), V.mul(F.Z, 0.12*F.L)), 1/o.rad)), hold:10, drift:0.01 },
     // looking from Earth's direction, nearly in the plane of the orbit: the anti-tail points toward the Sun
     { dirFn:F.earth, k:1.1*F.L/o.rad, off:() => M3.applyT(o.R0, V.mul(V.mul(F.X, 0.15*F.L), 1/o.rad)), hold:11, drift:0.002 },
     { dirFn:() => F.dir(-0.35, 0.5, 0.8), k:1.6, hold:9, drift:0.04 } ],
@@ -285,7 +285,7 @@ let off3i = null;
 const atlas3i = addComet({ key:'3iatlas', name:'3I/ATLAS', label:'3I/ATLAS', type:'the third interstellar object · a comet from another star', sortKey:1.356,
   el:{ a:-0.26393561, e:6.13931342, i:175.11313, om:322.15552, w:128.00713, tp:2460977.9823 }, jd:2460977.98, R:1.3, spinH:16, from:0.46, to:0.54,
   shape:{ a:[0, 0, 0], ra:[1, 0.85, 0.8], b:[0.45, 0.2, 0], rb:[0.6, 0.55, 0.5], k:0.3, rough:0.08, seed:21.5, tint:[0.62, 0.5, 0.42] },
-  tail:{ Rc:1.5e5, ion:0.05, dust:0.035, bend:0.35, act:0.55, shells:0, jets:0.8, ionK:0.8 },
+  tail:{ Rc:1.5e5, ion:0.05, dust:0.035, bend:0.35, act:0.8, shells:0, jets:0.8 },
   fact:'Found on 1 July 2025 by the ATLAS survey telescope in Chile: only the third object known to come from another star. It swept past the Sun just inside the orbit of Mars and is heading back into interstellar space; its speed hints that it may be older than the Solar System.',
   aka:'3i atlas c/2025 n1 interstellar comet 2025',
   views:(o, F) => [
@@ -303,12 +303,12 @@ const c67p = addComet({ key:'67p', name:'Comet 67P/Churyumov-Gerasimenko', label
   // two lobes, 4.1 x 3.3 x 1.8 km and 2.6 x 2.3 x 1.8 km, joined by a narrow neck
   shape:{ a:[-0.45, -0.45, 0], ra:[2.05, 0.9, 1.65], b:[1.25, 1.0, 0.1], rb:[1.3, 0.9, 1.15], tilt:[0, 0.2, 0.65], k:0.55, rough:0.05, seed:1.7, tint:[0.52, 0.5, 0.48] },
   tail:{ Rc:1.2e5, ion:0.03, dust:0.022, bend:0.4, act:0.75, shells:0, jets:1.3 },
-  fact:'The comet ESA\'s Rosetta orbited from 2014 to 2016: two lobes, 4.1 and 2.6 km long, joined by a neck like a rubber duck. It is about half as dense as water. Rosetta\'s lander Philae touched down on it on 12 November 2014.',
+  fact:'The comet ESA\'s Rosetta orbited from 2014 to 2016, and the first one landed on (by Philae, on 12 November 2014). Two lobes 4.1 and 2.6 km long, joined by a neck like a rubber duck, and about half as dense as water.',
   aka:'67p churyumov gerasimenko rosetta philae rubber duck comet esa',
   views:(o, F) => [
     { dirFn:() => F.eq(0.35, -0.55), k:1.6, hold:10, drift:0.03 },
-    // on the night side, looking toward the Sun: the jets glow against the dark
-    { dirFn:() => F.eq(2.7, 0.35), k:2.1, hold:9, drift:0.02 },
+    // side on, with the day and night sides both in view: jets rise from the sunlit ground into the dark
+    { dirFn:() => F.eq(1.55, -0.3), k:2, hold:9, drift:0.02 },
     { dirFn:() => F.dir(0.25, 0.85, -0.45), k:0.6*F.L/o.rad, off:() => M3.applyT(o.R0, V.mul(V.mul(F.X, 0.35*F.L), 1/o.rad)), hold:9, drift:0.01 } ],
   readout:() => `shown as on 13 August 2015, at its closest to the Sun (1.24 AU)\nthen losing up to 300 kg of water and 1,000 kg of dust a second\nnow ${auTxt(cometNow(c67p))} AU from the Sun · it circles it every 6.4 years` });
 
@@ -383,7 +383,7 @@ const sl9 = (() => {
   geom();
   const o = addObj({ key:'sl9', name:'Comet Shoemaker-Levy 9', label:'Shoemaker-Levy 9', type:'the comet that hit Jupiter in July 1994 · replayed', group:'comets', layer:3,
     parent:jupiter, offset:[0, 0, 0], rad:RJ*16, R0:jupiter.R0, sizeR:1*KM, pxMin:2, minZoom:0.02, farLum:0, noImpostor:true, noWaypoint:true, labelRange:0.05*AU_LY, sortKey:5.2,
-    fact:'Jupiter\'s gravity tore this comet into 21 pieces in July 1992. Two years later, from 16 to 22 July 1994, they hit Jupiter one after another at 60 km/s: the first collision between two Solar System bodies ever watched.',
+    fact:'Jupiter\'s gravity tore this comet into about 21 pieces in July 1992. Two years later, from 16 to 22 July 1994, they hit Jupiter one after another at 60 km/s: the first collision between two Solar System bodies ever watched.',
     aka:'shoemaker levy 9 sl9 d/1993 f2 jupiter impact 1994 string of pearls',
     inRange:() => o.present > 0.003, sim:true,
     visFn(){ return o.present; },
@@ -418,7 +418,7 @@ const sl9 = (() => {
     particles:[{ ps, prog:'ptHidden', mode:3, sb:1.6, size:2.6, rot:() => I3, q0:() => [...jupiter.rel, RJ*0.96], show:() => ps.count > 0 },
       { ps, prog:'ptHidden', mode:3, sb:0.22, size:9, rot:() => I3, q0:() => [...jupiter.rel, RJ*0.96], show:() => ps.count > 0 }],
     readout:() => { const t = o.t % T, n = frag.filter(f => t >= f.t).length;
-      return `a replay of July 1994, sped up · ${n} of 21 fragments have hit\nfragment G struck with the energy of about 6 million megatons of TNT\nplumes rose 3,000 km; the dark scars were about the size of Earth`; },
+      return `a replay of July 1994, sped up · ${n} of 21 fragments have hit\nthe biggest pieces hit with the energy of tens of thousands of megatons of TNT\nplumes rose 3,000 km; the dark scars were about the size of Earth`; },
     views:[
       // the string of pearls falling in from the south
       { dirFn:() => M3.apply(jupiter.R0, V.norm(V.add(V0, [0, -0.25, 0]))), k:0.62, off:() => V.mul(V.add(P0, V.mul(A, 3.2)), 1/16), hold:11, drift:0.004 },
@@ -426,7 +426,6 @@ const sl9 = (() => {
       { dirFn:() => M3.apply(jupiter.R0, V0), k:0.035, off:() => V.mul(V.norm(V.add(P0, V.mul(V0, -V.dot(P0, V0)))), 0.98/16), hold:11, drift:0.002 },
       // the scars turning into view
       { dirFn:() => M3.apply(jupiter.R0, V.norm(V.add(V0, [0, -0.5, 0]))), k:0.2, hold:10, drift:0.01 } ] });
-  o.dbg = { ps, imp, frag };
   return o;
 })();
 
@@ -453,7 +452,7 @@ const kreutz = (() => {
   const o = addObj({ key:'kreutz', name:'Kreutz sungrazers', label:'Kreutz sungrazers', type:'a family of comets that dive through the Sun\'s corona · replayed', group:'comets', layer:3,
     parent:sun, offset:V.mul(F0.P, -8*RS), rad:RS*24, sizeR:0.01*KM, R0:frameY(F0.Q, V.cross(F0.Q, F0.P)), pxMin:2, minZoom:0.05, farLum:0, noImpostor:true, noWaypoint:true,
     labelRange:0.5*AU_LY, sortKey:0.0055,
-    fact:'Pieces of one giant comet that broke up centuries ago, still following nearly the same orbit, which passes about 130,000 km above the Sun\'s surface. The SOHO spacecraft has found over 4,000 of them; most are only metres to tens of metres across and boil away.',
+    fact:'Pieces of one giant comet that broke up centuries ago, still on nearly the same orbit, which skims the Sun\'s corona as close as about 130,000 km above its surface. The SOHO spacecraft has found over 4,000 of them; most are only a few metres to tens of metres across and boil away.',
     aka:'kreutz sungrazers sungrazing comets soho lovejoy ikeya-seki great comet 1843 1882',
     inRange:() => o.present > 0.003, sim:true, visFn(){ return o.present; },
     update(dt){
@@ -564,13 +563,13 @@ const swiftTuttleEl = { a:26.0920695, e:0.963225755, i:113.453817, om:139.381192
 const tempelTuttleEl = { a:10.3383382, e:0.905552721, i:162.4865754, om:235.2709891, w:172.5002737, tp:2450872.5977 };
 const perseids = addShower({ key:'perseids', name:'the Perseids', label:'Perseids', type:'meteor shower in August · dust from Comet Swift-Tuttle', el:swiftTuttleEl, n:9000, width:0.05, col:[1, 0.86, 0.62], sortKey:1.01,
   parentPS:parentDot(swiftTuttleEl, [0.7, 0.85, 1]),
-  fact:'Every August Earth runs through the dust shed by Comet Swift-Tuttle, whose nucleus is 26 km across. The grains, from sand to pebble size, hit the air at 59 km/s and burn up as shooting stars high above the ground.',
+  fact:'Every August Earth runs through the dust shed by Comet Swift-Tuttle, whose nucleus is 26 km across. The grains, mostly the size of sand, hit the air at 59 km/s and burn up as shooting stars 80 to 120 km up.',
   aka:'perseids meteor shower august swift-tuttle 109p shooting stars',
   readout:() => `the dust stream along Comet Swift-Tuttle's orbit (spread drawn illustratively)\nEarth crosses it around 12 August: in ${perseids.daysToCrossing()} days · up to about 100 meteors an hour\nthe comet returns every 133 years, next in 2126`,
   views:[{ d:[0.2, 1, 0.35], k:7, hold:10, drift:0.004 }, { d:[0.35, 0.25, 1], k:1.6, hold:10, drift:0.01 }, { d:[0.05, 1, 0.08], k:150, hold:10, drift:0.002 }] });
 const leonids = addShower({ key:'leonids', name:'the Leonids', label:'Leonids', type:'meteor shower in November · dust from Comet Tempel-Tuttle', el:tempelTuttleEl, n:9000, width:0.02, col:[0.85, 0.92, 1], sortKey:0.98,
   parentPS:parentDot(tempelTuttleEl, [0.7, 0.85, 1]), clump:0.3, clumpM:(() => { const n = 0.01720209895/Math.pow(tempelTuttleEl.a, 1.5); return n*(JD_NOW - tempelTuttleEl.tp) - 0.02; })(),
-  fact:'Comet Tempel-Tuttle, 3.6 km across, passes the Sun every 33 years and leaves fresh trails of dust. When Earth hits one, the November Leonids become a storm: in 1966 people saw thousands of meteors a minute. At 71 km/s they are the fastest meteors of the year.',
+  fact:'Comet Tempel-Tuttle, 3.6 km across, returns every 33 years and leaves fresh trails of dust; when Earth hits one, the November Leonids become a storm, as in 1966, when thousands of meteors a minute fell over the western US. At about 70 km/s they are the fastest of the big yearly showers.',
   aka:'leonids meteor shower storm november tempel-tuttle 55p shooting stars 1833 1966',
   readout:() => `the dust stream along Comet Tempel-Tuttle's orbit (spread drawn illustratively)\nEarth crosses it around 17 November: in ${leonids.daysToCrossing()} days · about 15 meteors an hour in most years\nthe densest dust trails close to the comet bring the storms`,
   views:[{ d:[0.2, 1, 0.35], k:7, hold:10, drift:0.004 }, { d:[0.35, 0.25, 1], k:1.6, hold:10, drift:0.01 }, { d:[0.05, 1, 0.08], k:65, hold:10, drift:0.002 }] });

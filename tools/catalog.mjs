@@ -19,7 +19,7 @@ const rows = await page.evaluate(() => {
   const size = o => o.isBH || (o.prog && o.prog === c.BYKEY.sgra.prog) ? o.rad/20 : (o.sizeR || (o.starR ? o.starR*o.rad : o.rad*(o.solid || 0.6)));
   return c.OBJ.filter(o => !o.marker && o.atlas !== false && o.group).map(o => ({
     key:o.key, name:o.name, group:o.group, type:o.type, bh:!!(o.isBH || (o.prog && o.prog === c.BYKEY.sgra.prog)),
-    distLy:Math.hypot(o.pos[0] - earth.pos[0], o.pos[1] - earth.pos[1], o.pos[2] - earth.pos[2]), sizeKm:2*size(o)*LY,
+    distLy:o.distNow ? o.distNow() : Math.hypot(o.pos[0] - earth.pos[0], o.pos[1] - earth.pos[1], o.pos[2] - earth.pos[2]), sizeKm:2*size(o)*LY,
     views:(o.views || []).length, flyby:!!o.flyby, tour:c.TOUR.includes(o.index) }));
 });
 await browser.close();

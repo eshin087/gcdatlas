@@ -98,7 +98,7 @@ const TOURS = [
     ['sl9', 'In July 1994 the pieces of Comet Shoemaker-Levy 9 hit Jupiter, one after another, leaving dark scars the size of Earth.'],
     ['kreutz', 'Some comets dive straight through the Sun\'s corona. Most of these sungrazers boil away.'],
     ['perseids', 'Comets leave dust along their orbits. Every August Earth runs through the dust of Swift-Tuttle: the Perseid meteors.'],
-    ['leonids', 'Tempel-Tuttle\'s dust makes the Leonids. When Earth hits a fresh trail they become a storm of thousands of meteors a minute.'],
+    ['leonids', 'Tempel-Tuttle\'s dust makes the Leonids. When Earth hits a fresh trail they become a storm: in 1966, thousands of meteors a minute.'],
     ['oumuamua', 'Some visitors come from other stars. \'Oumuamua was the first one found, in 2017.'],
     ['3iatlas', '3I/ATLAS, found in 2025, was the third. It passed the Sun and is heading back to interstellar space.'],
   ] },

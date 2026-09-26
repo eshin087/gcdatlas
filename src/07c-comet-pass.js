@@ -17,13 +17,13 @@ const passer = (() => {
   }
   function make(f){
     // inside the Solar System a comet (slow, tails away from the Sun), otherwise a quick meteor-like streak
-    const nearSun = V.len(sun.rel) < 3000*AU_LY || V.len(V.sub(frel(f.obj), frel(sun))) < 3000*AU_LY;
+    const nearSun = V.len(sun.rel) < 3000*AU_LY && f.vp.dist < 3000*AU_LY;
     const comet = nearSun && pr() < 0.7, dur = comet ? 2.6 + 1.2*pr() : 0.8 + 0.5*pr();
     const x0 = 0.18 + 0.35*pr(), start = Math.min(x0*f.dur, 0.85*f.dur - dur);
     if (start < 0.1*f.dur) return;
     // the path: a straight line whose closest point to the middle of the screen is at 55 to 80% of the half-height,
     // in the upper half or toward the right (the interface sits bottom and left), crossing it sideways
-    const th = (-35 + 180*pr())*DEG, rho = 0.55 + 0.25*pr(), mid = [rho*Math.cos(th), rho*Math.sin(th)];
+    const th = (-35 + 180*pr())*DEG, rho = 0.55 + 0.25*pr(), mid = [rho*Math.cos(th)*Math.min(tanX/tanY, 1.25), rho*Math.sin(th)];   // (narrow screens: pulled in sideways)
     const tilt = (5 + 15*pr())*DEG, sgn = pr() < 0.5 ? -1 : 1, tg = [-Math.sin(th)*sgn, Math.cos(th)*sgn];
     const dir = [tg[0]*Math.cos(tilt) + Math.cos(th)*Math.sin(tilt), tg[1]*Math.cos(tilt) + Math.sin(th)*Math.sin(tilt)];
     const L = comet ? 0.35 + 0.2*pr() : 0.55 + 0.3*pr();
