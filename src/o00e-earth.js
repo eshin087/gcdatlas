@@ -118,9 +118,11 @@ void main(){
         float fire = box*fpatch*pow(noise(n*520. + vec3(0., t*0.02, 0.)), 16.)*9.;   // (patchy burning regions, few scattered fronts)
         col += vec3(1., 0.42, 0.1)*fire*(1. - day)*(1. - 0.6*cl);
         col = mix(col, vec3(0.45, 0.4, 0.34)*(dif + 0.02), box*0.18*fpatch*day*(1. - cl)); } }
-    // lightning: brief flashes lighting up storm clouds from inside (only visible on the night side)
-    for(int i=0;i<6;i++){ vec4 f = uFlash[i]; if(f.w <= 0.) continue; float d = length(n - f.xyz);
-      col += vec3(0.78, 0.84, 1.)*f.w*(exp(-d*d/0.00006)*3. + exp(-d*d/0.0008)*0.6)*(1. - 0.85*day); }
+    // lightning: a storm cloud lit from inside for a moment, a soft patchy glow about a hundred kilometres across rather than a
+    // point of light, with a faint brighter core where the bolt is (only visible on the night side)
+    for(int i=0;i<6;i++){ vec4 f = uFlash[i]; if(f.w <= 0.) continue; float d = length(n - f.xyz); if(d > 0.06) continue;
+      float cloudTop = 0.35 + 0.9*noise(n*150. + float(i)*3.1);
+      col += vec3(0.72, 0.8, 1.)*f.w*(exp(-d*d/0.00035)*0.55*cloudTop + exp(-d*d/0.00003)*0.35)*(1. - 0.9*day); }
     if(era > 3.) col += vec3(1., 0.36, 0.08)*pow(noise(n*16. + t*0.02), 3.)*(era - 3.)*2.5;   // the magma ocean glows on its own
     // atmosphere along the view path: blue by day, orange at the terminator
     float path = pow(1. - mu, 2.5);
@@ -173,6 +175,7 @@ const earth = (() => {
   const WX = { storms:[], cells:[], flashes:[], last:null, month:0, sBuf:new Float32Array(12), sbBuf:new Float32Array(12), cBuf:new Float32Array(20), fBuf:new Float32Array(24), cyc:0 };
   const earthWeather = {
     get storms(){ return WX.storms; }, get cells(){ return WX.cells; },
+    testFlash(la, lo){ WX.flashes.push({ p:dirLL(la, lo), t:0.005, st:[0, 0.09], end:0.3, amp:0.9 }); },   // (tests)
     ffwd(sec){ let t = WX.last ?? 0; for (let k=0;k<sec*2;k++){ t += 0.5; this.step(t); } WX.last = null; },   // (tests: run the weather ahead)
     step(t){
       const dt = WX.last == null ? 0 : clamp(t - WX.last, 0, 0.5); WX.last = t;
@@ -194,17 +197,19 @@ const earth = (() => {
       for (let i=WX.cells.length - 1; i>=0; i--){ const c = WX.cells[i]; c.age += dt; if (c.age > c.life) WX.cells.splice(i, 1); }
       while (WX.cells.length < 5 && reg.length){ const r = reg[Math.floor(rnd()*reg.length)]; WX.cells.push({ r, age:0, life:50 + 70*rnd(), p:dirLL(r[1] + rndn()*2.5, r[2] + rndn()*3.5), w:(1.2 + 1.2*rnd())*DEG }); }
       // lightning: each cluster (and each cyclone's eyewall) flashes now and then, often twice in quick succession
-      for (const c of WX.cells) if (rnd() < dt*1.4){ const q = V.norm(V.add(c.p, V.mul(randDir(), c.w*0.7))); WX.flashes.push({ p:q, t:0, dur:0.12 + 0.1*rnd(), again:rnd() < 0.5 }); }
-      for (const s of WX.storms) if (s.str > 0.5 && rnd() < dt*0.8){ const q = V.norm(V.add(dirLL(s.lat, s.lon), V.mul(randDir(), s.R*0.25))); WX.flashes.push({ p:q, t:0, dur:0.15, again:rnd() < 0.4 }); }
-      for (let i=WX.flashes.length - 1; i>=0; i--){ const f = WX.flashes[i]; f.t += dt; if (f.t > f.dur*(f.again ? 2.6 : 1)) WX.flashes.splice(i, 1); }
-      if (WX.flashes.length > 6) WX.flashes.splice(0, WX.flashes.length - 6);
+      // lightning: now and then (about once every 4 to 5 seconds per cluster, rarer in cyclones), never more than three at once
+      // on the whole planet. Each flash is 2 to 4 quick strokes within a third of a second, as real lightning flickers.
+      const flash = (p) => { if (WX.flashes.length >= 3) return; const n = 2 + Math.floor(rnd()*3), st = [0]; for (let k=1;k<n;k++) st.push(st[k - 1] + 0.04 + 0.1*rnd()); WX.flashes.push({ p, t:0, st, end:st[n - 1] + 0.2, amp:0.6 + 0.4*rnd() }); };
+      for (const c of WX.cells) if (rnd() < dt*0.22) flash(V.norm(V.add(c.p, V.mul(randDir(), c.w*0.6))));
+      for (const s of WX.storms) if (s.str > 0.5 && rnd() < dt*0.12) flash(V.norm(V.add(dirLL(s.lat, s.lon), V.mul(randDir(), s.R*0.25))));
+      for (let i=WX.flashes.length - 1; i>=0; i--){ const f = WX.flashes[i]; f.t += dt; if (f.t > f.end) WX.flashes.splice(i, 1); }
     },
     set(pr, t){
       this.step(t);
       WX.sBuf.fill(0); WX.sbBuf.fill(0); WX.cBuf.fill(0); WX.fBuf.fill(0);
       WX.storms.slice(0, 3).forEach((s, i) => { const p = dirLL(s.lat, s.lon); WX.sBuf.set([p[0], p[1], p[2], s.R*Math.sign(s.lat || 1)], i*4); WX.sbBuf.set([s.str, s.ph, 0, 0], i*4); });
       WX.cells.slice(0, 5).forEach((c, i) => WX.cBuf.set([c.p[0], c.p[1], c.p[2], c.w*smooth(0, 8, c.age)*(1 - smooth(c.life - 8, c.life, c.age))], i*4));
-      WX.flashes.forEach((f, i) => { const x = f.t/f.dur, b = x < 1 ? Math.sin(Math.PI*x) : (x > 1.6 && x < 2.6 ? 0.7*Math.sin(Math.PI*(x - 1.6)) : 0); WX.fBuf.set([f.p[0], f.p[1], f.p[2], b], i*4); });
+      WX.flashes.forEach((f, i) => { let b = 0; for (const s of f.st) if (f.t >= s) b += Math.exp(-(f.t - s)/0.035); WX.fBuf.set([f.p[0], f.p[1], f.p[2], Math.min(b, 1)*f.amp], i*4); });
       if (pr.u.uStorm) gl.uniform4fv(pr.u.uStorm, WX.sBuf); if (pr.u.uStormB) gl.uniform4fv(pr.u.uStormB, WX.sbBuf);
       if (pr.u.uCell) gl.uniform4fv(pr.u.uCell, WX.cBuf); if (pr.u.uFlash) gl.uniform4fv(pr.u.uFlash, WX.fBuf);
       const m = WX.month, on = ms => ms.includes(m) ? 1 : 0;
@@ -215,7 +220,7 @@ const earth = (() => {
     summary(){
       const parts = [];
       const big = WX.storms.filter(s => s.str > 0.4); if (big.length) parts.push((big.length > 1 ? big.length + ' tropical cyclones' : 'a tropical cyclone') + ' over ' + [...new Set(big.map(s => s.b[0]))].join(' and '));
-      const lit = [...new Set(WX.cells.map(c => c.r[0]))]; if (lit.length) parts.push('thunderstorms over ' + lit.slice(0, 2).join(' and '));
+      const lit = [...new Set(WX.cells.map(c => c.r[0]))]; if (lit.length) parts.push('thunderstorms with lightning over ' + lit.slice(0, 2).join(' and '));
       return parts.length ? 'weather now (illustrative, sped up): ' + parts.join(' · ') : '';
     },
   };

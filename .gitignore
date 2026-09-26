@@ -6,3 +6,4 @@ tools/stars.json
 .DS_Store
 tests/out/
 tools/cache/
+.claude/worktrees/
