@@ -200,7 +200,9 @@ const milkyway = (() => {
     update(){
       const c = M3.applyT(this.R0, V.mul(this.rel, -1));   // camera in galaxy frame (ly)
       const Rc = Math.hypot(c[0], c[2]), zc = Math.abs(c[1]);
-      this.inside = (1 - smooth(1800, 9000, zc))*(1 - smooth(52000, 76000, Rc));
+      // (inside the disc's slab, or within about 15,000 light-years of the centre: from globular clusters a few thousand light-years
+      // above the inner galaxy, such as M19 and M10, the half-faded volume filled the screen with banded glow)
+      this.inside = Math.max((1 - smooth(1800, 9000, zc))*(1 - smooth(52000, 76000, Rc)), 1 - smooth(15000, 24000, Math.hypot(Rc, zc)));
       this.camR = Rc; this.camZ = zc;
     },
     views:[
@@ -246,12 +248,36 @@ const m33 = addGalaxy({ key:'m33', name:'Triangulum Galaxy', label:'M33', type:'
   fact:'A loose, flocculent spiral full of giant star-forming regions. On a dark night it is the most distant thing some people can see with the naked eye.',
   pos:radec(hms(1,33,50.9), dms(30,39,37), 2.73e6), rad:32000, incl:55, pa:23, g:{ arms:2, pitch:24, bulge:0.2, dust:0.6, H:0.012, sf:1.6, irr:0.35, seed:21, Rd:0.3 },
   aka:'m33 ngc 598 triangulum', readout:() => '2.73 million light-years · ~40 billion stars\nmay be a satellite of Andromeda' });
-[['sgrdsph', 'Sagittarius Dwarf', hms(18,55,19.5), dms(-30,32,43), 70000, 8000], ['fornaxd', 'Fornax Dwarf', hms(2,39,59.3), dms(-34,26,57), 460000, 3000],
- ['sculptord', 'Sculptor Dwarf', hms(1,0,9.4), dms(-33,42,33), 290000, 1500], ['leoi', 'Leo I', hms(10,8,28.1), dms(12,18,23), 820000, 1300],
- ['dracod', 'Draco Dwarf', hms(17,20,12.4), dms(57,54,55), 260000, 1000], ['ngc6822', "Barnard's Galaxy", hms(19,44,56.6), dms(-14,47,21), 1.6e6, 4500],
- ['ic1613', 'IC 1613', hms(1,4,47.8), dms(2,7,4), 2.4e6, 5000], ['wlm', 'Wolf–Lundmark–Melotte', hms(0,1,58.1), dms(-15,27,39), 3e6, 4000]].forEach(([key, name, ra, dec, dist, r]) => {
-  addGalaxy({ key, name, label:name, type:'dwarf galaxy · Local Group', pos:radec(ra, dec, dist), rad:r, incl:40, g:{ ell:0.3, Rd:0.25 }, farLum:0.35, atlas:false, labelRange:r*600, sortKey:dist,
-    fact:'One of dozens of small galaxies orbiting the Milky Way or Andromeda.', readout:() => fmtDist(dist) + ' away' });
+// eight of the Local Group's dwarf galaxies (listed since 0.21.0; p9b-messier3.js turns each to its real position angle and draws it as
+// what it is). Positions: SIMBAD (degrees). Distances: the tip of the red giant branch, RR Lyrae stars or Cepheids, as named. The size is
+// how far the drawing reaches: the King limiting radius for the spheroidals (Muñoz et al. 2018), about 1.5 times R25 for the irregulars;
+// 4 half-light radii for the Sagittarius Dwarf, whose outskirts become its stream. (Their stars here keep the shared random numbers as
+// they were before 0.21.0: everything made after them depends on that)
+[['sgrdsph', 'Sagittarius Dwarf', 'Sagittarius Dwarf', 283.8292, -30.5453, 86000, 34000, 'dwarf spheroidal galaxy · being torn apart by the Milky Way',
+  'Hidden behind the crowded middle of the Milky Way, it was found only in 1994. Our galaxy is tearing it into a stream of stars that loops right around the sky, and the globular cluster M54 sits at its heart.',
+  '86,000 light-years, beyond the Milky Way\'s centre\nhalf its light lies within 8,500 light-years', 'sgr dsph sag dsph sagittarius dwarf spheroidal sagittarius dwarf elliptical galaxy sgr deg sdg stream'],
+ ['fornaxd', 'Fornax Dwarf', 'Fornax Dwarf', 39.9971, -34.4492, 465000, 9300, 'dwarf spheroidal galaxy · satellite of the Milky Way',
+  'Found by Harlow Shapley in 1938, it holds six globular clusters of its own. The brightest was seen by John Herschel in 1835, a century before the galaxy itself.',
+  '465,000 light-years · 6 globular clusters of its own\nas bright as 19 million Suns', 'fornax dsph fornax dwarf spheroidal fornax dwarf elliptical eso 356-4 pgc 10074 mcg-06-07-001'],
+ ['sculptord', 'Sculptor Dwarf', 'Sculptor Dwarf', 15.0392, -33.7089, 274000, 5900, 'dwarf spheroidal galaxy · satellite of the Milky Way',
+  'The first dwarf spheroidal galaxy ever found, reported by Harlow Shapley in 1938 from photographs taken in South Africa. Most of its stars are more than 10 billion years old.',
+  '274,000 light-years · found in 1938\nhalf its light lies within 980 light-years', 'sculptor dsph scl dsph sculptor dwarf spheroidal sculptor dwarf elliptical eso 351-30 pgc 3589'],
+ ['leoi', 'Leo I', 'Leo I', 152.1172, 12.3065, 830000, 3300, 'dwarf spheroidal galaxy · one of the Milky Way\'s most distant satellites',
+  'It lies a third of a degree north of Regulus, the bright star at the heart of Leo, whose glare makes it hard to see. One of the Milky Way\'s most distant satellites, it swung past our galaxy about a billion years ago.',
+  '830,000 light-years · 0.34° from the star Regulus\npassed closest to the Milky Way about 1 billion years ago', 'leo i dsph leo i dwarf spheroidal regulus dwarf ugc 5470 ddo 74 pgc 29488 harrington-wilson 1'],
+ ['dracod', 'Draco Dwarf', 'Draco Dwarf', 260.0597, 57.9212, 266000, 3700, 'dwarf spheroidal galaxy · satellite of the Milky Way',
+  'Its stars move so fast that the galaxy must be held together by far more mass than they have. For every Sun\'s worth of light it holds about 100 Suns\' worth of mass or more, so it is a favourite place to hunt for signs of dark matter.',
+  '266,000 light-years · as bright as 300,000 Suns\nabout 100 Suns of mass for each Sun of light', 'draco dsph draco dwarf spheroidal ugc 10822 ddo 208 pgc 60095 dark matter'],
+ ['ngc6822', "Barnard's Galaxy", "Barnard's Galaxy", 296.2342, -14.7976, 1.5e6, 5000, 'barred dwarf irregular galaxy · Local Group',
+  'E. E. Barnard found it in 1884. In 1925 Edwin Hubble measured its Cepheid stars and showed it lies far outside the Milky Way, one of the first proofs that other galaxies exist.',
+  '1.5 million light-years · found by Barnard in 1884\nHubble\'s 1925 estimate: 700,000 light-years', 'ngc 6822 c57 caldwell 57 barnard\'s galaxy barnards galaxy ic 4895 ddo 209 pgc 63616 hubble cepheids'],
+ ['ic1613', 'IC 1613', 'IC 1613', 16.2017, 2.1195, 2.4e6, 8500, 'dwarf irregular galaxy · Local Group',
+  'Max Wolf found it in 1906. We see it through a clear patch of our own galaxy and it holds little dust, so astronomers use its stars to check the rungs of the cosmic distance ladder.',
+  '2.4 million light-years · found by Max Wolf in 1906\nas bright as about 90 million Suns', 'ic 1613 c51 caldwell 51 ddo 8 ugc 668 pgc 3844 distance ladder'],
+ ['wlm', 'Wolf-Lundmark-Melotte', 'WLM', 0.4913, -15.4639, 3.2e6, 10000, 'dwarf irregular galaxy · on the edge of the Local Group',
+  'A lonely galaxy at the edge of the Local Group that seems never to have met another galaxy. Max Wolf found it in 1909, and in 2022 the James Webb Space Telescope photographed its stars to read its history.',
+  '3.2 million light-years · at the Local Group\'s edge\nthe Webb telescope photographed its stars in 2022', 'wlm wolf-lundmark-melotte wolf lundmark melotte ddo 221 ugca 444 pgc 143 mcg-03-01-015 jwst']].forEach(([key, name, label, ra, dec, dist, r, type, fact, readout, aka]) => {
+  addGalaxy({ key, name, label, type, pos:radec(ra/15, dec, dist), rad:r, g:{ ell:0.3, Rd:0.25 }, farLum:0.35, labelRange:r*600, sortKey:dist, fact, aka, readout:() => readout });
 });
 // ---------------------------------------------------------------- notable galaxies beyond the Local Group
 addGalaxy({ key:'m81', name:"Bode's Galaxy", label:'M81', type:'grand-design spiral', sortKey:11.8e6, aka:'m81 ngc 3031',
