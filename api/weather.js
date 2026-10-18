@@ -1,5 +1,5 @@
 // GET /api/weather: the weather over the three launch sites (Starbase, Cape Canaveral, Vandenberg) and, since the cities came (0.14), over the
-// centres of the cities (New York, Tokyo, Dubai, London, Paris; since 0.19.0 Hong Kong, San Francisco, Sydney, Rome, Los Angeles, Rio de Janeiro; since 0.20.0 Las Vegas), hour by hour from three days ago to two days ahead, from Open-Meteo (free,
+// centres of the cities (New York, Tokyo, Dubai, London, Paris; since 0.19.0 Hong Kong, San Francisco, Sydney, Rome, Los Angeles, Rio de Janeiro; since 0.22.0 Las Vegas), hour by hour from three days ago to two days ahead, from Open-Meteo (free,
 // CC BY 4.0: "Weather data by Open-Meteo.com"). The page draws the clouds, the wind that carries a launch's smoke and the haze from it (0.10.0)
 // and each city's own sky. The coordinates are the pads' and the cities' centres, fixed here: nothing about the visitor is sent anywhere.
 // One upstream request for all fifteen places. Cached at the edge for 30 minutes. Query strings are refused (see _lib/guard.js).

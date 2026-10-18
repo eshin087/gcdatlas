@@ -5,11 +5,18 @@
      numbers with units. The newest version comes first and opens by itself; its number must match package.json (tests/smoke.mjs checks it).
      Every detail stays in docs/CHANGELOG.md, which the panel links to. -->
 
-## 0.20.0 · 18 Oct 2026 · Las Vegas
+## 0.22.0 · 18 Oct 2026 · Las Vegas
 - Las Vegas in 3D as it is today, with its traffic, the planes at Harry Reid Airport, local time and real weather.
 - The Sphere with shows on its outside, the High Roller lit at night, the Luxor's pyramid and its beam of light, the STRAT and the Fremont Street canopy.
 - The Fountains of Bellagio rise on their real schedule: every 30 minutes in the afternoon, every 15 minutes from 8 pm to midnight.
 - What is being built right now: Hard Rock's guitar-shaped tower, topped out in May, and the Athletics' ballpark with its first two roof arches.
+
+## 0.21.0 · 18 Oct 2026 · Every Messier globular cluster
+- 25 more globular clusters, so all 29 in Messier's list are here: from M71, so loose it was long taken for an open cluster, to M54, the heart of a small galaxy the Milky Way is pulling apart.
+- Each one is shaped by its real measurements: how tight its core is, how flat it is, and the colours of its stars.
+- Pease 1, the first planetary nebula found inside a globular cluster, glows among M15's stars.
+- Ganymede, Callisto, Canopus, Tau Ceti and eight small galaxies near ours now have their own places in the atlas, with their real sizes and shapes.
+- The Messier marathon tour grows to 79 stops. 82 of Messier's 110 objects are in so far.
 
 ## 0.19.1 · 18 Oct 2026 · One of each
 - Behind the scenes: checks that stop the same star, nebula or galaxy from being added to the atlas twice.

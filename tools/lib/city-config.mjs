@@ -91,7 +91,7 @@ export const CITIES = [
       { id:'zonasul', name:'Copacabana, Botafogo and Sugarloaf', la:-22.958, lo:-43.178, size:3200, px:2048, bld:true },
       { id:'corcovado', name:'Corcovado', la:-22.952, lo:-43.211, size:3200, px:1536, bld:true } ],
     airports:[ { iata:'GIG', size:6400 }, { iata:'SDU', size:3200 } ] },
-  // ---- 0.20.0 (owner, 2026-10-17: Las Vegas "how it is present day"). The finer layers' photos are USDA NAIP of May 2024; the two sites that
+  // ---- 0.22.0 (owner, 2026-10-17: Las Vegas "how it is present day"). The finer layers' photos are USDA NAIP of May 2024; the two sites that
   // changed since (the Tropicana, imploded in October 2024, now the Athletics' ballpark; the Mirage, closed in July 2024, now Hard Rock with its
   // guitar tower) take Sentinel-2's newest colours (`recent`). thin: buildings the page draws as models (the Sphere, the High Roller, the Luxor
   // pyramid, Paris Las Vegas's Eiffel Tower, the STRAT's tower)
@@ -110,6 +110,6 @@ export const CITIES = [
     airports:[ { iata:'LAS', size:6400 } ] },
 ];
 // airports' known elevations, to check OpenStreetMap's (m above sea level; official figures, aeronautical charts): JFK 4, LGA 6, EWR 5, HND 6, NRT 43, DXB 19, DWC 33, LHR 25, LGW 62, LCY 6, STN 106, LTN 160, CDG 119, ORY 89
-// (0.19.0: HKG 9, SFO 4, OAK 3, SYD 6, FCO 4, CIA 129, LAX 38, BUR 236, GIG 9, SDU 3; 0.20.0: LAS 665, 2,181 ft)
+// (0.19.0: HKG 9, SFO 4, OAK 3, SYD 6, FCO 4, CIA 129, LAX 38, BUR 236, GIG 9, SDU 3; 0.22.0: LAS 665, 2,181 ft)
 export const ELE_CHECK = { JFK:4, LGA:6, EWR:5, HND:6, NRT:43, DXB:19, DWC:33, LHR:25, LGW:62, LCY:6, STN:106, LTN:160, CDG:119, ORY:89,
   HKG:9, SFO:4, OAK:3, SYD:6, FCO:4, CIA:129, LAX:38, BUR:236, GIG:9, SDU:3, LAS:665 };

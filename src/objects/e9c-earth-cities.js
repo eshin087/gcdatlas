@@ -95,7 +95,7 @@ const ECT = (() => {
     losangeles:{ prog:'sxEnvLA', lit:false, items:[{ name:'the Hollywood sign', la:34.1340991, lo:-118.321652, b:90, g:478,
       letters:[[-47.2, -7.7], [-34.4, -11.0], [-21.9, -8.6], [-12.6, -7.0], [-3.3, -5.7], [8.9, -0.9], [21.5, 0.7], [34.1, 2.7], [48.8, -1.7]] }] },
     rio:{ prog:'sxEnvRio', lit:true, items:[{ name:'Christ the Redeemer', la:-22.95192, lo:-43.21049, b:-15, g:700 }] },
-    // (0.20.0, Las Vegas: four landmarks. The first is a group of three models round the centre of the Strip, its frame at the middle of
+    // (0.22.0, Las Vegas: four landmarks. The first is a group of three models round the centre of the Strip, its frame at the middle of
     // their parts (x east, z south), each part at its OpenStreetMap place with the turn of its own x (b: the wheel's axle, across the
     // guitar's faces), the ground under each from the city's heights)
     lasvegas:{ prog:'sxEnvLV', lit:true, items:[

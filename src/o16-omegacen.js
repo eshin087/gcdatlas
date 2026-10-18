@@ -6,9 +6,12 @@ void main(){
   vec2 h = sphIsect(o, d, vec3(0.), 1.);
   if(h.y < 0.) discard;
   // unresolved glow of millions of faint stars: a King-like profile integrated along the ray
+  // (uP0.y, when set, is the core's radius and uP0.z how much the ball is squashed along local y; Omega Centauri, M13, M3, M4 and M22
+  // leave both at 0. The Messier globulars of p9b-messier3.js set them from their measured core radius and ellipticity)
+  float rc = uP0.y > 0. ? uP0.y : 0.045, fy = uP0.z > 0. ? uP0.z : 1.08;
   float t0 = max(h.x, 0.), dt = (h.y - t0)/24.; vec3 col = vec3(0.);
-  for(int i=0;i<24;i++){ vec3 p = o + d*(t0 + dt*(float(i) + 0.5)); float r = length(p*vec3(1., 1.08, 1.));
-    col += vec3(1., 0.86, 0.66)*(1./(1. + pow(r/0.045, 2.)))*smoothstep(1., 0.35, r); }
+  for(int i=0;i<24;i++){ vec3 p = o + d*(t0 + dt*(float(i) + 0.5)); float r = length(p*vec3(1., fy, 1.));
+    col += vec3(1., 0.86, 0.66)*(1./(1. + pow(r/rc, 2.)))*smoothstep(1., 0.35, r); }
   outCol(col*dt*uP0.x, 0.);
 }`;
 const omegacen = (() => {

@@ -67,7 +67,7 @@ try {
     await page.evaluate(() => { const c = window.__cosmos; c.epl.go(c.epl.PICKS.cities.find(r => r[0] === 'Rio de Janeiro')); });
     const tr = await until(page, () => { const c = window.__cosmos, d = c.ect.dbg(); return !c.flight && d.env === 'city-rio' && d.landmark === 'sxEnvRio'; }, null, 150, 'Rio drawn with Christ the Redeemer');
     notes.push(`Rio drawn with Christ the Redeemer after ${tr} s`);
-    // (0.20.0: Las Vegas, drawn with its landmarks' copy; the Fountains of Bellagio during a show (Saturday 17 October 2026, 21:02 local
+    // (0.22.0: Las Vegas, drawn with its landmarks' copy; the Fountains of Bellagio during a show (Saturday 17 October 2026, 21:02 local
     // time: shows every 15 minutes from 20:00) and not between two (21:10))
     await page.evaluate(() => { const c = window.__cosmos; c.epl.go(c.epl.PICKS.cities.find(r => r[0] === 'Las Vegas')); });
     const tv = await until(page, () => { const c = window.__cosmos, d = c.ect.dbg(); return !c.flight && d.env === 'city-lasvegas' && d.landmark === 'sxEnvLV'; }, null, 150, 'Las Vegas drawn with its landmarks');

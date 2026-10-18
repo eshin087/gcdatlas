@@ -85,14 +85,20 @@ namedStar('deneb', 'Deneb', hms(20,41,25.9), dms(45,16,49), 2615, 203, 8525, { t
 namedStar('arcturus', 'Arcturus', hms(14,15,39.7), dms(19,10,57), 36.7, 25.4, 4286, { type:'orange giant · brightest star of the northern sky',
   fact:'An old star that has run out of hydrogen in its core and swollen to 25 times the Sun\'s width: a preview of the Sun in about 5 billion years.', star:{ cells:14, act:0.05, corona:0.2 }, farLum:0.9, labelRange:900,
   readout:() => '36.7 light-years · moving fast through the Milky Way\'s disk' });
-namedStar('canopus', 'Canopus', hms(6,23,57.1), dms(-52,41,45), 310, 71, 7400, { type:'bright giant · second-brightest star', fact:'The second-brightest star in the night sky, used by spacecraft to orient themselves.',
-  star:{ cells:22, act:0, corona:0.3 }, farLum:0.9, labelRange:4000, atlas:false, readout:() => '310 light-years · 71 solar radii' });
+// (Canopus: Hipparcos 2007 distance; radius and temperature from VLTI/PIONIER, Domiciano de Souza et al. 2021)
+namedStar('canopus', 'Canopus', hms(6,23,57.1), dms(-52,41,45), 310, 73.2, 7660, { type:'white bright giant · second-brightest star in the night sky',
+  fact:'The second-brightest star in the night sky, a white giant 73 times the Sun\'s width and about 16,600 times as luminous. Since Mariner 4 in 1964, spacecraft have steered by it to keep themselves pointed the right way.',
+  star:{ cells:22, act:0, corona:0.3 }, farLum:0.9, labelRange:4000, aka:'alpha carinae alf car hd 45348 hr 2326 hip 30438',
+  readout:() => '310 light-years · 73 times the Sun\'s radius\nabout 16,600 times as luminous as the Sun, 7,660 K' });
 namedStar('aldebaran', 'Aldebaran', hms(4,35,55.2), dms(16,30,33), 65.3, 45.1, 3910, { type:'orange giant · the eye of the Bull', fact:'An orange giant 44 times wider than the Sun. Pioneer 10 is heading its way and will pass it in about 2 million years.',
   star:{ cells:10, act:0, corona:0.2 }, farLum:0.9, labelRange:1500, readout:() => '65 light-years · 44 solar radii' });
 namedStar('barnard', "Barnard's Star", hms(17,57,48.5), dms(4,41,36), 5.96, 0.187, 3134, { type:'red dwarf · fastest-moving star in our sky', fact:'An ancient red dwarf racing across the sky, the second-closest star system to the Sun. Four small planets were found around it in 2024-25.',
   star:{ cells:30, act:0.7, prom:0.5 }, bound:4, farLum:0.25, labelRange:300, readout:() => '5.96 light-years · about 10 billion years old' });
-namedStar('tauceti', 'Tau Ceti', hms(1,44,4.1), dms(-15,56,15), 11.9, 0.793, 5344, { type:'nearby Sun-like star', fact:'A quiet, Sun-like star 12 light-years away, a favourite of science fiction and early searches for alien radio signals.',
-  star:{ cells:36, act:0.2 }, farLum:0.6, labelRange:500, atlas:false, readout:() => '11.9 light-years · a little smaller and cooler than the Sun' });
+// (Tau Ceti: radius and temperature from CHARA/MIRC-X, Korolik et al. 2023)
+namedStar('tauceti', 'Tau Ceti', hms(1,44,4.1), dms(-15,56,15), 11.9, 0.793, 5320, { type:'nearby Sun-like star',
+  fact:'A Sun-like star 11.9 light-years away, older than the Sun and poorer in metals. In 1960 it was one of the first two stars searched for alien radio signals, and four planets a few times Earth\'s mass may orbit it.',
+  star:{ cells:36, act:0.2 }, farLum:0.6, labelRange:500, aka:'tau cet 52 ceti hd 10700 hr 509 hip 8102 gj 71 gliese 71 project ozma',
+  readout:() => '11.9 light-years · 79% of the Sun\'s width, 5,320 K\n4 candidate planets, each at least 1.7 Earth masses' });
 const epsEri = namedStar('epseri', 'Epsilon Eridani', hms(3,32,55.8), dms(-9,27,30), 10.5, 0.735, 5084, { type:'young Sun-like star with debris belts', fact:'A young, active star about 500 million years old, ringed by belts of icy debris like a young Solar System.',
   star:{ cells:36, act:0.8 }, bound:3, farLum:0.6, labelRange:500, readout:() => '10.5 light-years · outer debris ring ~65 AU from the star' });
 // (the belts are measured in units of the outer belt's radius, rad:RB: a point's brightness is spread over the size it is given, and over

@@ -521,7 +521,7 @@ vec4 cars(vec2 en, vec4 rd, float fp, vec2 dv, out vec3 body){
 // (half-length in x, y from, y to, half-width in z) and lmMap(p, k) (the distance, in m) and lmBase(q, n, k, px, glow) (the colour in full
 // sunlight, and how much of its night lighting shows)
 uniform vec4 uLm0; uniform vec4 uLm1; uniform vec4 uLm2;
-// (0.20.0: Las Vegas has four, LM_N 4: uLm3, uLm4 the third and fourth. LMEM: what the landmark gives off itself, a screen or its lamps,
+// (0.22.0: Las Vegas has four, LM_N 4: uLm3, uLm4 the third and fourth. LMEM: what the landmark gives off itself, a screen or its lamps,
 // set by lmBase; LMD, LMPX: the ray's direction in the landmark's frame and the size of a pixel where lmMap is asked, so a model can leave out
 // what a pixel cannot show, such as a wheel's cables)
 #ifndef LM_N
@@ -684,7 +684,7 @@ float lmMap(vec3 p, float k){
 vec3 lmBase(vec3 q, vec3 n, float k, float px, out float glow){ glow = 0.; return vec3(0.96, 0.96, 0.94); }
 #endif
 #ifdef LM_LV
-// Las Vegas (0.20.0, owner: the city "how it is present day"). k 0: the centre of the Strip, four models each where OpenStreetMap maps it
+// Las Vegas (0.22.0, owner: the city "how it is present day"). k 0: the centre of the Strip, four models each where OpenStreetMap maps it
 // (uLmP[i]: x, z in this frame, its ground over this frame's foot, the turn of its own frame; uLmB: this group's half-size in x and z):
 //   0 the Sphere (Sphere Entertainment: 112 m high, 157 m across, widest 33 m up; about 1.2 million LED pucks 20 cm apart on its outside),
 //   1 the High Roller (Caesars, Arup: 167.6 m high, a wheel 158.5 m across, 28 cabins 6.7 m across outside its rim, its hub on a 35 m
@@ -962,7 +962,7 @@ void cityMat(float k, float tall, float hsh, out vec3 wc, out vec3 rc){
     wc = hsh < 0.35 ? vec3(0.92, 0.9, 0.86) : hsh < 0.55 ? vec3(0.86, 0.78, 0.66) : hsh < 0.7 ? vec3(0.88, 0.74, 0.7) : vec3(0.54, 0.66, 0.78); rc = vec3(0.8, 0.79, 0.76);
   } else if(k < 10.5){ // Rio de Janeiro: white and pastel concrete, red brick of the hillside favelas, glass
     wc = hsh < 0.35 ? vec3(0.9, 0.9, 0.88) : hsh < 0.55 ? vec3(0.86, 0.8, 0.66) : hsh < 0.75 ? vec3(0.74, 0.46, 0.34) : vec3(0.54, 0.68, 0.76); rc = vec3(0.64, 0.64, 0.64);
-  } else {            // Las Vegas (0.20.0): cream and white render, desert tan, glass; the resorts' towers in gold, bronze, white and blue glass
+  } else {            // Las Vegas (0.22.0): cream and white render, desert tan, glass; the resorts' towers in gold, bronze, white and blue glass
     wc = hsh < 0.35 ? vec3(0.92, 0.88, 0.8) : hsh < 0.6 ? vec3(0.84, 0.74, 0.6) : hsh < 0.8 ? vec3(0.94, 0.93, 0.9) : vec3(0.56, 0.68, 0.78); rc = vec3(0.82, 0.81, 0.78);
     if(tall > 0.5){ wc = hsh < 0.25 ? vec3(0.9, 0.74, 0.42) : hsh < 0.45 ? vec3(0.66, 0.46, 0.32) : hsh < 0.7 ? vec3(0.92, 0.91, 0.88) : vec3(0.5, 0.64, 0.8); return; }
   }
@@ -1181,7 +1181,7 @@ void main(){
   CALT = o.y + e + dot(o.xz, o.xz)/(2.*RE); DIP = -sqrt(2.*max(CALT, 0.)/RE);
   float thin = exp(-CALT/8500.);
   // (the haze's colour along the view, once a pixel: a model's shading, the ground's and the clouds' each worked it out, and Direct3D's
-  // compiler copies a function at every call, 0.20.0)
+  // compiler copies a function at every call, 0.22.0)
   vec3 HZ = skyCol(normalize(vec3(d.x, DIP + 0.015, d.z)), L, day);
   float lit = 0.04 + 0.96*smoothstep(-0.1, 0.2, sunE);   // how bright the day is: full with the Sun 12 degrees up (a camera's exposure follows the light: at 20 degrees a dawn launch came out murky), dim at night
   float near = smoothstep(30000., 8000., CALT);   // (above 30 km the ground shows as Earth's shader shows it, below 8 km brighter and richer)
@@ -1214,7 +1214,7 @@ void main(){
   float tc = curveT(o, d, e);
   if(t < 0. && tc > 0.) t = tc;
   // (the models' hit tests first, then the cloud shadow once, at whatever the ray meets first: each shading block called cloudShadow
-  // itself, a copy each under Direct3D, 0.20.0)
+  // itself, a copy each under Direct3D, 0.22.0)
   float tSh = t;
 #ifdef EIFFEL
   vec3 nE; float tE = efHit(o, d, t > 0. ? t : 1e9, nE); if(tE > 0.) tSh = tE;
@@ -1362,7 +1362,7 @@ void main(){
         float win = mix(0.33, step(0.2, fw.x)*step(fw.x, 0.8)*step(0.3, fw.y)*step(fw.y, 0.85), smoothstep(1.6, 0.8, fp));   // (resolved only up close: farther they aliased into noise)
         base = mix(base, (uCity.x >= 0. ? wc : mix(vec3(0.42, 0.44, 0.47), img, 0.35))*(0.85 + 0.25*win)*lit, wl);
         glowC += vec3(1., 0.78, 0.45)*win*step(uCity.x > 10.5 ? 0.5 : 0.66, hash12(cell + floor(p.xz/40.)*7.31))*nt*wl*0.9;
-        // (Las Vegas, 0.20.0: the resorts' fronts lit along the bottom of their walls, the signs and marquees, in a colour each; illustrative)
+        // (Las Vegas, 0.22.0: the resorts' fronts lit along the bottom of their walls, the signs and marquees, in a colour each; illustrative)
         if(uCity.x > 10.5){ float hb = hash12(floor(p.xz/60.) + 17.3), lh = p.y - m;   // (the height up the wall, from the lowest ground beside it)
           vec3 neon = hb < 0.25 ? vec3(1., 0.25, 0.75) : hb < 0.45 ? vec3(0.3, 0.85, 1.) : hb < 0.7 ? vec3(1., 0.78, 0.3) : hb < 0.85 ? vec3(1., 0.3, 0.2) : vec3(1.);
           glowC += neon*wl*nt*smoothstep(26., 12., lh)*smoothstep(1., 5., lh)*0.75; }
@@ -1415,7 +1415,7 @@ void main(){
     col += vec3(1., 0.16, 0.08)*tw.w*(exp(-r*r/(s*s))*2.2 + exp(-r/(s*6.))*0.12);
   }
 #ifdef LM_LV
-  // the Luxor's Sky Beam (0.20.0): 39 xenon lamps in the pyramid's tip, the strongest beam of light in the world, on from sunset for about
+  // the Luxor's Sky Beam (0.22.0): 39 xenon lamps in the pyramid's tip, the strongest beam of light in the world, on from sunset for about
   // eight hours (Luxor; City Cast Las Vegas): straight up from the tip, its light scattered by the air, fading with height. Where the ray
   // passes nearest the beam's line, unless something nearer hides it
   if(uLmS.w > 0.01 && uLm2.z > 1.5){
@@ -1453,4 +1453,4 @@ P.sxEnvSyd = program(VS_RECT, FS_SX_ENV.replace('#version 300 es\n', '#version 3
 P.sxEnvRome = program(VS_RECT, FS_SX_ENV.replace('#version 300 es\n', '#version 300 es\n#define CITY\n#define LM\n#define LM_ROME\n'));
 P.sxEnvLA = program(VS_RECT, FS_SX_ENV.replace('#version 300 es\n', '#version 300 es\n#define CITY\n#define LM\n#define LM_LA\n'));
 P.sxEnvRio = program(VS_RECT, FS_SX_ENV.replace('#version 300 es\n', '#version 300 es\n#define CITY\n#define LM\n#define LM_RIO\n'));
-P.sxEnvLV = program(VS_RECT, FS_SX_ENV.replace('#version 300 es\n', '#version 300 es\n#define CITY\n#define LM\n#define LM_N 4\n#define LM_LV\n'));   // (0.20.0: Las Vegas, four landmarks)
+P.sxEnvLV = program(VS_RECT, FS_SX_ENV.replace('#version 300 es\n', '#version 300 es\n#define CITY\n#define LM\n#define LM_N 4\n#define LM_LV\n'));   // (0.22.0: Las Vegas, four landmarks)

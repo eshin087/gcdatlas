@@ -218,7 +218,7 @@ const EAS = (() => {
     const w = S.ap.length ? ends(S.ap[0], t) : null;
     S.line = u.length ? `planes (simulated, drawn larger far off): landing ${u.join(', ')}, into the wind${w && !w.calm ? ' from ' + w.wd + '°' : ''}` : '';
   }
-  // the Fountains of Bellagio (Las Vegas, 0.20.0): more than 1,200 nozzles in the 8.5-acre lake in front of the Bellagio, shooting water up to
+  // the Fountains of Bellagio (Las Vegas, 0.22.0): more than 1,200 nozzles in the 8.5-acre lake in front of the Bellagio, shooting water up to
   // 140 m (460 ft) in time with music (Bellagio). A show every 30 minutes from 15:00 (from noon at weekends), every 15 minutes from 20:00 to
   // midnight, each about four minutes. Here 110 jets on the lake's curves (an outer arc, an inner one and a line of shooters through the
   // middle), their heights in waves that run along the lines, the shooters at three moments and the finale; the music and the real

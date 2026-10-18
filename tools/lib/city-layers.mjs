@@ -94,7 +94,7 @@ function rasterFeatures(feats, seen, F, N, half, m, h, accept, out){
   return n;
 }
 // (lattice and other slender towers, which a height map turns into solid blocks, are left out where the city's config says: the page draws them from the towers' list;
-// an entry with an id leaves out that OpenStreetMap feature only, 'w' and its way's number, 0.20.0: by distance the Luxor's pyramid took its hotel towers with it)
+// an entry with an id leaves out that OpenStreetMap feature only, 'w' and its way's number, 0.22.0: by distance the Luxor's pyramid took its hotel towers with it)
 const withoutThin = (city, feats) => city.thin ? feats.filter(f => !city.thin.some(t => t.id ? f.i === t.id : haversine(f.r[0][0], f.r[0][1], t.la, t.lo) < t.r)) : feats;
 // (ids: also which building each pixel shows, { id, feats }, for the architectural-model style)
 export async function rasterBuildings(city, L, F, ids){
@@ -229,7 +229,7 @@ export async function buildLayer(city, L, ctx){
     // wet: 2 the sea (the coast says so, or where it does not cross the row, the terrain model at or under the sea level), 1 a river or lake of OpenStreetMap
     wet[i] = sv === 1 || (sv === -1 && t <= 0.2) ? 2 : wat.water[i] === 1 ? 1 : 0;
     let v = photo ? photo(la, lo) : null;
-    // (a site that changed after the aerial photos were taken, city.recent { la, lo, r m }: Sentinel-2's newer colours there, blended in over its last 25 m, 0.20.0)
+    // (a site that changed after the aerial photos were taken, city.recent { la, lo, r m }: Sentinel-2's newer colours there, blended in over its last 25 m, 0.22.0)
     if (v && city.recent){ let k = 0; for (const q of city.recent) k = Math.max(k, clampN((q.r - haversine(la, lo, q.la, q.lo))/25, 0, 1));
       if (k > 0){ const w = s2(la, lo); if (w){ const g = gain ? gain(w) : w; v = v.map((c, j) => c*(1 - k) + g[j]*k); recN++; } } }
     if (v) photoN++; else { v = s2(la, lo); if (v){ s2N++; if (gain) v = gain(v); } }

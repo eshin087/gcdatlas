@@ -134,9 +134,11 @@ const io = galilean('io', 'Io', 7, 1821.6, 421700, 106.07719, 203.488955790,
 const europa = galilean('europa', 'Europa', 8, 1560.8, 671034, 175.73161, 101.374724735,
   'A shell of ice cracked into long red streaks, floating on a global ocean holding twice the water of Earth\'s seas.',
   'radius 1,561 km · ice shell 15 to 25 km thick\none of the best places to look for life');
-const ganymede = galilean('ganymede', 'Ganymede', 9, 2634.1, 1070412, 120.55883, 50.317609207,
-  'The largest moon in the Solar System, bigger than Mercury, with its own magnetic field and a buried salty ocean.',
-  'radius 2,634 km · larger than the planet Mercury\nthe only moon with its own magnetosphere', { atlas:false });
+// (radii: JPL SSD from the IAU 2015 report; Ganymede's 2,631.2 km replaced Anderson et al. 2001's 2,634.1 in 0.21.0, when both moons
+// were listed in the atlas)
+const ganymede = galilean('ganymede', 'Ganymede', 9, 2631.2, 1070412, 120.55883, 50.317609207,
+  'The largest moon in the Solar System, wider than the planet Mercury but with less than half its mass. It is the only moon known to make its own magnetic field, and a salty ocean lies buried under its ice.',
+  'radius 2,631 km · 8% wider than the planet Mercury\nits own magnetic field, found by the Galileo probe in 1996', { aka:'jupiter iii galilean moon magnetic field ocean' });
 const callisto = galilean('callisto', 'Callisto', 10, 2410.3, 1882709, 84.44459, 21.571071177,
-  'An ancient, dark surface saturated with craters: one of the least changed worlds in the Solar System.',
-  'radius 2,410 km · the most heavily cratered surface known', { atlas:false });
+  'The most heavily cratered world in the Solar System, almost as wide as Mercury. Its dark, icy surface has barely changed in billions of years, and a salty ocean may lie deep beneath it.',
+  'radius 2,410 km · 99% as wide as the planet Mercury\nValhalla, its biggest impact, has rings 3,000 km across', { aka:'jupiter iv galilean moon craters valhalla' });
