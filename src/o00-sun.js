@@ -3,6 +3,7 @@
 // Local units: bounding sphere radius 1; the photosphere has radius uP1.x.
 // uP0: T_eff, convection cells per radius, spot activity, cell speed   uP1: R*, oblateness, corona, prominences
 // uP2: flare (local dir, amount)   uP3: CME (local dir, radius)   uP4: x granulation fine detail, y limb darkening, z chromosphere, w colour boost
+// uM0[0].x: a tide's stretch along local x (the star that much longer toward a close partner than across; 0 for a round star)
 // (a negative w switches on the fire look of a star with a boiling convective surface: churning granulation, flames licking up from the limb, lively prominences;
 //  w <= -10 also gives the Sun's warm filtered-photo tint, and its boost is |w| - 10)
 const FS_STAR = COMMON + `
@@ -50,7 +51,7 @@ vec3 photosphere(vec3 n, float mu, float Rs){
 void main(){
   vec3 o, d; localRay(o, d);
   float Rs = uP1.x, sq = 1. + uP1.y;
-  vec3 os = o*vec3(1., sq, 1.), ds = normalize(d*vec3(1., sq, 1.));
+  vec3 sv = vec3(1./(1. + uM0[0].x), sq, 1.), os = o*sv, ds = normalize(d*sv);
   vec2 h = sphIsect(os, ds, vec3(0.), Rs);
   vec3 col = vec3(0.); float alpha = 0.;
   float tc = -dot(o, d); vec3 pc = o + d*max(tc, 0.);
@@ -140,6 +141,7 @@ void main(){
 }`;
 P.star = program(VS_RECT, FS_STAR);
 // generic star object: radius in solar radii, temperature, optional spin (days) and pole
+const STAR_M0 = new Float32Array(9);
 function addStar(def){
   const Rs = def.R*RSUN*KM, bound = def.bound || 3.2;
   const o = addObj(Object.assign({ layer:3, prog:P.star, rad:Rs*bound, solid:1/bound, minZoom:1.08/bound, pxMin:5, group:'stars', farColor:blackbodyJS(def.T), farLum:def.farLum ?? 0.9, noImpostor:def.noImpostor ?? true,
@@ -150,6 +152,7 @@ function addStar(def){
       gl.uniform4f(pr.u.uP2, 0, 1, 0, 0); gl.uniform4f(pr.u.uP3, 0, 1, 0, 0);
       // stars cooler than ~7,000 K have boiling convective surfaces and get the fire look; hotter stars' surfaces are calm
       gl.uniform4f(pr.u.uP4, s.fine ?? 0, s.limb ?? 0.55, s.chromo ?? 0.25, (s.fire ?? def.T < 7000) ? -(s.boost ?? 1) : (s.boost ?? 1));
+      STAR_M0[0] = s.tide ?? 0; gl.uniformMatrix3fv(pr.u.uM0, false, STAR_M0);   // (every star sets it: the program keeps the last star's)
     } }, def));
   o.star = def.star || {};
   if (def.spinDays){ const R0 = o.R0; o.update = function(){ this.rot = M3.mul(R0, M3.rotY(-this.t*SS_RATE/86400/def.spinDays*2*Math.PI)); }; }
@@ -185,6 +188,7 @@ const sun = (() => {
       gl.uniform4f(pr.u.uP2, st.flareDir[0], st.flareDir[1], st.flareDir[2], st.flare);
       gl.uniform4f(pr.u.uP3, st.cmeDir[0], st.cmeDir[1], st.cmeDir[2], kc > 0.05 ? st.cme : 0);
       gl.uniform4f(pr.u.uP4, clamp(1.5 - viewDist()/(this.rad*1.2), 0, 1), 0.58, 0.5, -11);
+      STAR_M0[0] = 0; gl.uniformMatrix3fv(pr.u.uM0, false, STAR_M0);
     },
     readout:() => st.cmeT < 10 ? 'coronal mass ejection: a billion tonnes of plasma\nleaving at ~1,000 km/s; it would reach Earth in ~2 days' :
       (st.flareT < 3 ? 'solar flare: magnetic loops snapping and reconnecting\nreleasing the energy of millions of nuclear bombs' : 'surface 5,500 °C, core 15 million °C · 1.39 million km across\nlight from its core takes ~100,000 years to reach the surface\ndrawn warm like a filtered photo · from space it looks white') });
@@ -194,13 +198,13 @@ const sun = (() => {
 
 // ---------------------------------------------------------------- generic planets and small moons
 // uP0: x kind, y ring on/off   uP1: sun direction (world)   uP2: shadowing body centre (local units), w radius
-// The Solar System's own bodies (kinds 0 to 13, and Ceres, 19) are drawn display-referred: their surface functions give the colour a cell should
+// The Solar System's own bodies (kinds 0 to 13, Ceres 19, and Tethys, Dione and Rhea, 25 to 27) are drawn display-referred: their surface functions give the colour a cell should
 // show in full sunlight, as FS_CELL sees it after its tone map, and main() undoes that tone map (unTone). So a bright highland and a dark sea land
 // on different characters in the middle of the ramp, instead of every lit part piling up on the heaviest ones and only the light's fall-off
 // showing. Their markings sit at their real places (latitude, east longitude); relief (craters, volcanoes, canyons) tilts the normal the light
 // sees (gN), with slopes steeper than real so it shows in characters. The worlds of other stars and Mimas keep the older, physical path.
 const FS_PLANETG = `
-#define SOL (KIND < 14 || KIND == 19)
+#define SOL (KIND < 14 || KIND == 19 || KIND > 24)
 const float RP = 0.9, kind = float(KIND);
 int ZI = 0;   // (a 0 the compiler cannot see, set in main from a uniform: the crater loops stay loops instead of being unrolled at every call)
 vec2 vorc(vec3 p){ vec3 i = floor(p), f = fract(p); float d1 = 8.; vec3 id = vec3(0.);
@@ -250,6 +254,24 @@ float rays(vec3 n, vec3 c, float len, float sd){
   float st = smoothstep(0.5, 0.82, noise(vec3(u*11., sd)))*smoothstep(0.25, 0.7, noise(vec3(u*3.2, sd + 5.)));
   return st*exp(-s/len)*smoothstep(0., len*0.15, s) + exp(-s*s/(len*len*0.012));
 }
+// the distance (radians) from n to a chain of great-circle arcs through c[0] to c[k-1] (a canyon or a line of cliffs traced from a map), and in g
+// the way that distance grows (a unit vector along the surface)
+float chainD(vec3 n, vec3 c[12], int k, out vec3 g){
+  float best = 9.; g = vec3(0.);
+  for(int i=ZI;i<k-1;i++){
+    vec3 a = c[i], b = c[i + 1], q = normalize(cross(a, b));
+    float t = atan(dot(n, cross(q, a)), dot(n, a)), L = acos(clamp(dot(a, b), -1., 1.)), d; vec3 gd;
+    if(t > 0. && t < L){ float r = asin(clamp(dot(n, q), -1., 1.)); d = abs(r); gd = (q - n*dot(n, q))*sign(r); }
+    else { vec3 e = t <= 0. ? a : b; float ce = dot(n, e); d = acos(clamp(ce, -1., 1.)); gd = n*ce - e; }   // (past an end: from that end)
+    if(d < best){ best = d; g = gd; }
+  }
+  g /= max(length(g), 1e-5);
+  return best;
+}
+// the slope across a trough of half-width w (radians) and depth h (radii; h < 0 for a ridge) with a low raised rim either side, d from its middle
+float troughS(float d, float w, float h){ float x = d/w, y = x - 1.35; return h/w*(2.*x*exp(-x*x) - 6.*y*exp(-y*y/0.1)); }
+// a crater or basin of radius R round c: a sunk floor (depth h, flattened by top) inside a raised rim; returns the distance from its centre in radii
+float crat(vec3 n, vec3 c, float R, float h, float top){ ringR(n, c, R, h*0.45, 0.14); return rise(n, c, R*0.92, -h, top); }
 // the Solar System's own bodies: the colour each point shows in full sunlight (display-referred, see above)
 #if SOL
 vec3 solSurf(vec3 n){
@@ -433,8 +455,91 @@ vec3 solSurf(vec3 n){
     return mix(vec3(0.74, 0.76, 0.79), vec3(0.36, 0.5, 0.6), tig)*(0.94 + 0.8*crf(n, 7., 0.4, 0.04, 2.));
   }
 #elif KIND == 13
-  { // Saturn's mid-sized icy moons: old, cratered ice
+  { // old, cratered ice (TRAPPIST-1 f, g and h, drawn as guesses)
     return vec3(0.66, 0.65, 0.62)*(0.86 + 0.2*fbm3(n*5.))*(1. + crf(n, 5., 0.6, 0.08, 6.) + 0.8*crf(n, 11., 0.5, 0.05, 2.));
+  }
+#elif KIND == 25
+  { // Tethys: bright old ice (positions from the IAU gazetteer; longitudes west there, so east = -west here). The side it leads with
+    // (centred on 90 W) is brighter than the trailing side, and carries the dark bluish lens across its equator that fast electrons leave
+    // (Schenk et al. 2011: 20 deg either side of the equator at 90 W, narrowing to a few degrees at 0 and 180 W). Odysseus, a basin 445 km
+    // wide whose rim and peak have slumped, with Scheria Montes in its middle; Ithaca Chasma, a canyon up to 100 km wide and about 3 km deep
+    // with raised rims, about 2,000 km from 70 S up to the north polar region (traced from the USGS map); the biggest old craters
+    float a = crf(n, 5.4, 0.62, 0.06, 6.) + 0.8*crf(n, 11.5, 0.5, 0.04, 2.);
+    vec3 c = vec3(0.63, 0.63, 0.61)*(0.9 + 0.14*fbm3(n*5. + 3.))*(1. + a);
+    c *= mix(vec3(1.), vec3(0.8, 0.76, 0.71), smoothstep(0.15, -0.9, n.z));          // (the trailing side, darkest and reddest at 270 W)
+    float dl = abs(mod(ll.y + 90. + 540., 360.) - 180.), hw = 3. + 17.*cos(radians(min(dl, 90.)));
+    c = mix(c, c*vec3(0.62, 0.7, 0.84), smoothstep(hw + 2.5, hw - 2.5, abs(ll.x))*smoothstep(97., 88., dl)*0.9);
+    vec3 od = sph(32.82, -128.89);
+    float xo = rise(n, od, 0.42, -0.035, 0.55);
+    ringR(n, od, 0.42, 0.012*(0.4 + 1.2*noise(n*8.)), 0.1);
+    rise(n, sph(30., -131.), 0.17, 0.02*(0.5 + noise(n*11.)), 0.);
+    c *= 1. - 0.1*smoothstep(1., 0.8, xo) + 0.12*exp(-pow((xo - 1.)/0.07, 2.));
+    vec3 ic[12] = vec3[12](sph(-70., -65.), sph(-57., -33.5), sph(-26., -21.), sph(-9., -6.), sph(3., 3.), sph(22., 12.), sph(38., 19.), sph(54., 21.),
+      sph(64., 39.), sph(63., 70.), sph(62., 100.), sph(62., 100.));
+    vec3 g; float di = chainD(n, ic, 11, g);
+    float tp = smoothstep(0., 0.2, acos(clamp(dot(n, ic[0]), -1., 1.)))*smoothstep(0., 0.2, acos(clamp(dot(n, ic[10]), -1., 1.)));
+    gN += g*troughS(di, 0.094, 0.022*tp);
+    c *= 1. + (0.14*exp(-pow((di - 0.125)/0.03, 2.)) - 0.32*exp(-pow(di/0.075, 2.)))*tp;   // (its floor darker, its raised rims brighter)
+    crat(n, sph(-10.83, -249.22), 0.195, 0.014, 0.4); crat(n, sph(-58.5, -192.61), 0.235, 0.014, 0.4); crat(n, sph(-34.53, -356.89), 0.3, 0.01, 0.5);
+    crat(n, sph(-30.15, -210.33), 0.179, 0.012, 0.4); crat(n, sph(-59.89, -286.15), 0.13, 0.012, 0.3); crat(n, sph(54., -339.38), 0.087, 0.012, 0.3);
+    return c;
+  }
+#elif KIND == 26
+  { // Dione: the side it leads with bright and cratered, the trailing side much darker (0.71 against 0.44 at 0.55 um, Filacchione et al. 2022),
+    // crossed by the wispy terrain: bright ice cliffs, the walls of canyons, bright where the darker material has fallen off them. Palatine and Eurotas Chasmata,
+    // Padua Chasmata, Clusium Fossae, Drepanum Chasma and Carthage Fossae, traced from the USGS map and drawn wider than the real cliffs so they
+    // show; finer cliffs between them. Creusa's bright rays over the leading side and the side facing Saturn; Evander, Aeneas, Dido and other
+    // craters; Janiculum Dorsa, a ridge 1 to 2 km high
+    float tr = smoothstep(0.3, -0.85, n.z);
+    float a = (crf(n, 5.6, 0.6, 0.06, 4.) + 0.8*crf(n, 12., 0.55, 0.04, 9.))*(1. - 0.4*tr);
+    vec3 c = mix(vec3(0.62, 0.61, 0.59), vec3(0.34, 0.33, 0.31), tr)*(0.9 + 0.16*fbm3(n*5. + 1.))*(1. + a);
+    vec3 g, g2; float w;
+    vec3 pe[12] = vec3[12](sph(-72., -338.), sph(-57., -326.), sph(-48., -318.), sph(-41., -313.), sph(-31., -310.), sph(-15., -306.), sph(-2.5, -302.8),
+      sph(18.5, -295.8), sph(44., -293.), sph(44., -293.), sph(44., -293.), sph(44., -293.));
+    float d1 = chainD(n, pe, 9, g);
+    vec3 pa[12] = vec3[12](sph(45., -221.), sph(25., -244.), sph(14., -249.), sph(-1., -244.), sph(-14., -232.), sph(-24., -226.),
+      sph(47., -311.), sph(30., -293.), sph(12., -357.), sph(12., -322.), sph(-27., -263.), sph(-66., -267.));
+    float d2 = chainD(n, pa, 6, g2), d3 = 9.;
+    for(int i=ZI;i<3;i++){ vec3 p2[12]; p2[0] = pa[6 + i*2]; p2[1] = pa[7 + i*2]; vec3 gi; d3 = min(d3, chainD(n, p2, 2, gi)); }   // (Clusium, Carthage, Drepanum)
+    float dw = min(min(d1, d2), d3);
+    w = exp(-pow(dw/0.045, 2.))*(0.8 + 0.2*sin(dw*200.));                          // (several cliffs side by side)
+    gN += g*troughS(d1, 0.04, 0.006) + g2*troughS(d2, 0.04, 0.006);
+    // finer cliffs over the trailing side, mostly north-south and round Amata
+    float m = smoothstep(0.1, -0.5, n.z)*smoothstep(70., 50., abs(ll.x));
+    float f = pow(1. - abs(noise(n*vec3(22., 6., 22.) + 4.)*2. - 1.), 18.)*smoothstep(0.45, 0.65, fbm3(n*3. + 8.));
+    w = max(w, f*m*0.7);
+    c = mix(c, vec3(0.86, 0.86, 0.85), clamp(w, 0., 1.)*0.92);
+    vec3 cr = sph(49.19, -76.32);
+    c = mix(c, vec3(0.86, 0.85, 0.82), clamp(rays(n, cr, 0.8, 3.)*(1. - tr), 0., 1.)*0.55);
+    crat(n, sph(-57., -145.), 0.312, 0.012, 0.6); crat(n, sph(25.89, -46.27), 0.143, 0.016, 0.4); crat(n, sph(-23.97, -18.82), 0.109, 0.018, 0.3);
+    crat(n, sph(-8.15, -26.85), 0.081, 0.016, 0.3); crat(n, sph(5.17, -279.81), 0.068, 0.016, 0.3); crat(n, sph(15.59, -345.31), 0.09, 0.014, 0.3);
+    vec3 jd[12] = vec3[12](sph(-22., -145.), sph(25., -144.), sph(55., -142.), vec3(0.), vec3(0.), vec3(0.), vec3(0.), vec3(0.), vec3(0.), vec3(0.), vec3(0.), vec3(0.));
+    vec3 gj; float dj = chainD(n, jd, 3, gj);
+    gN += gj*troughS(dj, 0.08, -0.012);
+    return c;
+  }
+#elif KIND == 27
+  { // Rhea: the side it leads with bright and the most cratered, the trailing side darker (0.67 against 0.48 at 0.55 um, Filacchione et al. 2022)
+    // with bright north-south fractures (Avaiki, Galunlati, Yamsi, Pulag and Vaupas Chasmata, Kunlun Linea; drawn wider than the real cliffs);
+    // Inktomi, a crater 47 km wide and likely the youngest large one in Saturn's system, with bright rays reaching hundreds of km in a
+    // butterfly pattern (it was hit at a slant from the west); the basins Tirawa, 360 km wide and 5 km deep, and the older Mamaldi under it
+    float tr = smoothstep(0.3, -0.85, n.z);
+    float a = (crf(n, 5.8, 0.72, 0.065, 7.) + 0.85*crf(n, 12.5, 0.62, 0.045, 3.))*(1. - 0.3*tr);
+    vec3 c = mix(vec3(0.61, 0.6, 0.58), vec3(0.4, 0.39, 0.37), tr)*(0.9 + 0.16*fbm3(n*5. + 2.))*(1. + a);
+    vec3 fr[12] = vec3[12](sph(3., -279.), sph(47., -279.), sph(4., -290.), sph(60., -290.), sph(-42., -280.5), sph(-14., -280.5),
+      sph(-40., -266.5), sph(-26., -266.5), sph(-42., -260.), sph(-24., -260.), sph(40., -304.), sph(50., -312.));
+    float dw = 9.; vec3 gw = vec3(0.);
+    for(int i=ZI;i<6;i++){ vec3 p2[12]; p2[0] = fr[i*2]; p2[1] = fr[i*2 + 1]; vec3 gi; float di = chainD(n, p2, 2, gi); if(di < dw){ dw = di; gw = gi; } }
+    gN += gw*troughS(dw, 0.035, 0.005);
+    c = mix(c, vec3(0.85, 0.86, 0.87), exp(-pow(dw/0.04, 2.))*(0.8 + 0.2*sin(dw*240.))*0.9);
+    vec3 ik = sph(-14.1, -112.1), ie = normalize(cross(vec3(0., 1., 0.), ik)), t = n - ik*dot(n, ik);
+    float s = length(t), ue = dot(t, ie)/max(s, 1e-5), un = sqrt(max(1. - ue*ue, 0.));
+    float ry = rays(n, ik, 0.45, 5.)*(0.35 + 0.65*un)*(1. - 0.6*smoothstep(0., -0.9, ue));
+    c = mix(c, vec3(0.88, 0.88, 0.86), clamp(ry + exp(-s*s/0.0012), 0., 1.)*0.85);
+    crat(n, ik, 0.031, 0.02, 0.2);
+    crat(n, sph(34.2, -151.7), 0.236, 0.02, 0.5); crat(n, sph(14., -184.), 0.314, 0.008, 0.6);
+    crat(n, sph(-8.2, -280.4), 0.178, 0.01, 0.5); crat(n, sph(-49.4, -310.2), 0.164, 0.012, 0.4); crat(n, sph(48.6, -269.7), 0.08, 0.014, 0.3);
+    return c;
   }
 #else
   // Ceres: dark grey, cratered, with the bright salt spots of Occator crater
@@ -544,7 +649,7 @@ void main(){
 #endif
     float mu = max(dot(n, -d), 0.), sh = 1.;
     vec3 nl = n;
-    if(kind > 23.5){   // (Mimas: the slopes and shadows of Herschel; its floor a shade darker than the fresh ice of its walls and peak)
+    if(kind > 23.5 && kind < 24.5){   // (Mimas: the slopes and shadows of Herschel; its floor a shade darker than the fresh ice of its walls and peak)
       nl = herschel(n, L, sh); float x = acos(clamp(dot(n, HC), -1., 1.))/HR;
       base *= 1. - 0.14*smoothstep(0.85, 0.5, x) + 0.12*exp(-pow((x - 0.9)/0.1, 2.)) + 0.12*exp(-x*x/0.02);
     }
@@ -564,7 +669,7 @@ void main(){
       col = unTone(base*lam*sh);
     } else {
       float lam = (newX && kind < 23.5) ? dif : pow(dif, 0.8)*(0.4 + 0.6*pow(mu, 0.2));   // gas and cloud tops vs rough regolith
-      if(kind > 23.5) lam = pow(dif, 1.5)*(0.5 + 0.5*pow(mu, 0.2))*1.25;   // (Mimas: a harder falloff, like Vesta's, so the crater's relief shows)
+      if(kind > 23.5 && kind < 24.5) lam = pow(dif, 1.5)*(0.5 + 0.5*pow(mu, 0.2))*1.25;   // (Mimas: a harder falloff, like Vesta's, so the crater's relief shows)
       col = base*(lam*sh*1.25 + 0.006) + gEm;
     }
     col += diskAir(mu, dot(n, L), atm, atm*vec3(1., 0.6, 0.45), atmK*1.3);
@@ -587,11 +692,13 @@ function addBody(def){
     views:[{dirFn:() => sunSide(o, 0.8, 0.35), k:3.2, hold:8, drift:0.04}, {dirFn:() => sunSide(o, 2.2, 0.2), k:1.9, hold:7, drift:0.04}],
     update(){
       const jd = jdNow();
+      // (dL: a moon's swing about its mean longitude, degrees, which it turns with: Tethys's libration)
+      const dL = def.dL ? def.dL(jd) : 0;
       if (def.el) this.offset = planetPos(def.el, jd);
-      else if (def.moonOf){ const P = def.moonOf, th = (def.L0 + def.n*(jd - 2451545))*DEG, r = def.a*KM; this.offset = M3.apply(P.R0, [r*Math.cos(th), 0, -r*Math.sin(th)]); }
+      else if (def.moonOf){ const P = def.moonOf, th = (def.L0 + def.n*(jd - 2451545) + dL)*DEG, r = def.a*KM; this.offset = M3.apply(P.R0, [r*Math.cos(th), 0, -r*Math.sin(th)]); }
       else if (def.offsetFn) this.offset = def.offsetFn(jd);
       this.pos = V.add(this.parent.pos, this.offset);
-      this.rot = def.W ? bodyFrame(def.pole[0], def.pole[1], def.W[0] + def.W[1]*(jd - 2451545)) : this.R0;
+      this.rot = def.W ? bodyFrame(def.pole[0], def.pole[1], def.W[0] + def.W[1]*(jd - 2451545) + dL) : this.R0;
     },
     setU(pr){ const L = def.lightFrom ? V.norm(V.sub(def.lightFrom.rel, this.rel)) : sunDirFrom(this); gl.uniform4f(pr.u.uP0, def.kind, 0, 0, 0); gl.uniform4f(pr.u.uP1, L[0], L[1], L[2], 0);
       const sh = def.shadowOf;

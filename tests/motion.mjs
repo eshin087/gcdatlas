@@ -603,7 +603,7 @@ const rt = await page.evaluate(() => {
   const C = __cosmos, g = document.getElementById('goNext'), key = k => dispatchEvent(new KeyboardEvent('keydown', { key:k, bubbles:true })), r = {};
   const wasFrozen = window.__freeze; window.__freeze = true; const wasSeen = [...C.SEEN]; C.SEEN.clear();
   location.hash = '#o=earth&jd=2461310.5'; C.applyHash(); history.replaceState(null, '', location.pathname);   // (2026-09-27 0:00 UTC)
-  const keys = () => C.TOUR.map(i => C.OBJ[i].key), btn = () => g.hidden ? null : g.textContent, catOf = o => (o.isBH || o.prog === C.BYKEY.sgra.prog) ? 'bh' : o.group;
+  const keys = () => C.TOUR.map(i => C.OBJ[i].key), btn = () => g.hidden ? null : g.textContent, catOf = o => o.atlasKind || ((o.isBH || o.prog === C.BYKEY.sgra.prog) ? 'bh' : o.group);   // (as catOf in 09-render.js: the S-stars are stars)
   const overlap = T => C.TOUR.filter(i => T.includes(i)).length;
   const check = (T, from) => { const os = T.map(i => C.OBJ[i]), bad = [], per = {};
     if (T.length !== 12 || new Set(T).size !== 12) bad.push(T.length + ' stops');
