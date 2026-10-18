@@ -189,6 +189,9 @@ function dwarfStars(key, n, L){
 for (const [key, L] of Object.entries(DWARF_LOOK)){
   const o = BYKEY[key], q = 1 - L.ell, inc = L.irr ? Math.acos(Math.sqrt(clamp((q*q - 0.11)/0.89, 0, 1)))/DEG : 90;
   o.R0 = o.rot = discR0(o.pos, inc, L.pa);
+  // (the atlas's size: the drawn radius is measured here, the King radius, so not the 0.6 of rad a galaxy's bounding sphere gets; an
+  // irregular is drawn out to 1.5 R25 and listed at R25, as the other galaxies are by their D25: from Codex's review of #54)
+  o.sizeR = L.irr ? Math.round(o.rad/1.5) : o.rad;
   if (L.irr){ o.setU = galaxyU({ arms:0, bulge:0.15, dust:0.25, bar:L.bar || 0, barAng:0, H:0.06, sf:1.1, irr:1, Rd:clamp(L.rh/1.68, 0.12, 0.3), seed:L.seed }); o.farColor = [0.8, 0.85, 1]; }
   else { o.prog = omegacen.prog; o.setU = pr => gl.uniform4f(pr.u.uP0, L.glow || 0.25, L.rh*0.7, 1/q, 0); }
   // (the stars 06g-galaxies.js drew for it are let go: they were made only to keep the shared random numbers as they were)
