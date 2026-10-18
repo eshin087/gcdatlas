@@ -184,6 +184,9 @@ const R0of = (rx, ry, rz) => M3.mul(M3.rotY(ry), M3.mul(M3.rotX(rx), M3.rotZ(rz)
 const OBJ = [], BYKEY = Object.create(null);   // (no prototype: a share link with #o=constructor or __proto__ must not find anything)
 // layer: 0 universe, 1 large-scale context, 2 galaxy context, 3 objects (drawn in that order, far to near within a layer)
 function addObj(o){
+  // (a key is an object's identity in links, the seen list and tours: a second object with a key already taken is a mistake, never a
+  // replacement, so the page stops here and the build's tests fail. It used to overwrite BYKEY silently)
+  if (!o.key || BYKEY[o.key]) throw new Error(o.key ? `addObj: the key '${o.key}' is taken (${BYKEY[o.key].name}); give the new object its own` : `addObj: ${o.name || 'an object'} has no key`);
   o.R0 = o.R0 || R0of(...(o.tilt || [0,0,0])); o.rot = o.rot || o.R0; o.t = 0; o.particles = o.particles || [];
   o.layer = o.layer ?? 3; o.index = OBJ.length; o.vis = 0; o.rel = [0,0,0]; o.dist = 1;
   if (o.parent && !o.offset) o.offset = [0,0,0];
