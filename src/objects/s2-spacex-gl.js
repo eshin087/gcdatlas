@@ -521,6 +521,23 @@ vec4 cars(vec2 en, vec4 rd, float fp, vec2 dv, out vec3 body){
 // (half-length in x, y from, y to, half-width in z) and lmMap(p, k) (the distance, in m) and lmBase(q, n, k, px, glow) (the colour in full
 // sunlight, and how much of its night lighting shows)
 uniform vec4 uLm0; uniform vec4 uLm1; uniform vec4 uLm2;
+// (0.20.0: Las Vegas has four, LM_N 4: uLm3, uLm4 the third and fourth. LMEM: what the landmark gives off itself, a screen or its lamps,
+// set by lmBase; LMD, LMPX: the ray's direction in the landmark's frame and the size of a pixel where lmMap is asked, so a model can leave out
+// what a pixel cannot show, such as a wheel's cables)
+#ifndef LM_N
+#define LM_N 2
+#endif
+#if LM_N > 2
+uniform vec4 uLm3; uniform vec4 uLm4;
+#endif
+vec4 lmU(int j){
+#if LM_N > 2
+  return j == 0 ? uLm0 : j == 1 ? uLm1 : j == 2 ? uLm3 : uLm4;
+#else
+  return j == 0 ? uLm0 : uLm1;
+#endif
+}
+vec3 LMEM = vec3(0.), LMD = vec3(0., -1., 0.); float LMPX = 1.;
 float lmBox(vec3 p, vec3 c, vec3 b){ vec3 q = abs(p - c) - b; return length(max(q, 0.)) + min(max(q.x, max(q.y, q.z)), 0.); }
 float lmCap(vec3 p, vec3 a, vec3 b, float r){ vec3 pa = p - a, ba = b - a; float h = clamp(dot(pa, ba)/dot(ba, ba), 0., 1.); return length(pa - ba*h) - r; }
 float lmSeg(vec2 p, vec2 a, vec2 b){ vec2 pa = p - a, ba = b - a; float h = clamp(dot(pa, ba)/dot(ba, ba), 0., 1.); return length(pa - ba*h); }
@@ -666,6 +683,176 @@ float lmMap(vec3 p, float k){
 }
 vec3 lmBase(vec3 q, vec3 n, float k, float px, out float glow){ glow = 0.; return vec3(0.96, 0.96, 0.94); }
 #endif
+#ifdef LM_LV
+// Las Vegas (0.20.0, owner: the city "how it is present day"). k 0: the centre of the Strip, four models each where OpenStreetMap maps it
+// (uLmP[i]: x, z in this frame, its ground over this frame's foot, the turn of its own frame; uLmB: this group's half-size in x and z):
+//   0 the Sphere (Sphere Entertainment: 112 m high, 157 m across, widest 33 m up; about 1.2 million LED pucks 20 cm apart on its outside),
+//   1 the High Roller (Caesars, Arup: 167.6 m high, a wheel 158.5 m across, 28 cabins 6.7 m across outside its rim, its hub on a 35 m
+//     spindle held by four inclined legs 2.8 m thick and a brace; x along its axle),
+//   2 Hard Rock's guitar tower (201 m, 42 floors, topped out on 1 May 2026, opening late 2027: two guitar bodies back to back, 96 m wide and
+//     25 m deep as OpenStreetMap maps it, its faces looking north and south; its outline illustrative, its glass hung, not lit yet).
+// (Paris Las Vegas's half-scale Eiffel Tower, 164.6 m, is drawn as the slender towers are, a lattice tapering from its feet: a model of
+// its own made this copy compile a third slower.) k 1: the Luxor's pyramid (109 m; black glass) and, 700 m to its north-east (uLmP[3]), the
+// Athletics' ballpark as it stands in October 2026 (Mortenson-McCarthy, Thornton Tomasetti, the Review-Journal): the seating bowl's steel up,
+// and two of the roof's seven truss arches, each nearly 213 m (700 ft) across the field from a buttress on the east side, the second
+// reaching close to the roof's 88 m; the shapes simplified, the arches' direction across the field assumed. k 2: the STRAT's tower (350 m: three legs round its core, the pod at about 260 to 290 m,
+// the mast; simplified). k 3: the Fremont Street Experience's canopy (a barrel vault 419 m long and 27 m high over the street, its
+// underside a screen). uLmS: the Sphere's show (this one, the next, how far into the change) and the Luxor's beam (0..1)
+uniform vec4 uLmP[4]; uniform vec4 uLmB; uniform vec4 uLmS;
+const float LXB = 92., LXH = 109.;   // (the pyramid's half base and height: its outline in OpenStreetMap, Wikipedia's height)
+vec4 lmBounds(float k){ return k < 0.5 ? vec4(uLmB.x, -6., 205., uLmB.y) : k < 1.5 ? vec4(max(LXB + 2., abs(uLmP[3].x) + 116.), -4., LXH + 1., max(LXB + 2., abs(uLmP[3].y) + 116.)) : k < 2.5 ? vec4(32., -4., 351., 32.) : vec4(212., -2., 29., 16.); }
+// the ballpark (its own frame: x east, z south, y up from its ground): the bowl rising from the field's edge, lower toward the outfield in
+// the west (its glass wall to face the Strip), two arches, the east buttress
+float lvPark(vec3 q){
+  float r = length(q.xz), lowW = smoothstep(0.3, 0.9, -q.x/max(r, 1.)), top = mix(42., 14., lowW), s = 4. + (top - 4.)*clamp((r - 60.)/46., 0., 1.);
+  float d = max(max(60. - r, r - 108.), q.y - s)*0.7;
+  float ax = clamp(q.x/106., -1., 1.), sl = 2.*ax/106.;
+  d = min(d, max(length(vec2((q.y - 74.*(1. - ax*ax))/sqrt(1. + 74.*74.*sl*sl), q.z + 16.)) - 3.5, abs(q.x) - 108.));
+  d = min(d, max(length(vec2((q.y - 80.*(1. - ax*ax))/sqrt(1. + 80.*80.*sl*sl), q.z - 16.)) - 3.5, abs(q.x) - 108.));
+  d = min(d, lmBox(q, vec3(104., 15., 0.), vec3(6., 15., 30.)));
+  return max(d, -q.y - 2.);
+}
+vec3 lmPart(vec3 p, int i){ vec4 P = uLmP[i]; return lmRot(p - vec3(P.x, P.z, P.y), P.w); }
+// the guitar's half-width at a height: the lower bout about 92 m across at 50 m, the waist 62 m at 118 m, the upper bout 74 m at 160 m, the
+// top rounded off at 201 m (illustrative)
+float lvGtW(float y){ float w = 31. + 15.*exp(-pow((y - 50.)/45., 2.)) + 6.*exp(-pow((y - 160.)/26., 2.)); return y < 165. ? w : w*sqrt(max(1. - pow((y - 165.)/36., 2.), 0.)); }
+float lmMap(vec3 p, float k){
+  if(k < 0.5){
+    // the Sphere
+    vec3 q = lmPart(p, 0);
+    float d = max(length(q - vec3(0., 33., 0.)) - 78.5, -q.y - 4.);
+    // the High Roller: the rim, the cabins, the hub and spindle, the legs and the brace (the cables only where a pixel is under 1.5 m)
+    q = lmPart(p, 1);
+    float bw = length(max(abs(q - vec3(40., 84., 0.)) - vec3(58., 86., 88.), 0.));
+    if(bw < d){
+      vec3 c = q - vec3(0., 84.25, 0.);
+      float r = length(c.yz), an = atan(c.z, c.y), st = 6.2831853/28., a = (floor(an/st + 0.5))*st;
+      float dw = length(vec2(r - 76., c.x)) - 1.6;
+      dw = min(dw, length(c - vec3(0., cos(a)*80., sin(a)*80.)) - 3.35);
+      dw = min(dw, lmCap(c, vec3(-17.5, 0., 0.), vec3(17.5, 0., 0.), 2.6));
+      vec3 cq = vec3(abs(c.x), c.y, abs(c.z));
+      dw = min(dw, lmCap(cq, vec3(16., 0., 0.), vec3(24., -84.25, 30.), 1.4));
+      dw = min(dw, lmCap(c, vec3(17., -1., 0.), vec3(96., -84.25, 0.), 1.4));
+      if(LMPX < 1.5) dw = min(dw, lmCap(c, vec3(sign(c.x)*17., 0., 0.), vec3(0., cos(a)*76., sin(a)*76.), 0.12));
+      d = min(d, dw);
+    }
+    // the guitar tower: its outline across its faces (x), 25 m deep (z), the edges rounded
+    q = lmPart(p, 2);
+    float bg = length(max(abs(q - vec3(0., 100., 0.)) - vec3(49., 102., 19.), 0.));
+    if(bg < d){
+      float dg = (abs(q.x) - lvGtW(clamp(q.y, 0., 201.)))*0.8;
+      dg = length(max(vec2(dg, abs(q.z) - 9.5), 0.)) + min(max(dg, abs(q.z) - 9.5), 0.) - 3.;
+      d = min(d, max(dg, max(-q.y - 3., q.y - 201.)));
+    }
+    return d;
+  }
+  if(k < 1.5){   // the Luxor's pyramid, and the ballpark
+    float m = max(abs(p.x), abs(p.z));
+    float d = max((m*LXH + p.y*LXB - LXB*LXH)/sqrt(LXH*LXH + LXB*LXB), -p.y - 3.);
+    vec3 q = lmPart(p, 3); float bp = length(max(abs(q - vec3(0., 42., 0.)) - vec3(112., 44., 112.), 0.));
+    return bp < d ? min(d, lvPark(q)) : d;
+  }
+  if(k < 2.5){   // the STRAT: three legs round the core, the pod, the mast
+    float r = length(p.xz), an = atan(p.z, p.x), st = 2.0943951, a = floor(an/st + 0.5)*st;
+    vec2 u = vec2(cos(a), sin(a)), lp = vec2(dot(p.xz, u), dot(p.xz, vec2(-u.y, u.x)));
+    float y = p.y, ext = mix(27., 9., pow(clamp(y/250., 0., 1.), 0.55));
+    float d = max(r - 8.5, abs(y - 128.) - 132.);
+    d = min(d, max(max(lp.x - ext, -lp.x), max(abs(lp.y) - 2.6, abs(y - 125.) - 125.)));
+    d = min(d, max(r - mix(10., 24., smoothstep(244., 259., y)), abs(y - 253.) - 9.));
+    d = min(d, max(r - 24., abs(y - 272.) - 14.));
+    d = min(d, max(r - 26.5, abs(abs(y - 274.) - 6.) - 0.9));
+    d = min(d, max(r - mix(24., 12., smoothstep(286., 294., y)), abs(y - 290.) - 4.));
+    d = min(d, max(r - mix(3., 1.2, clamp((y - 294.)/56., 0., 1.)), abs(y - 322.) - 28.));
+    return d*0.85;
+  }
+  // the Fremont Street canopy: a barrel vault (its arc's centre 9.9 m up, 17.1 m across, so 27 m at its peak), and the columns under it
+  float dc = max(abs(length(vec2(p.z, p.y - 9.9)) - 17.1) - 0.7, max(abs(p.x) - 209.5, 20.5 - p.y));
+  vec2 cx = vec2(p.x - (floor(p.x/52.4 + 0.5))*52.4, abs(p.z) - 12.6);
+  return min(dc, max(length(cx) - 0.7, max(p.y - 21., abs(p.x) - 210.)));
+}
+// what the Sphere shows (illustrative: its real shows change; here a few of the atlas's own worlds and the eye it is known for), on its
+// unit normal n, the camera's way into it (v), one show (w) and the time (s)
+// (noise read with textureLod: texture() in a branch needs gradients, and Direct3D's compiler then unrolled every call, doubling the time)
+float lvN(vec3 p){ return textureLod(uNoise, p*(1./64.), 0.).r; }
+float lvF(vec3 p){ return (lvN(p)*0.5 + lvN(p*2.03 + vec3(1.7, 9.2, 3.1))*0.25 + lvN(p*4.12 + vec3(4.4, 1.3, 7.7))*0.125)/0.875; }
+vec3 lvShow(vec3 n, vec3 v, float w, float tm){
+  float lat = asin(clamp(n.y, -1., 1.)), lon = atan(n.z, n.x);
+  if(w < 0.5){   // an eye looking about, its lids blinking now and then
+    vec3 ax = normalize(vec3(-v.x, -0.1, -v.z) + vec3(0.18*sin(tm*0.31), 0.06*sin(tm*0.53), 0.18*cos(tm*0.27)));
+    vec3 sd = normalize(cross(vec3(0., 1., 0.), ax)), u2 = cross(ax, sd);
+    float th = acos(clamp(dot(n, ax), -1., 1.)), ex = dot(n, sd), ey = dot(n, u2);
+    float bl = smoothstep(0.92, 1., abs(sin(tm*0.52))), lid = mix(0.62, 0.03, bl);
+    vec3 skin = vec3(0.86, 0.6, 0.48), c = vec3(0.97, 0.96, 0.94);
+    float ir = smoothstep(0.42, 0.4, th), pu = smoothstep(0.17, 0.15, th);
+    c = mix(c, mix(vec3(0.1, 0.42, 0.7), vec3(0.32, 0.62, 0.86), 0.5 + 0.5*sin(lon*28.)), ir);
+    c = mix(c, vec3(0.02), pu);
+    c += vec3(1.)*smoothstep(0.06, 0.03, length(vec2(ex - 0.13, ey - 0.13)));
+    float open = step(abs(ey), lid*sqrt(max(1. - ex*ex/0.9, 0.)));
+    return mix(skin*(0.6 + 0.4*n.y), c, open*step(abs(ex), 0.95));
+  }
+  if(w < 1.5){   // the Earth, turning: oceans, land, cloud
+    float lo2 = lon + tm*0.05, h = lvF(vec3(cos(lat)*cos(lo2), sin(lat), cos(lat)*sin(lo2))*2.2);
+    vec3 c = mix(vec3(0.06, 0.2, 0.52), mix(vec3(0.25, 0.42, 0.18), vec3(0.62, 0.52, 0.34), smoothstep(0.55, 0.7, h)), smoothstep(0.5, 0.52, h));
+    c = mix(c, vec3(0.95), smoothstep(0.82, 0.9, abs(n.y)));
+    float cl = lvF(vec3(cos(lat)*cos(lo2*1.3 + 1.), sin(lat)*1.6, cos(lat)*sin(lo2*1.3 + 1.))*3.1 + 7.);
+    return mix(c, vec3(0.96), smoothstep(0.56, 0.7, cl)*0.85);
+  }
+  if(w < 2.5){   // the Moon: its seas and craters
+    float h = lvF(n*2.6 + 3.), cr = lvF(n*9. + 11.);
+    vec3 c = mix(vec3(0.72, 0.71, 0.68), vec3(0.36, 0.36, 0.38), smoothstep(0.5, 0.62, h));
+    return c*(0.85 + 0.3*smoothstep(0.55, 0.75, cr));
+  }
+  // Jupiter: its bands and the Great Red Spot, turning
+  float lo3 = lon + tm*0.08, b = sin(lat*13. + 0.6*lvF(vec3(lo3*2., lat*6., 1.)));
+  vec3 c = mix(vec3(0.86, 0.78, 0.66), vec3(0.62, 0.42, 0.3), smoothstep(-0.2, 0.6, b));
+  vec2 gs = vec2(mod(lo3 + 3.1416, 6.2832) - 3.1416 - 0.6, lat + 0.38)*vec2(1., 2.2);
+  return mix(c, vec3(0.78, 0.32, 0.2), smoothstep(0.26, 0.2, length(gs)));
+}
+vec3 lmBase(vec3 q, vec3 n, float k, float px, out float glow){
+  glow = 0.;
+  if(k < 0.5){
+    vec4 P0 = uLmP[0], P1 = uLmP[1], P3 = uLmP[2];
+    vec3 q0 = lmRot(q - vec3(P0.x, P0.z, P0.y), P0.w);
+    if(length(q0 - vec3(0., 33., 0.)) < 80.){   // the Sphere's screen: dark pucks by day where a pixel resolves them, its show
+      vec3 sn = normalize(q0 - vec3(0., 33., 0.)), v = normalize(lmRot(LMD, P0.w));
+      float tm = uLm2.y, f = uLmS.z;   // (one show at a time, the change a dip through dark: two shows a pixel doubled the compile time)
+      vec3 sh = lvShow(sn, v, f < 0.5 ? uLmS.x : uLmS.y, tm)*(0.15 + 0.85*abs(1. - 2.*f));
+      vec2 g = vec2(atan(sn.z, sn.x)*78.5*cos(asin(clamp(sn.y, -1., 1.))), asin(clamp(sn.y, -1., 1.))*78.5)/0.2;
+      float pk = mix(1., 1.6*smoothstep(0.42, 0.28, length(fract(g) - 0.5)), smoothstep(0.3, 0.12, px));
+      LMEM = sh*pk*mix(0.62, 0.8, uLm2.x);
+      return vec3(0.16, 0.16, 0.17);
+    }
+    vec3 q1 = lmRot(q - vec3(P1.x, P1.z, P1.y), P1.w);
+    if(abs(q1.x - 40.) < 60. && length(q1.yz - vec2(84.25, 0.)) < 86.5){   // the High Roller: white steel, the cabins' glass; its rim lit at night in colours that run round it
+      vec3 c = q1 - vec3(0., 84.25, 0.); float r = length(c.yz), an = atan(c.z, c.y);
+      if(r > 78.5 && abs(c.x) < 4.) return vec3(0.55, 0.62, 0.66);
+      if(abs(r - 76.) < 2.5 && abs(c.x) < 3.){ float hu = an*2. + uLm2.y*0.4; LMEM = (0.5 + 0.5*cos(vec3(0., 2.1, 4.2) + hu))*0.75*uLm2.x; }
+      return vec3(0.9, 0.9, 0.88);
+    }
+    // the guitar tower: dark blue-grey glass, a light band round each face's edge (the guitar's binding)
+    vec3 q3 = lmRot(q - vec3(P3.x, P3.z, P3.y), P3.w);
+    float ed = lvGtW(clamp(q3.y, 0., 201.)) - abs(q3.x);
+    glow = 0.04;
+    vec3 n3 = lmRot(n, P3.w);
+    return abs(n3.z) > 0.7 && ed < 4. ? vec3(0.86, 0.85, 0.82) : abs(n3.z) > 0.7 ? vec3(0.26, 0.32, 0.38) : vec3(0.7, 0.71, 0.72);
+  }
+  if(k < 1.5){   // the Luxor's black glass; the ballpark's concrete and steel, a few work lights at night
+    vec3 q4 = lmRot(q - vec3(uLmP[3].x, uLmP[3].z, uLmP[3].y), uLmP[3].w);
+    // (pale concrete for the bowl, warm brown steel for the arches and the buttress: in greys they vanished into the city behind them)
+    if(length(q4.xz) < 125.){ glow = 0.12; return q4.y > 44. || q4.x > 97. ? vec3(0.62, 0.44, 0.34) : vec3(0.86, 0.83, 0.76); }   // (the arches dark steel trusses about 7 m deep, the bowl pale concrete)
+    return vec3(0.17, 0.17, 0.19);
+  }
+  if(k < 2.5){   // the STRAT: white concrete, the pod's glass bands lit at night
+    if(q.y > 244. && q.y < 296.){ float bd = step(0.5, fract(q.y/4.)); glow = 0.9; LMEM = vec3(0.75, 0.85, 1.)*bd*0.5*uLm2.x; return mix(vec3(0.9), vec3(0.3, 0.38, 0.46), bd); }
+    glow = 0.45; return vec3(0.9, 0.89, 0.86);
+  }
+  // the Fremont Street canopy: grey above; its underside a screen, lit at night, and its light showing through the open frame from above
+  float hu = q.x*0.03 + uLm2.y*0.7; vec3 sc = 0.55 + 0.45*cos(vec3(0., 2.1, 4.2) + hu + q.z*0.2);
+  if(n.y < -0.2 || length(vec2(q.z, q.y - 9.9)) < 16.6){ LMEM = sc*0.9*uLm2.x; return vec3(0.3); }
+  LMEM = sc*0.3*uLm2.x;
+  return vec3(0.72, 0.73, 0.74);
+}
+#endif
 #ifdef LM_RIO
 // Christ the Redeemer (Santuario Cristo Redentor): 30 m tall on an 8 m pedestal, its arms 28 m across, on the top of Corcovado; x along its
 // arms, z the way it faces (east-northeast, over the city and the bay). Soapstone, floodlit at night
@@ -773,8 +960,11 @@ void cityMat(float k, float tall, float hsh, out vec3 wc, out vec3 rc){
     wc = hsh < 0.3 ? vec3(0.86, 0.64, 0.4) : hsh < 0.55 ? vec3(0.78, 0.48, 0.34) : hsh < 0.8 ? vec3(0.9, 0.82, 0.66) : vec3(0.84, 0.78, 0.66); rc = vec3(0.76, 0.46, 0.33);
   } else if(k < 9.5){ // Los Angeles: white and beige stucco, pink and tan render, glass
     wc = hsh < 0.35 ? vec3(0.92, 0.9, 0.86) : hsh < 0.55 ? vec3(0.86, 0.78, 0.66) : hsh < 0.7 ? vec3(0.88, 0.74, 0.7) : vec3(0.54, 0.66, 0.78); rc = vec3(0.8, 0.79, 0.76);
-  } else {            // Rio de Janeiro: white and pastel concrete, red brick of the hillside favelas, glass
+  } else if(k < 10.5){ // Rio de Janeiro: white and pastel concrete, red brick of the hillside favelas, glass
     wc = hsh < 0.35 ? vec3(0.9, 0.9, 0.88) : hsh < 0.55 ? vec3(0.86, 0.8, 0.66) : hsh < 0.75 ? vec3(0.74, 0.46, 0.34) : vec3(0.54, 0.68, 0.76); rc = vec3(0.64, 0.64, 0.64);
+  } else {            // Las Vegas (0.20.0): cream and white render, desert tan, glass; the resorts' towers in gold, bronze, white and blue glass
+    wc = hsh < 0.35 ? vec3(0.92, 0.88, 0.8) : hsh < 0.6 ? vec3(0.84, 0.74, 0.6) : hsh < 0.8 ? vec3(0.94, 0.93, 0.9) : vec3(0.56, 0.68, 0.78); rc = vec3(0.82, 0.81, 0.78);
+    if(tall > 0.5){ wc = hsh < 0.25 ? vec3(0.9, 0.74, 0.42) : hsh < 0.45 ? vec3(0.66, 0.46, 0.32) : hsh < 0.7 ? vec3(0.92, 0.91, 0.88) : vec3(0.5, 0.64, 0.8); return; }
   }
   if(tall > 0.5) wc = k > 2.5 && k < 3.5 ? vec3(0.55, 0.7, 0.84) : vec3(0.52, 0.65, 0.78);
 }
@@ -809,18 +999,19 @@ float groundY(vec2 xz, out float water, out float ok){ vec3 P = seaPt(xz); float
 // the normal's four samples share one loop, so lmMap is compiled once (as for the Eiffel Tower)
 float lmHit(vec3 o, vec3 d, float tMax, out vec3 nl, out float kk, out vec3 ql){
   nl = vec3(0., 1., 0.); kk = 0.; ql = vec3(0.); float best = -1.;
-  for(int j=ZI;j<2;j++){
+  for(int j=ZI;j<LM_N;j++){
     if(float(j) >= uLm2.z) break;
-    float k = float(j); vec4 U = j == 0 ? uLm0 : uLm1, bb = lmBounds(k);
+    float k = float(j); vec4 U = lmU(j), bb = lmBounds(k);
     vec3 B = vec3(U.x, seaPt(U.xy).y + U.z, U.y), ol = lmRot(o - B, U.w), dl = lmRot(d, U.w);
     vec3 iv = 1./(dl + vec3(dl.x < 0. ? -1e-7 : 1e-7, dl.y < 0. ? -1e-7 : 1e-7, dl.z < 0. ? -1e-7 : 1e-7));
     vec3 t0 = (vec3(-bb.x, bb.y, -bb.w) - ol)*iv, t1 = (vec3(bb.x, bb.z, bb.w) - ol)*iv, tn = min(t0, t1), tf = max(t0, t1);
     float ta = max(max(tn.x, tn.y), max(tn.z, 0.)), tb = min(min(tf.x, tf.y), min(tf.z, best > 0. ? best : tMax));
     if(ta >= tb) continue;
-    float t = ta; int hi = -1; vec3 ph = vec3(0.), n = vec3(0.); float ep = 0.;
+    float t = ta; int hi = -1; vec3 ph = vec3(0.), n = vec3(0.); float ep = 0.; LMD = dl;
     for(int i=ZI;i<124;i++){
       int mm = hi < 0 ? -1 : i - hi - 1;
       vec3 kv = mm == 0 ? vec3(1., -1., -1.) : mm == 1 ? vec3(-1., -1., 1.) : mm == 2 ? vec3(-1., 1., -1.) : vec3(1.), p = mm < 0 ? ol + dl*t : ph + kv*ep;
+      LMPX = t*uPix;
       float h = lmMap(p, k);
       if(mm >= 0){ n += kv*h; if(mm == 3) break; continue; }
       float pw = t*uPix*0.6;
@@ -830,6 +1021,7 @@ float lmHit(vec3 o, vec3 d, float tMax, out vec3 nl, out float kk, out vec3 ql){
     if(hi < 0) continue;
     best = t; nl = normalize(n + vec3(0., 1e-6, 0.)); kk = k; ql = ph;
   }
+  LMPX = best*uPix;
   return best;
 }
 #endif
@@ -988,6 +1180,9 @@ void main(){
   float day = uP1.w, fade = uP0.w, e = uP4.y, sunE = L.y;
   CALT = o.y + e + dot(o.xz, o.xz)/(2.*RE); DIP = -sqrt(2.*max(CALT, 0.)/RE);
   float thin = exp(-CALT/8500.);
+  // (the haze's colour along the view, once a pixel: a model's shading, the ground's and the clouds' each worked it out, and Direct3D's
+  // compiler copies a function at every call, 0.20.0)
+  vec3 HZ = skyCol(normalize(vec3(d.x, DIP + 0.015, d.z)), L, day);
   float lit = 0.04 + 0.96*smoothstep(-0.1, 0.2, sunE);   // how bright the day is: full with the Sun 12 degrees up (a camera's exposure follows the light: at 20 degrees a dawn launch came out murky), dim at night
   float near = smoothstep(30000., 8000., CALT);   // (above 30 km the ground shows as Earth's shader shows it, below 8 km brighter and richer)
   // (a city (uP4.z < 0) at night: the eyes adjust, as they do in a city at night: the picture brightened about 2.6 times, so the buildings
@@ -1018,8 +1213,20 @@ void main(){
   }
   float tc = curveT(o, d, e);
   if(t < 0. && tc > 0.) t = tc;
+  // (the models' hit tests first, then the cloud shadow once, at whatever the ray meets first: each shading block called cloudShadow
+  // itself, a copy each under Direct3D, 0.20.0)
+  float tSh = t;
 #ifdef EIFFEL
-  vec3 nE; float tE = efHit(o, d, t > 0. ? t : 1e9, nE);
+  vec3 nE; float tE = efHit(o, d, t > 0. ? t : 1e9, nE); if(tE > 0.) tSh = tE;
+#endif
+#ifdef LM
+  vec3 nM, qM; float kM, tM = lmHit(o, d, t > 0. ? t : 1e9, nM, kM, qM); if(tM > 0.) tSh = tM;
+#endif
+#ifdef TOKYO
+  vec3 nT, qT; float kT, tT = tkHit(o, d, t > 0. ? t : 1e9, nT, kT, qT); if(tT > 0.) tSh = tT;
+#endif
+  float CSH = tSh > 0. ? cloudShadow(o + d*tSh, e, L) : 1.;
+#ifdef EIFFEL
   if(tE > 0.){
     vec3 B = vec3(uEf0.x, seaPt(uEf0.xy).y + uEf0.z, uEf0.y), q = efLoc(o + d*tE - B), nw = efWor(nE);
     // (the lattice: braces crossing on each face and a girder every panel, the panels smaller toward the top; it fades to its average
@@ -1027,26 +1234,25 @@ void main(){
     float uu = abs(nE.x) > abs(nE.z) ? q.z : q.x, kL, lt = efLat(q, uu, tE*uPix, kL);
     lt = mix(0.45, lt, kL*(1. - smoothstep(0.7, 0.9, abs(nE.y))));
     float ov = smoothstep(0.5, 0.95, uWx0.x), fl = max(sunE, 0.)*(1. - 0.65*ov) + 0.6;
-    float here = max(dot(nw, L), 0.)*cloudShadow(o + d*tE, e, L) + 0.6*(0.85 + 0.15*nw.y);
+    float here = max(dot(nw, L), 0.)*CSH + 0.6*(0.85 + 0.15*nw.y);
     vec3 g = vec3(0.64, 0.5, 0.36)*mix(0.32, 1., lt)*lit*clamp(here/fl, 0.15, 1.6);
     g += vec3(1., 0.7, 0.32)*uEf1.x*(0.3 + 0.5*lt);
     g += vec3(1., 0.96, 0.88)*1.6*uEf1.y*step(0.975, hash12(floor(vec2(uu, q.y)/2.2) + floor(uEf1.z*7.)*vec2(3.1, 7.7)));
-    col = mix(g, skyCol(normalize(vec3(d.x, DIP + 0.015, d.z)), L, day), hazeF(tE, thin)*0.4); a = 1.; t = tE;
+    col = mix(g, HZ, hazeF(tE, thin)*0.4); a = 1.; t = tE;
   } else
 #endif
 #ifdef LM
-  vec3 nM, qM; float kM, tM = lmHit(o, d, t > 0. ? t : 1e9, nM, kM, qM);
   if(tM > 0.){
-    vec4 U = kM < 0.5 ? uLm0 : uLm1; vec3 nw = lmRot(nM, -U.w);
+    vec4 U = lmU(int(kM + 0.5)); vec3 nw = lmRot(nM, -U.w);
     float glow, ov = smoothstep(0.5, 0.95, uWx0.x), fl = max(sunE, 0.)*(1. - 0.65*ov) + 0.6;
+    LMEM = vec3(0.); LMD = lmRot(d, U.w);
     vec3 base = lmBase(qM, nM, kM, tM*uPix, glow);
-    float here = max(dot(nw, L), 0.)*cloudShadow(o + d*tM, e, L) + 0.6*(0.85 + 0.15*nw.y);
-    vec3 g = base*lit*clamp(here/fl, 0.15, 1.6) + vec3(1., 0.88, 0.7)*base*uLm2.x*glow;
-    col = mix(g, skyCol(normalize(vec3(d.x, DIP + 0.015, d.z)), L, day), hazeF(tM, thin)*0.4); a = 1.; t = tM;
+    float here = max(dot(nw, L), 0.)*CSH + 0.6*(0.85 + 0.15*nw.y);
+    vec3 g = base*lit*clamp(here/fl, 0.15, 1.6) + vec3(1., 0.88, 0.7)*base*uLm2.x*glow + LMEM;
+    col = mix(g, HZ, hazeF(tM, thin)*0.4); a = 1.; t = tM;
   } else
 #endif
 #ifdef TOKYO
-  vec3 nT, qT; float kT, tT = tkHit(o, d, t > 0. ? t : 1e9, nT, kT, qT);
   if(tT > 0.){
     vec3 nw = tkRot(nT, -(kT < 0.5 ? uTk0.w : uTk1.w));
     float ang = atan(qT.z, qT.x), P = kT < 0.5 ? max(1.6, 0.17*ttW(clamp(qT.y, 0., 252.))) : 7.;
@@ -1055,7 +1261,7 @@ void main(){
     // (the decks: dark glass, lit windows at night)
     bool deck = kT < 0.5 ? abs(qT.y - 148.) < 4.6 || abs(qT.y - 249.6) < 2.7 || qT.y < 18.2 : abs(qT.y - 346.) < 11.1 || abs(qT.y - 448.) < 6.1;
     float ov = smoothstep(0.5, 0.95, uWx0.x), fl = max(sunE, 0.)*(1. - 0.65*ov) + 0.6;
-    float here = max(dot(nw, L), 0.)*cloudShadow(o + d*tT, e, L) + 0.6*(0.85 + 0.15*nw.y);
+    float here = max(dot(nw, L), 0.)*CSH + 0.6*(0.85 + 0.15*nw.y);
     // (Tokyo Tower's bands: international orange and white, eleven of them; the Skytree's "Skytree White", a faint blue)
     vec3 base = kT < 0.5 ? (mod(floor(qT.y/(333./11.)), 2.) < 0.5 ? vec3(0.95, 0.4, 0.14) : vec3(0.93, 0.92, 0.9)) : vec3(0.84, 0.88, 0.93);
     if(deck) base = vec3(0.3, 0.34, 0.38);
@@ -1063,7 +1269,7 @@ void main(){
     float on = kT < 0.5 ? uTk2.x : uTk2.y;
     vec3 lc = kT < 0.5 ? (uTk2.w > 0.5 ? vec3(1., 0.95, 0.85) : vec3(1., 0.55, 0.2)) : (uTk2.z > 0.5 ? vec3(0.62, 0.35, 1.) : vec3(0.4, 0.75, 1.));
     g += deck ? vec3(1., 0.85, 0.6)*on*0.35*step(0.4, fract(uu/3.)) : lc*on*(0.3 + 0.5*lt);
-    col = mix(g, skyCol(normalize(vec3(d.x, DIP + 0.015, d.z)), L, day), hazeF(tT, thin)*0.4); a = 1.; t = tT;
+    col = mix(g, HZ, hazeF(tT, thin)*0.4); a = 1.; t = tT;
   } else
 #endif
   if(t > 0.){
@@ -1092,11 +1298,11 @@ void main(){
         sh = mix(1., sh, smoothstep(5000., 2500., t));
       }
     }
-    float csh = cloudShadow(p, e, L);
+    float csh = CSH;
     // (outside the images: the sketch, sea past a straight coastline)
     float sd = dot(p.xz, uP2.xy) - uP2.z + 180.*(fbm3(vec3(p.xz*0.0004, 1.)) - 0.5);
     bool sea = cov > 0.5 ? water > 0.5 : (uP2.w > 0.5 || sd > 0.);
-    vec3 haze = skyCol(normalize(vec3(d.x, DIP + 0.015, d.z)), L, day);
+    vec3 haze = HZ;
     if(sea){
       vec2 wv = p.xz*0.02 + vec2(uP4.x*0.3, uP4.x*0.17);
       vec3 nw = normalize(vec3((noise(vec3(wv, 3.)) - 0.5)*0.3, 1., (noise(vec3(wv.yx, 7.)) - 0.5)*0.3));
@@ -1155,7 +1361,11 @@ void main(){
         vec2 cell = floor(vec2(wu/2.6, hA/3.6)), fw = fract(vec2(wu/2.6, hA/3.6));
         float win = mix(0.33, step(0.2, fw.x)*step(fw.x, 0.8)*step(0.3, fw.y)*step(fw.y, 0.85), smoothstep(1.6, 0.8, fp));   // (resolved only up close: farther they aliased into noise)
         base = mix(base, (uCity.x >= 0. ? wc : mix(vec3(0.42, 0.44, 0.47), img, 0.35))*(0.85 + 0.25*win)*lit, wl);
-        glowC += vec3(1., 0.78, 0.45)*win*step(0.66, hash12(cell + floor(p.xz/40.)*7.31))*nt*wl*0.9;
+        glowC += vec3(1., 0.78, 0.45)*win*step(uCity.x > 10.5 ? 0.5 : 0.66, hash12(cell + floor(p.xz/40.)*7.31))*nt*wl*0.9;
+        // (Las Vegas, 0.20.0: the resorts' fronts lit along the bottom of their walls, the signs and marquees, in a colour each; illustrative)
+        if(uCity.x > 10.5){ float hb = hash12(floor(p.xz/60.) + 17.3), lh = p.y - m;   // (the height up the wall, from the lowest ground beside it)
+          vec3 neon = hb < 0.25 ? vec3(1., 0.25, 0.75) : hb < 0.45 ? vec3(0.3, 0.85, 1.) : hb < 0.7 ? vec3(1., 0.78, 0.3) : hb < 0.85 ? vec3(1., 0.3, 0.2) : vec3(1.);
+          glowC += neon*wl*nt*smoothstep(26., 12., lh)*smoothstep(1., 5., lh)*0.75; }
         float lum = dot(img, vec3(0.3, 0.59, 0.11)), sat = length(img - vec3(lum));
         float pav = 0.2;
 #ifdef CITY
@@ -1204,9 +1414,25 @@ void main(){
     float r = length(v - d*tl), s = max(tl*uPix*1.4, 1.5);
     col += vec3(1., 0.16, 0.08)*tw.w*(exp(-r*r/(s*s))*2.2 + exp(-r/(s*6.))*0.12);
   }
+#ifdef LM_LV
+  // the Luxor's Sky Beam (0.20.0): 39 xenon lamps in the pyramid's tip, the strongest beam of light in the world, on from sunset for about
+  // eight hours (Luxor; City Cast Las Vegas): straight up from the tip, its light scattered by the air, fading with height. Where the ray
+  // passes nearest the beam's line, unless something nearer hides it
+  if(uLmS.w > 0.01 && uLm2.z > 1.5){
+    vec3 A = vec3(uLm1.x, seaPt(uLm1.xy).y + uLm1.z + LXH, uLm1.y);
+    vec2 w = A.xz - o.xz, dx = d.xz; float dd = dot(dx, dx), sB = dd > 1e-10 ? dot(w, dx)/dd : 0.;
+    if(sB > 0. && (t < 0. || sB < t + 3.)){
+      vec3 pB = o + d*sB; float rB = length(pB.xz - A.xz), hB = pB.y - A.y;
+      if(hB > 0.){
+        float wv = max(2., sB*uPix*1.1), I = uLmS.w*smoothstep(0., 25., hB)*exp(-hB/9000.)*(exp(-rB*rB/(wv*wv))*1.8*min(1., 3./wv*4.) + exp(-rB/(wv*5.))*0.06);
+        col += vec3(0.82, 0.88, 1.)*I; a = max(a, min(I, 1.));
+      }
+    }
+  }
+#endif
   // the clouds in front of what the ray met, in the order it meets them (the sunlight warm when the Sun is low)
   { vec3 sunC = mix(vec3(1., 0.97, 0.92), vec3(1., 0.62, 0.36), smoothstep(0.3, 0.02, sunE))*lit*smoothstep(-0.06, 0.04, sunE);
-    vec3 hz = skyCol(normalize(vec3(d.x, DIP + 0.015, d.z)), L, day);
+    vec3 hz = HZ;
     float tB = t > 0. ? t : 1e9, tL, tM, tH;
     vec4 A1 = layerLow(o, d, e, tB, L, lit, sunC, hz, thin, tL), A2 = sheet(o, d, e, 4500., tB, 0, L, lit, sunC, hz, thin, tM), A3 = sheet(o, d, e, 9000., tB, 1, L, lit, sunC, hz, thin, tH);
     vec4 X; float y;
@@ -1227,3 +1453,4 @@ P.sxEnvSyd = program(VS_RECT, FS_SX_ENV.replace('#version 300 es\n', '#version 3
 P.sxEnvRome = program(VS_RECT, FS_SX_ENV.replace('#version 300 es\n', '#version 300 es\n#define CITY\n#define LM\n#define LM_ROME\n'));
 P.sxEnvLA = program(VS_RECT, FS_SX_ENV.replace('#version 300 es\n', '#version 300 es\n#define CITY\n#define LM\n#define LM_LA\n'));
 P.sxEnvRio = program(VS_RECT, FS_SX_ENV.replace('#version 300 es\n', '#version 300 es\n#define CITY\n#define LM\n#define LM_RIO\n'));
+P.sxEnvLV = program(VS_RECT, FS_SX_ENV.replace('#version 300 es\n', '#version 300 es\n#define CITY\n#define LM\n#define LM_N 4\n#define LM_LV\n'));   // (0.20.0: Las Vegas, four landmarks)

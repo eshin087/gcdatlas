@@ -67,6 +67,14 @@ try {
     await page.evaluate(() => { const c = window.__cosmos; c.epl.go(c.epl.PICKS.cities.find(r => r[0] === 'Rio de Janeiro')); });
     const tr = await until(page, () => { const c = window.__cosmos, d = c.ect.dbg(); return !c.flight && d.env === 'city-rio' && d.landmark === 'sxEnvRio'; }, null, 150, 'Rio drawn with Christ the Redeemer');
     notes.push(`Rio drawn with Christ the Redeemer after ${tr} s`);
+    // (0.20.0: Las Vegas, drawn with its landmarks' copy; the Fountains of Bellagio during a show (Saturday 17 October 2026, 21:02 local
+    // time: shows every 15 minutes from 20:00) and not between two (21:10))
+    await page.evaluate(() => { const c = window.__cosmos; c.epl.go(c.epl.PICKS.cities.find(r => r[0] === 'Las Vegas')); });
+    const tv = await until(page, () => { const c = window.__cosmos, d = c.ect.dbg(); return !c.flight && d.env === 'city-lasvegas' && d.landmark === 'sxEnvLV'; }, null, 150, 'Las Vegas drawn with its landmarks');
+    const at = (h, m) => page.evaluate(jd => { const c = window.__cosmos; c.ssRate = 0; c.setDays(jd - (performance.timeOrigin/86400000 + 2440587.5)); }, Date.UTC(2026, 9, 18, h, m)/86400000 + 2440587.5);
+    await at(4, 2); const fOn = await until(page, () => window.__cosmos.eas.dbg().fountains > 40, null, 20, 'the fountains during a show');
+    await at(4, 10); const fOff = await until(page, () => window.__cosmos.eas.dbg().fountains === 0, null, 20, 'no fountains between shows');
+    notes.push(`Las Vegas drawn with its landmarks after ${tv} s; the fountains ${fOn != null && fOff != null ? 'run in a show and rest between' : 'off schedule'}`);
     errors.push(...pe); await browser.close(); }
   // ---- a famous place with its own layers (0.15.0): Everest from the atlas's row, drawn with its own layers, its credits in the readout;
   // the search finds the places by their other names; moved by hand, the camera goes to a place object and Everest's own stays put

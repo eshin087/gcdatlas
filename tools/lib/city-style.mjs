@@ -18,6 +18,7 @@ export const ROOF = {
   sydney:       [[0.74, 0.44, 0.32, 0.8], [0.56, 0.58, 0.60, 0.9], [0.82, 0.80, 0.75, 1], [0.42, 0.42, 0.44, 1], [0.48, 0.62, 0.48, 1.3]],   // terracotta tile, grey metal, pale, dark, green
   rome:         [[0.76, 0.46, 0.33, 0.6], [0.84, 0.78, 0.66, 1.1], [0.58, 0.57, 0.55, 1.1], [0.48, 0.60, 0.44, 1.3]],                         // terracotta tile, pale, grey, roof gardens
   losangeles:   [[0.82, 0.81, 0.78, 0.8], [0.58, 0.58, 0.58, 0.9], [0.74, 0.46, 0.36, 1], [0.76, 0.68, 0.56, 1], [0.48, 0.62, 0.44, 1.3]],   // white, grey, red tile, tan, green
+  lasvegas:     [[0.86, 0.85, 0.82, 1.3], [0.6, 0.6, 0.6, 0.8], [0.78, 0.69, 0.55, 1], [0.74, 0.52, 0.42, 0.6], [0.5, 0.56, 0.62, 0.5]],   // white membrane, grey, desert tan, terracotta, blue-grey
   rio:          [[0.62, 0.62, 0.62, 0.9], [0.72, 0.45, 0.34, 1], [0.84, 0.82, 0.78, 0.9], [0.76, 0.48, 0.36, 1], [0.46, 0.60, 0.44, 1.3]],   // concrete, brick, pale, terracotta, green
 };
 const GLASS = [0.44, 0.52, 0.60];   // (towers over 120 m: glass and steel)

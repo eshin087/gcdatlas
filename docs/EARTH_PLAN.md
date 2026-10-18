@@ -58,6 +58,7 @@ release and one pull request each. This file is the plan; `docs/CHANGELOG.md` sa
 - Phase 2: 0.12.0, merged (PR #43). Tiles to 2.4 km a pixel (31 MB), the ground in 3D anywhere, places on Earth in the search.
 - Phase 4, first part: 0.13.0. The five cities in 3D, tower lights, local time and weather; with it the real clouds (phase 5's back end, brought forward), Google Earth-like moves near surfaces, marks on the globe and a zoom that lands on places. The second part (traffic, planes, ships) is 0.14.0.
 - Phase 4, second part: 0.14.0. Traffic on the real roads by local hour, simulated planes on the real runways into the real wind, boats on the ferry routes, Tokyo Tower and the Skytree as models.
+- 0.20.0: Las Vegas as it is in October 2026, with the Sphere, the High Roller, the Luxor and its beam, the STRAT, the Fremont Street canopy, the Fountains of Bellagio, and Hard Rock's guitar tower and the Athletics' ballpark under construction.
 - 0.19.0: six more cities (Hong Kong, San Francisco, Sydney, Rome, Los Angeles, Rio de Janeiro) with six landmark models.
 - 0.17.0: the cities in an architectural-model style, their traffic and planes visible from afar (owner's review of 0.14.0 and 0.15.0).
 - Phase 3: 0.15.0. 30 famous places in 3D (`e9p-earth-places.js`): their layers drawn near the ground like the cities', an object each with its framings, fact and credits, reached from the atlas's "on Earth" list (19 rows added, 7 of them in a new kind, "built by people"), the marks on the globe and the search, and a tour, wonders of Earth.
