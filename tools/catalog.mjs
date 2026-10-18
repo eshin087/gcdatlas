@@ -9,32 +9,40 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 // (the Halo showcase only names objects in its plan, as key:'moon' and so on, so it is left out)
 const src = [...fs.readdirSync(path.join(ROOT, 'src')).filter(f => f.endsWith('.js') && f !== '09i-showcase.js').map(f => 'src/' + f), ...fs.readdirSync(path.join(ROOT, 'src/objects')).map(f => 'src/objects/' + f)];
 const text = Object.fromEntries(src.map(f => [f, fs.readFileSync(path.join(ROOT, f), 'utf8')]));
-// where an object is defined: its key:'…' property, a namedStar('…' call, or a ['…', 'Name' table row, in that order
-const fileOf = key => src.find(f => text[f].includes(`key:'${key}'`)) || src.find(f => text[f].includes(`namedStar('${key}'`)) || src.find(f => new RegExp(`[\\[(]'${key}', '[A-Z]`).test(text[f])) || src.find(f => new RegExp(`key:\\s*'${key}'|'${key}'\\s*:\\s*\\{`).test(text[f])) || src.find(f => text[f].includes(`key:'${key.slice(0, -1)}' +`)) || '';
+// where an object is defined: its key:'…' property, a namedStar('…' or gaiaOpenCluster('…' call, or a ['…', 'Name' (or "Name") table row, in that order
+const fileOf = key => src.find(f => text[f].includes(`key:'${key}'`)) || src.find(f => text[f].includes(`namedStar('${key}'`) || text[f].includes(`gaiaOpenCluster('${key}'`)) || src.find(f => new RegExp(`[\\[(]'${key}', ['"][A-Z]`).test(text[f])) || src.find(f => new RegExp(`key:\\s*'${key}'|'${key}'\\s*:\\s*\\{`).test(text[f])) || src.find(f => text[f].includes(`key:'${key.slice(0, -1)}' +`)) || '';
 const browser = await chromium.launch({ args:['--use-angle=swiftshader', '--enable-unsafe-swiftshader'] });
 const page = await browser.newPage();
 await page.addInitScript(() => { window.__noAdapt = true; });
 await page.goto('file://' + path.join(ROOT, 'dist', 'index.html'));
 await page.waitForFunction(() => window.__cosmos && window.__cosmos.OBJ);
 // the atlas headings (GROUPS) and kinds (CATS, the grid of filters) come from the page itself, so a new group can never drop out of the catalogue
-const { rows, GROUPS, CATS, held } = await page.evaluate(() => {
-  const c = window.__cosmos, LY = 9.4607e12, earth = c.BYKEY.earth;
+const { rows, GROUPS, CATS, held, hidden, clash } = await page.evaluate(() => {
+  const c = window.__cosmos, LY = 9.4607e12, earth = c.BYKEY.earth, listed = o => o.atlas !== false && !!o.group;
   const size = o => o.isBH || (o.prog && o.prog === c.BYKEY.sgra.prog) ? o.rad/20 : (o.sizeR || (o.starR ? o.starR*o.rad : o.rad*(o.solid || 0.6)));
-  const rows = c.OBJ.filter(o => !o.marker && o.atlas !== false && o.group).map(o => ({
+  const rows = c.OBJ.filter(o => !o.marker && listed(o)).map(o => ({
     key:o.key, name:o.name, group:o.group, type:o.type, bh:!!(o.isBH || (o.prog && o.prog === c.BYKEY.sgra.prog)),
     distLy:o.distNow ? o.distNow() : Math.hypot(o.pos[0] - earth.pos[0], o.pos[1] - earth.pos[1], o.pos[2] - earth.pos[2]), sizeKm:2*size(o)*LY,
     views:(o.views || []).length, flyby:!!o.flyby, tour:c.TOUR.includes(o.index), cats:c.dbg.catsOf(o) }));
+  // real things drawn but left out of the atlas: hidden moons, stars and galaxies, and the named parts of listed places (Alpha Centauri B,
+  // the Quintet's galaxies). Not the internals: markers, the sky, the comets' tails and their helper, unnamed parts ("the black hole" of the
+  // star torn apart), and the Travellers group's rockets, launch sites, places on Earth and Pip
+  const hidden = c.OBJ.filter(o => !o.marker && !listed(o) && c.dbg.GROUPS.some(([g]) => g === o.group) && o.group !== 'travel' && !o.fiction && !/-(ring|tail)$/.test(o.key) && !/^the /.test(o.name))
+    .map(o => ({ key:o.key, name:o.name, group:o.group, of:o.parent && o.parent.name, codes:[...new Set(c.dbg.catSplit(o.key + ' ' + o.name + ' ' + (o.aka || '')).codes)] }));
   // (every object's catalogue numbers and words, read as the search reads them, for the Messier and Caldwell checklists; objects left out
-  // of the atlas count too, as drawn but not listed)
-  const held = c.OBJ.filter(o => !o.marker && o.aka).map(o => ({ key:o.key, listed:o.atlas !== false && !!o.group,
-    codes:c.dbg.catSplit(o.aka).codes, words:' ' + o.aka.toLowerCase() + ' ' }));
-  return { rows, GROUPS:c.dbg.GROUPS, CATS:c.dbg.CATS, held };
+  // of the atlas count too, as drawn but not listed, also by a number in their key or name: ngc6822, IC 1613)
+  const held = c.OBJ.filter(o => !o.marker).map(o => ({ key:o.key, listed:listed(o),
+    codes:c.dbg.catSplit((o.aka || '') + (listed(o) ? '' : ' ' + o.key + ' ' + o.name)).codes, words:' ' + (o.aka || '').toLowerCase() + ' ' }))
+    .filter(h => h.codes.length || h.words.trim());
+  return { rows, GROUPS:c.dbg.GROUPS, CATS:c.dbg.CATS, held, hidden, clash:c.dbg.catClash() };
 });
 await browser.close();
-for (const r of rows) r.file = fileOf(r.key);
-const fmtD = ly => ly < 0.02 ? Math.round(ly*9.4607e12).toLocaleString('en-US') + ' km' : ly < 1e6 ? (+ly.toPrecision(3)).toLocaleString('en-US') + ' ly' : (+(ly/1e6).toPrecision(3)) + ' Mly';
-const fmtS = km => km < 1 ? Math.round(km*1000) + ' m' : km < 1e7 ? Math.round(km).toLocaleString('en-US') + ' km' : (+(km/9.4607e12).toPrecision(3)).toLocaleString('en-US') + ' ly';
-let md = `# Catalogue of implemented objects\n\nGenerated by \`npm run catalog\` from the built page on ${new Date().toISOString().slice(0, 10)}. Do not edit by hand.\n\n**${rows.length} objects** · ${rows.filter(r => r.bh).length} black holes · ${rows.filter(r => r.flyby).length} with flybys · ${rows.filter(r => r.tour).length} on the grand tour\n`;
+for (const r of [...rows, ...hidden]) r.file = fileOf(r.key);
+// (three significant digits however small: toLocaleString alone keeps three decimals, so Betelgeuse's 0.000127 ly came out as "0 ly")
+const sig3 = x => x.toLocaleString('en-US', { maximumSignificantDigits:3 });
+const fmtD = ly => ly < 0.02 ? Math.round(ly*9.4607e12).toLocaleString('en-US') + ' km' : ly < 1e6 ? sig3(ly) + ' ly' : sig3(ly/1e6) + ' Mly';
+const fmtS = km => km < 1 ? Math.round(km*1000) + ' m' : km < 1e7 ? Math.round(km).toLocaleString('en-US') + ' km' : km < 1.5e12 ? sig3(km/1.496e8) + ' AU' : sig3(km/9.4607e12) + ' ly';
+let md = `# Catalogue of implemented objects\n\nGenerated by \`npm run catalog\` from the built page on ${new Date().toISOString().slice(0, 10)}. Do not edit by hand.\n\n**${rows.length} objects** · ${rows.filter(r => r.bh).length} black holes · ${rows.filter(r => r.flyby).length} with flybys · ${rows.filter(r => r.tour).length} on the grand tour · ${hidden.length} more drawn, not in the atlas\n`;
 md += `\nAtlas kinds, in the order of the grid (an object can be in several): ${CATS.filter(([id]) => id !== 'all' && id !== 'earth').map(([id, name]) => `${name} ${rows.filter(r => r.cats.includes(id)).length}`).join(' · ')}\n`;
 const lost = rows.filter(r => !GROUPS.some(([g]) => g === r.group));
 if (lost.length) throw new Error('in no atlas group, so missing from the atlas: ' + lost.map(r => r.key).join(', '));
@@ -43,13 +51,24 @@ for (const [g, title] of GROUPS){
   md += `\n## ${title} (${list.length})\n\n| key | name | distance | size | views | flyby | tour | file |\n| --- | --- | --- | --- | --- | --- | --- | --- |\n`;
   for (const r of list) md += `| \`${r.key}\` | ${r.name} | ${fmtD(r.distLy)} | ${fmtS(r.sizeKm)} | ${r.views} | ${r.flyby ? 'yes' : ''} | ${r.tour ? 'yes' : ''} | ${r.file} |\n`;
 }
+// ---------------------------------------------------------------- drawn, not in the atlas
+// (a hidden moon, star or galaxy is shown by taking out its atlas:false, never by drawing it a second time)
+const code = s => s.replace(/^(m|ngc|ic)(\d+)([a-z]?)$/, (x, p, n, l) => (p === 'm' ? 'M' : p.toUpperCase() + ' ') + n + l.toUpperCase());
+md += `\n## Drawn, not in the atlas (${hidden.length})\n\nReal objects the page draws but the atlas does not list (\`atlas:false\`): hidden moons, stars and galaxies, and the named parts of places it lists. Check here as well as above before adding an object: to show one of these, take out its \`atlas:false\` rather than adding it again.\n\n| key | name | part of | numbers | file |\n| --- | --- | --- | --- | --- |\n`;
+for (const r of hidden.sort((a, b) => GROUPS.findIndex(([g]) => g === a.group) - GROUPS.findIndex(([g]) => g === b.group) || a.key.localeCompare(b.key)))
+  md += `| \`${r.key}\` | ${r.name} | ${r.of || ''} | ${r.codes.map(code).join(', ')} | ${r.file} |\n`;
 // ---------------------------------------------------------------- the checklists the atlas follows: Messier and Caldwell (tools/data/deep-sky.mjs)
 // A row is in the atlas when an object's aka holds its number: Messier by its m number, Caldwell by its first NGC or IC number, a c number
 // (c63), or its `also` words for the few with neither. An object in the atlas wins over one drawn but left out of it.
+const mHas = r => h => h.codes.includes('m' + r[0]);
+const cHas = r => { const first = r[1].split(/ (?=ngc|ic)/)[0].replace(/\s+/g, '');
+  return h => (/^(ngc|ic)\d/.test(first) && h.codes.includes(first)) || h.words.includes(' c' + r[0] + ' ') || (!!r[5] && h.words.includes(' ' + r[5] + ' ')); };
 const holder = test => held.filter(test).sort((a, b) => b.listed - a.listed)[0];
-const mRow = r => holder(h => h.codes.includes('m' + r[0]));
-const cRow = r => { const first = r[1].split(/ (?=ngc|ic)/)[0].replace(/\s+/g, '');
-  return holder(h => (/^(ngc|ic)\d/.test(first) && h.codes.includes(first)) || h.words.includes(' c' + r[0] + ' ') || (!!r[5] && h.words.includes(' ' + r[5] + ' '))); };
+const mRow = r => holder(mHas(r)), cRow = r => holder(cHas(r));
+// two places in the atlas holding one catalogue number, or one row of a checklist (a Caldwell row by its words too): one is a duplicate
+const twice = [...MESSIER.map(r => ['M' + r[0], mHas(r)]), ...CALDWELL.map(r => ['C' + r[0], cHas(r)])]
+  .map(([n, has]) => [n, held.filter(h => h.listed && has(h)).map(h => h.key)]).filter(([, ks]) => ks.length > 1).map(([n, ks]) => `${n} is held by ${ks.join(', ')}`);
+if (clash.length || twice.length) throw new Error('two places in the atlas claim one catalogue number (leave it out of a part\'s aka, or remove the duplicate):\n' + [...clash, ...twice].join('\n'));
 const cell = h => h ? (h.listed ? `\`${h.key}\`` : `drawn, not listed (\`${h.key}\`)`) : '';
 const tally = (list, f) => list.filter(r => { const h = f(r); return h && h.listed; }).length;
 const desig = s => s.replace(/\b(ngc|ic|mel) (\d+)/g, (m, p, n) => (p === 'mel' ? 'Mel' : p.toUpperCase()) + ' ' + n).replace(/^sh2/, 'Sh2').replace(/^winnecke/, 'Winnecke');

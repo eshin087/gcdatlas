@@ -2,7 +2,9 @@
 
 ## What is already in the atlas
 
-**`docs/CATALOG.md` is the source of truth.** It is generated from the built page (`npm run catalog`), so it cannot drift from the code: every object with its key, name, group, category, distance, true size, number of camera angles, whether it has a flyby, and the file it is defined in. Check it before adding anything, and regenerate it after.
+**`docs/CATALOG.md` is the source of truth.** It is generated from the built page (`npm run catalog`), so it cannot drift from the code: every object with its key, name, group, category, distance, true size, number of camera angles, whether it has a flyby, and the file it is defined in. Check it before adding anything, and regenerate it after. Its section "Drawn, not in the atlas" lists the real objects the page draws but the atlas hides (`atlas:false`: M32 and M110 by Andromeda, NGC 3628, parts such as Alpha Centauri B and the Quintet's galaxies): to show one, take out its `atlas:false` instead of adding it again.
+
+Three checks stop a duplicate (0.19.1): `addObj` throws on a key already taken, so the page does not start and every test fails; the smoke test fails when two listed objects hold one Messier, NGC, IC or Caldwell number in `aka` (`catClash` in `09-render.js`); and `npm run catalog` fails on the same, or when two listed objects match one checklist row. A part (M87*, the Pillars) leaves its parent's number out of its `aka`.
 
 ## The checklists the atlas follows (owner, 2026-10-04)
 
@@ -64,7 +66,7 @@ Vesta, Bennu, Mimas and its crater Herschel, 51 Pegasi b, K2-18 b, HD 189733 b, 
 | --- | --- |
 | 2I/Borisov | the second interstellar object (2019), a clearly active comet |
 | Tempel 1 and Wild 2 | Deep Impact's crater (2005) and Stardust's sample (2004) |
-| Comet Lovejoy (C/2011 W3) | the Kreutz sungrazer that survived the Sun, then broke up |
+| Comet Lovejoy (C/2011 W3) | the Kreutz sungrazer that survived the Sun, then broke up. Overlaps: "lovejoy" is already in the Kreutz sungrazers' `aka` (`kreutz`, p6-comets.js), and its replay already shows a big one surviving now and then. Make it its own object only with its own orbit and look, and then take "lovejoy" out of `kreutz`'s `aka` |
 | Geminids and 3200 Phaethon | a meteor shower from an asteroid-like parent |
 | Orionids and Eta Aquariids | the two showers from Halley's Comet (its orbit is already drawn) |
 
