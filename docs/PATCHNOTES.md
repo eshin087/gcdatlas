@@ -5,6 +5,11 @@
      numbers with units. The newest version comes first and opens by itself; its number must match package.json (tests/smoke.mjs checks it).
      Every detail stays in docs/CHANGELOG.md, which the panel links to. -->
 
+## 0.23.0 · 18 Oct 2026 · Three moons and two pairs of stars
+- Saturn's moons Tethys, Dione and Rhea join the atlas, each with its own real markings: Tethys's giant crater Odysseus and its 2,000 km canyon, Dione's bright ice cliffs, Rhea's young ray crater Inktomi.
+- All three are where they really are along their orbits, so they pass through Saturn's shadow at the real times.
+- Capella and Spica are drawn as the pairs of stars they are, on their real orbits, sped up: two yellow giants, and two hot blue stars, the bigger one bulging at its equator from its fast spin.
+
 ## 0.22.0 · 18 Oct 2026 · Las Vegas
 - Las Vegas in 3D as it is today, with its traffic, the planes at Harry Reid Airport, local time and real weather.
 - The Sphere with shows on its outside, the High Roller lit at night, the Luxor's pyramid and its beam of light, the STRAT and the Fremont Street canopy.

@@ -44,6 +44,9 @@ After 0.21.0, 28 Messier objects are left. In the order to take them:
 | Caldwell 3: planetary nebulae | the Saturn Nebula (C55), the Eskimo (C39), the Ghost of Jupiter (C59), the Blue Snowball (C22), the Bug or Butterfly (C69), the Skull (C56), the Bow-Tie (C2), the Blinking Planetary (C15) |
 | Caldwell 4: galaxies | the Needle (C38), NGC 891 (C23), the Whale (C32), the Fireworks (C12), the Hidden Galaxy (C5), NGC 1097 (C67), NGC 4945 (C83), NGC 300 (C70), NGC 55 (C72), the Spindle (C53) |
 
+### Done in 0.23.0 (surfaces in `src/o00-sun.js`, the moons in `src/o10-planet.js`, the pairs in `src/o12-stars.js`)
+Tethys, Dione and Rhea listed, each with a surface of its own (their features at the IAU gazetteer's positions) and its real place along its orbit; Capella and Spica listed, drawn as the pairs they are on their real orbits (with Capella Ab and Spica B, drawn, not listed).
+
 ### Done in 0.21.0 (`src/objects/p9b-messier3.js`)
 The other 25 globular clusters, so all 29 of Messier's are in: M2, M5, M9, M10, M12, M14, M15 (with the planetary nebula Pease 1), M19, M28, M30, M53, M54, M55, M56, M62, M68, M69, M70, M71, M72, M75, M79, M80, M92, M107, each shaped by its measured core, half-light radius, ellipticity, metallicity and horizontal branch (`glob3Stars`). Listed in the atlas: Ganymede, Callisto, Canopus, Tau Ceti and the eight Local Group dwarfs of 06g-galaxies.js (the Sagittarius, Fornax, Sculptor and Draco dwarfs, Leo I, Barnard's Galaxy NGC 6822 (C57), IC 1613 (C51) and WLM), each drawn as what it is (`DWARF_LOOK`). Still drawn but not listed: Tethys, Dione and Rhea (one shared icy surface, without the features their texts name) and Capella and Spica (each a pair of stars, drawn as one).
 

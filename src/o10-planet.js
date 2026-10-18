@@ -171,6 +171,34 @@ const mimas = saturnMoon('mimas', 'Mimas', 24, 198.2, 185539, 0.942422, 120,
     mimasView(() => sunSide(mimas, 1.45, 0.12), 2.3, 8, 0.02)],
   readout:() => '396 km across · Herschel is 130 km wide\n' + (mimasDark() ? 'passing through Saturn\'s shadow: the Sun is behind Saturn' :
     V.dot(herschelDir(), sunDirFrom(mimas)) < 0.03 ? 'Herschel is turned away from the Sun; it is lit for half of each orbit' : 'its walls rise about 5 km; its central peak stands 6 km tall') });
-saturnMoon('tethys', 'Tethys', 13, 531.1, 294619, 1.887802, 300, 'An icy moon scarred by the huge Ithaca Chasma canyon.', 'radius 531 km');
-saturnMoon('dione', 'Dione', 13, 561.4, 377396, 2.736915, 70, 'Icy moon with bright ice cliffs on its trailing side.', 'radius 561 km');
-saturnMoon('rhea', 'Rhea', 13, 763.8, 527108, 4.518212, 160, 'Saturn\'s second-largest moon, a cold ball of ice and rock.', 'radius 764 km');
+// Tethys, Dione and Rhea at their real places along their orbits: mean longitudes fitted to JPL's ephemeris (SAT441 through Horizons, 1980 to
+// 2050, within 0.3 deg), counted in Saturn's equator from its node on the Earth's equator, as bodyFrame counts. (JPL's table of mean elements gives
+// these three phases that match 1950, not the 2000 it states.) Tethys swings 2.1 deg either way over 71 years, its resonance with Mimas (dL). Each turns so its
+// prime meridian is where the IAU's rotation model puts it (the point under Saturn 0.6, 0.8 and 2.9 deg west of it), so the features drawn from the
+// IAU gazetteer (kinds 25 to 27 in FS_PLANETG) face the right way, and the moons pass through Saturn's shadow at the real times.
+const satDark = o => { const s = o.offset, u = V.norm(saturn.pos), along = V.dot(s, u); return along > 0 && V.len(V.sub(s, V.mul(u, along))) < 58232*KM; };
+// a direction on a moon from latitude and east longitude (degrees), in the world, as sph() in FS_PLANETG
+const featAt = (o, la, lo) => M3.apply(o.rot, [Math.cos(la*DEG)*Math.cos(lo*DEG), Math.sin(la*DEG), -Math.cos(la*DEG)*Math.sin(lo*DEG)]);
+const featLit = (o, la, lo) => V.dot(featAt(o, la, lo), sunDirFrom(o)) > 0.3;
+// a moon's angle, as Mimas's are: in Saturn's shadow every angle pulls back and looks past the dark moon at Saturn. With a feature (la, lo), it looks
+// down on it, a little from the Sun's side, and is only ready while the Sun is at least 17 degrees up over the feature
+function satView(key, f, k, hold, drift, ft){
+  const o = () => BYKEY[key], v = { dirFn:() => satDark(o()) ? V.norm(V.add(V.norm(o().offset), V.mul(M3.apply(o().R0, [0, 1, 0]), 0.1))) :
+    ft ? V.norm(V.add(featAt(o(), ft[0], ft[1]), V.mul(sunDirFrom(o()), 0.15))) : f(o()), get k(){ return satDark(o()) ? 14 : k; }, hold, drift, state:() => satDark(o()) };
+  if (ft) Object.assign(v, { ready:() => satDark(o()) || featLit(o(), ft[0], ft[1]), state:() => satDark(o()) ? 2 : featLit(o(), ft[0], ft[1]) ? 1 : 0 });
+  return v;
+}
+const satLine = (o, s) => satDark(o) ? 'passing through Saturn\'s shadow: the Sun is behind Saturn' : s;
+const tethys = saturnMoon('tethys', 'Tethys', 25, 531.1, 294619, 360/190.6979072, 188.411,
+  'A moon 1,062 km across made almost entirely of water ice: its density, 0.98 g/cm³, is just under water\'s. Ithaca Chasma, a canyon up to 100 km wide and about 3 km deep, runs some 2,000 km across it, and the crater Odysseus is 445 km wide, more than two fifths of the moon\'s width.', '', { atlas:true, type:'moon of Saturn · almost pure ice', aka:'tethys ithaca chasma odysseus saturn moon',
+  dL:jd => { const S5 = (316.45 + 506.2*(jd - 2451545)/36525)*DEG; return 2.109*Math.sin(S5) + 0.166*Math.cos(S5); }, W:[188.411 + 180.6, 190.6979072],
+  views:[satView('tethys', o => sunSide(o, 0.4, 0.15), 3.2, 8, 0.03), satView('tethys', null, 2.6, 9, 0.01, [32.82, -128.89]), satView('tethys', null, 2.6, 9, 0.01, [-3, -1])],
+  readout:() => '1,062 km across · density 0.98 g/cm³, nearly pure ice\n' + satLine(tethys, 'the dark band on the side it leads with comes from fast electrons in Saturn\'s magnetic field') });
+const dione = saturnMoon('dione', 'Dione', 26, 561.4, 377396, 360/131.5349304, 176.916,
+  'An icy moon 1,123 km across. Its darker trailing side is streaked with bright cliffs of ice, some of them hundreds of metres high, the walls of canyons where the dark surface material has fallen off; its gravity and shape suggest an ocean about 65 km deep under 100 km of ice.', '', { atlas:true, type:'moon of Saturn · with cliffs of bright ice', aka:'dione wispy terrain ice cliffs saturn moon', W:[176.916 + 180.8, 131.5349304],
+  views:[satView('dione', o => sunSide(o, 0.4, 0.15), 3.2, 8, 0.03), satView('dione', null, 2.5, 9, 0.01, [5, -290]), satView('dione', o => sunSide(o, 1.45, 0.12), 2.3, 8, 0.02)],
+  readout:() => '1,123 km across · density 1.48 g/cm³, ice and rock\n' + satLine(dione, 'its leading side is 1.6 times as bright as its trailing side') });
+const rhea = saturnMoon('rhea', 'Rhea', 27, 763.5, 527108, 360/79.6900458, 52.177,
+  'Saturn\'s second-largest moon, 1,527 km across, about three quarters ice and one quarter rock. In 2010 Cassini flew through a whisper of oxygen and carbon dioxide around it, the first oxygen atmosphere sampled directly at a world other than Earth.', '', { atlas:true, type:'moon of Saturn · the second-largest', aka:'rhea inktomi tirawa saturn moon', W:[52.177 + 182.85, 79.6900458],
+  views:[satView('rhea', o => sunSide(o, 0.4, 0.15), 3.2, 8, 0.03), satView('rhea', null, 2.5, 9, 0.01, [-14.1, -112.1]), satView('rhea', null, 2.5, 9, 0.01, [10, -280])],
+  readout:() => '1,527 km across · orbit 4.5 days, 527,000 km from Saturn\n' + satLine(rhea, 'Inktomi: a young crater 47 km wide with rays hundreds of km long') });
