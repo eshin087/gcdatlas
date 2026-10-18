@@ -6,7 +6,7 @@
           {
             "type": "command",
             "command": "node \"${CLAUDE_PROJECT_DIR}/tools/sync-check.mjs\"",
-            "timeout": 40
+            "timeout": 180
           }
         ]
       }

@@ -4,24 +4,25 @@ Since 2026-09-29 the owner works on gcdatlas from two computers:
 
 | Machine | Folder | Notes |
 | --- | --- | --- |
-| Windows desktop (home, the main one) | `C:\Users\eshin\Desktop\Claude Code\gcdAtlas` | Had local changes that were not pushed when the MacBook sessions started. |
+| Windows desktop (home, the main one) | `E:\Vibe Coding\Claude Code\gcdAtlas` | Moved from `C:\Users\eshin\Desktop\Claude Code\gcdAtlas` in October 2026; the Earth download cache is in its `tools/cache`. |
 | MacBook | `/Users/gcd/Documents/Claude Code/gcdAtlas` | Cloned fresh from GitHub on 2026-09-29. |
 
 GitHub (`eshin087/gcdatlas`) is the only place they meet. Nothing is copied between the machines by hand.
 
 ## The check at the start of every session
 
-`.claude/settings.json` runs `node tools/sync-check.mjs` when Claude Code starts, resumes or compacts in this folder. It fetches from GitHub and reports:
+`.claude/settings.json` runs `node tools/sync-check.mjs` when Claude Code starts, resumes or compacts in this folder (or in one of its worktrees). It fetches from GitHub, then:
 
-- how far this branch and `main` are behind GitHub,
-- uncommitted files on this machine,
-- every branch on GitHub not merged into `main` (open PRs first), and which of their files you have also changed here.
+- **brings `main` up to date by itself** (owner, 2026-10-18: "make sure its auto updated moving forward so we dont have to manually do this"). It is a fast-forward only, in whichever folder has `main` checked out (the main folder, even when the session runs in a worktree). Every change reaches `main` through a pull request, so `main` never holds work of its own and nothing can be lost. If `main` has commits GitHub does not, or uncommitted files the update would change, git refuses and the report says so. When `package-lock.json` changed, or `node_modules` is missing, it runs `npm ci` there (`npm ci` never rewrites the lockfile; `npm install` did, the version line).
+- reports how far this branch is behind GitHub, uncommitted files on this machine, and every branch on GitHub not merged into `main` (open PRs first), with which of their files you have also changed here.
 
-It only reads. It never pulls, merges, stashes or switches branches. **Claude: tell the owner what the report says before editing anything, and integrate only when the owner says so.** Run it by hand at any time with `node tools/sync-check.mjs`.
+It never touches any other branch: it never pulls, merges, stashes or switches them. **Claude: tell the owner what the report says about other branches and PRs before editing anything, and integrate those only when the owner says so.** Run it by hand at any time with `node tools/sync-check.mjs`.
+
+The first time a machine runs this version, it still has the old check, which only reads: update that machine by hand once (`git switch main`, `git pull --ff-only`), and from then on it keeps itself up to date.
 
 ## Rules for both machines
 
-1. **Fetch first.** The hook does it; read its report before touching files.
+1. **Fetch first.** The hook does it (and updates `main`); read its report before touching files.
 2. **Never force-push, rebase or rewrite a branch that is on GitHub.** The other machine may have it checked out.
 3. **Push before you leave a machine**, unfinished work too (on a `wip/...` branch), so the other one can see it.
 4. **Version numbers:** before naming `release/vX.Y.Z`, run `gh pr list` and take the next number nobody uses. The other machine may already have taken one.
