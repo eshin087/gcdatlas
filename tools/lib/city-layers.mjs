@@ -93,8 +93,9 @@ function rasterFeatures(feats, seen, F, N, half, m, h, accept, out){
   }
   return n;
 }
-// (lattice and other slender towers, which a height map turns into solid blocks, are left out where the city's config says: the page draws them from the towers' list)
-const withoutThin = (city, feats) => city.thin ? feats.filter(f => !city.thin.some(t => haversine(f.r[0][0], f.r[0][1], t.la, t.lo) < t.r)) : feats;
+// (lattice and other slender towers, which a height map turns into solid blocks, are left out where the city's config says: the page draws them from the towers' list;
+// an entry with an id leaves out that OpenStreetMap feature only, 'w' and its way's number, 0.22.0: by distance the Luxor's pyramid took its hotel towers with it)
+const withoutThin = (city, feats) => city.thin ? feats.filter(f => !city.thin.some(t => t.id ? f.i === t.id : haversine(f.r[0][0], f.r[0][1], t.la, t.lo) < t.r)) : feats;
 // (ids: also which building each pixel shows, { id, feats }, for the architectural-model style)
 export async function rasterBuildings(city, L, F, ids){
   const N = L.px, half = L.size/2, m = L.size/N, h = new Float32Array(N*N), tiles = gridTiles(bboxLL(L, 150), city.bldKm || 3.2, city.la), seen = new Set();
@@ -221,13 +222,16 @@ export async function buildLayer(city, L, ctx){
   const wat = await rasterWater(city, L, F);
   const gain = ctx.gain[city.key];
   const rgb = new Uint8Array(N*N*3), elev = new Float32Array(N*N), isWater = new Uint8Array(N*N), tArr = new Float32Array(N*N), wet = new Uint8Array(N*N);
-  let photoN = 0, s2N = 0, wN = 0;
+  let photoN = 0, s2N = 0, wN = 0, recN = 0;
   for (let y=0;y<N;y++) for (let x=0;x<N;x++){
     const px = (x + 0.5)*m - L.size/2, py = L.size/2 - (y + 0.5)*m, [la, lo] = planeToLL(F, px, py), i = y*N + x;
     const t = terr(la, lo), sv = wat.sea[i]; tArr[i] = t;
     // wet: 2 the sea (the coast says so, or where it does not cross the row, the terrain model at or under the sea level), 1 a river or lake of OpenStreetMap
     wet[i] = sv === 1 || (sv === -1 && t <= 0.2) ? 2 : wat.water[i] === 1 ? 1 : 0;
     let v = photo ? photo(la, lo) : null;
+    // (a site that changed after the aerial photos were taken, city.recent { la, lo, r m }: Sentinel-2's newer colours there, blended in over its last 25 m, 0.22.0)
+    if (v && city.recent){ let k = 0; for (const q of city.recent) k = Math.max(k, clampN((q.r - haversine(la, lo, q.la, q.lo))/25, 0, 1));
+      if (k > 0){ const w = s2(la, lo); if (w){ const g = gain ? gain(w) : w; v = v.map((c, j) => c*(1 - k) + g[j]*k); recN++; } } }
     if (v) photoN++; else { v = s2(la, lo); if (v){ s2N++; if (gain) v = gain(v); } }
     if (!v) v = wet[i] ? [14, 36, 58] : [96, 92, 78];
     rgb[i*3] = clampN(Math.round(v[0]), 0, 255); rgb[i*3 + 1] = clampN(Math.round(v[1]), 0, 255); rgb[i*3 + 2] = clampN(Math.round(v[2]), 0, 255);
@@ -265,7 +269,7 @@ export async function buildLayer(city, L, ctx){
   const webp = await sharp(rgba, { raw:{ width:N, height:N, channels:4 } }).webp({ quality:styled ? 80 : ctx.quality || 70, alphaQuality:100, effort:6, smartSubsample:true }).toBuffer();
   const file = writeHashed(OUT, `${city.key}-${L.id}`, 'webp', webp);
   const [dx, dy] = llToPlane(cityF, L.la, L.lo);
-  console.log(` ${(webp.length/1024).toFixed(0)} KB, ${Math.round(100*photoN/(N*N))}% aerial, ${Math.round(100*s2N/(N*N))}% Sentinel-2, ${Math.round(100*wN/(N*N))}% water${bld ? `, ${bld.n} buildings` : ''}, ground ${base} to ${hi.toFixed(0)} m in ${step} m steps`);
+  console.log(` ${(webp.length/1024).toFixed(0)} KB, ${Math.round(100*photoN/(N*N))}% aerial, ${Math.round(100*s2N/(N*N))}% Sentinel-2${recN ? ` (${Math.round(100*recN/(N*N))}% newer satellite colours where the place changed)` : ""}, ${Math.round(100*wN/(N*N))}% water${bld ? `, ${bld.n} buildings` : ''}, ground ${base} to ${hi.toFixed(0)} m in ${step} m steps`);
   const meta = { id:L.id, name:L.name, file, la:L.la, lo:L.lo, size:L.size, px:N, dx:Math.round(dx), dy:Math.round(dy), base:fx.base, step:fx.step, top:fx.top, src:[photoN ? (Array.isArray(L.photo) ? L.photo[L.photo.length - 1] : L.photo) : null, s2N ? 's2' : null].filter(Boolean), s2dates:s2N ? s2.dates : [], bld:bld ? bld.n : 0, bytes:webp.length };
   if (painted) meta.painted = true;
   if (styled) meta.styled = 'model';

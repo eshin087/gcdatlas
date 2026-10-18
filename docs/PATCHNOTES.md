@@ -10,6 +10,12 @@
 - All three are where they really are along their orbits, so they pass through Saturn's shadow at the real times.
 - Capella and Spica are drawn as the pairs of stars they are, on their real orbits, sped up: two yellow giants, and two hot blue stars, the bigger one bulging at its equator from its fast spin.
 
+## 0.22.0 · 18 Oct 2026 · Las Vegas
+- Las Vegas in 3D as it is today, with its traffic, the planes at Harry Reid Airport, local time and real weather.
+- The Sphere with shows on its outside, the High Roller lit at night, the Luxor's pyramid and its beam of light, the STRAT and the Fremont Street canopy.
+- The Fountains of Bellagio rise on their real schedule: every 30 minutes in the afternoon, every 15 minutes from 8 pm to midnight.
+- What is being built right now: Hard Rock's guitar-shaped tower, topped out in May, and the Athletics' ballpark with its first two roof arches.
+
 ## 0.21.0 · 18 Oct 2026 · Every Messier globular cluster
 - 25 more globular clusters, so all 29 in Messier's list are here: from M71, so loose it was long taken for an open cluster, to M54, the heart of a small galaxy the Milky Way is pulling apart.
 - Each one is shaped by its real measurements: how tight its core is, how flat it is, and the colours of its stars.

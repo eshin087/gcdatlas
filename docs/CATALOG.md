@@ -11,48 +11,48 @@ Atlas kinds, in the order of the grid (an object can be in several): solar syste
 | key | name | distance | size | views | flyby | tour | file |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | `earth` | Earth | 0 km | 12,744 km | 5 |  | yes | src/o00e-earth.js |
-| `moon` | the Moon | 404,869 km | 3,475 km | 3 |  | yes | src/o00e-earth.js |
-| `venus` | Venus | 41,835,063 km | 12,104 km | 3 |  |  | src/o00-sun.js |
-| `mercury` | Mercury | 134,378,691 km | 4,879 km | 3 |  |  | src/o00-sun.js |
-| `sun` | the Sun | 149,063,536 km | 1,391,400 km | 4 | yes | yes | src/o00-sun.js |
-| `solarsystem` | the Solar System | 149,063,536 km | 60 AU | 3 |  | yes | src/o00-sun.js |
-| `oort` | the Oort cloud | 149,063,536 km | 1.92 ly | 2 |  | yes | src/o00-sun.js |
-| `vesta` | Vesta | 223,122,471 km | 525 km | 3 |  |  | src/objects/p7-places.js |
-| `mars` | Mars | 230,531,105 km | 6,779 km | 3 |  |  | src/o00-sun.js |
-| `bennu` | Bennu | 326,188,464 km | 484 m | 3 |  |  | src/objects/p7-places.js |
-| `ceres` | Ceres | 357,180,004 km | 939 km | 3 |  |  | src/objects/p5-wonders.js |
-| `callisto` | Callisto | 852,483,131 km | 4,821 km | 2 |  |  | src/o00j-jupiter.js |
-| `jupiter` | Jupiter | 852,486,965 km | 142,984 km | 5 | yes | yes | src/o00j-jupiter.js |
-| `io` | Io | 852,613,240 km | 3,643 km | 2 |  |  | src/o00j-jupiter.js |
-| `ganymede` | Ganymede | 853,022,870 km | 5,262 km | 2 |  |  | src/o00j-jupiter.js |
-| `europa` | Europa | 853,156,208 km | 3,122 km | 2 |  |  | src/o00j-jupiter.js |
-| `dione` | Dione | 1,265,757,599 km | 1,123 km | 3 |  |  | src/o10-planet.js |
-| `enceladus` | Enceladus | 1,265,882,811 km | 504 km | 2 |  |  | src/o10-planet.js |
-| `mimas` | Mimas | 1,265,947,036 km | 396 km | 3 |  |  | src/o10-planet.js |
-| `saturn` | Saturn | 1,265,996,680 km | 116,464 km | 5 | yes | yes | src/o10-planet.js |
-| `titan` | Titan | 1,266,188,871 km | 5,149 km | 2 |  |  | src/o10-planet.js |
-| `tethys` | Tethys | 1,266,280,188 km | 1,062 km | 3 |  |  | src/o10-planet.js |
-| `rhea` | Rhea | 1,266,368,627 km | 1,527 km | 3 |  |  | src/o10-planet.js |
-| `uranus` | Uranus | 2,791,814,615 km | 50,724 km | 3 |  |  | src/o00-sun.js |
-| `neptune` | Neptune | 4,331,452,077 km | 49,244 km | 3 |  |  | src/o00-sun.js |
-| `pluto` | Pluto | 5,306,277,249 km | 2,377 km | 3 |  |  | src/o00-sun.js |
-| `arrokoth` | Arrokoth | 6,454,098,005 km | 23 km | 2 |  |  | src/objects/p5-wonders.js |
+| `moon` | the Moon | 404,859 km | 3,475 km | 3 |  | yes | src/o00e-earth.js |
+| `venus` | Venus | 41,833,054 km | 12,104 km | 3 |  |  | src/o00-sun.js |
+| `mercury` | Mercury | 134,359,639 km | 4,879 km | 3 |  |  | src/o00-sun.js |
+| `sun` | the Sun | 149,063,248 km | 1,391,400 km | 4 | yes | yes | src/o00-sun.js |
+| `solarsystem` | the Solar System | 149,063,248 km | 60 AU | 3 |  | yes | src/o00-sun.js |
+| `oort` | the Oort cloud | 149,063,248 km | 1.92 ly | 2 |  | yes | src/o00-sun.js |
+| `vesta` | Vesta | 223,124,963 km | 525 km | 3 |  |  | src/objects/p7-places.js |
+| `mars` | Mars | 230,523,346 km | 6,779 km | 3 |  |  | src/o00-sun.js |
+| `bennu` | Bennu | 326,191,480 km | 484 m | 3 |  |  | src/objects/p7-places.js |
+| `ceres` | Ceres | 357,165,779 km | 939 km | 3 |  |  | src/objects/p5-wonders.js |
+| `callisto` | Callisto | 852,464,157 km | 4,821 km | 2 |  |  | src/o00j-jupiter.js |
+| `jupiter` | Jupiter | 852,472,796 km | 142,984 km | 5 | yes | yes | src/o00j-jupiter.js |
+| `io` | Io | 852,608,779 km | 3,643 km | 2 |  |  | src/o00j-jupiter.js |
+| `ganymede` | Ganymede | 853,014,228 km | 5,262 km | 2 |  |  | src/o00j-jupiter.js |
+| `europa` | Europa | 853,142,581 km | 3,122 km | 2 |  |  | src/o00j-jupiter.js |
+| `dione` | Dione | 1,265,766,385 km | 1,123 km | 3 |  |  | src/o10-planet.js |
+| `enceladus` | Enceladus | 1,265,880,625 km | 504 km | 2 |  |  | src/o10-planet.js |
+| `mimas` | Mimas | 1,265,943,254 km | 396 km | 3 |  |  | src/o10-planet.js |
+| `saturn` | Saturn | 1,266,000,915 km | 116,464 km | 5 | yes | yes | src/o10-planet.js |
+| `titan` | Titan | 1,266,189,875 km | 5,149 km | 2 |  |  | src/o10-planet.js |
+| `tethys` | Tethys | 1,266,282,723 km | 1,062 km | 3 |  |  | src/o10-planet.js |
+| `rhea` | Rhea | 1,266,376,341 km | 1,527 km | 3 |  |  | src/o10-planet.js |
+| `uranus` | Uranus | 2,791,803,387 km | 50,724 km | 3 |  |  | src/o00-sun.js |
+| `neptune` | Neptune | 4,331,459,010 km | 49,244 km | 3 |  |  | src/o00-sun.js |
+| `pluto` | Pluto | 5,306,295,316 km | 2,377 km | 3 |  |  | src/o00-sun.js |
+| `arrokoth` | Arrokoth | 6,454,115,490 km | 23 km | 2 |  |  | src/objects/p5-wonders.js |
 
 ## Comets & meteors (11)
 
 | key | name | distance | size | views | flyby | tour | file |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| `leonids` | the Leonids | 78,611,110 km | 5,983,916 km | 3 |  |  | src/objects/p6-comets.js |
-| `kreutz` | Kreutz sungrazers | 148,229,194 km | 20 m | 2 |  |  | src/objects/p6-comets.js |
-| `perseids` | the Perseids | 161,754,430 km | 0.1 AU | 3 |  |  | src/objects/p6-comets.js |
-| `67p` | Comet 67P/Churyumov-Gerasimenko | 738,083,313 km | 5 km | 3 |  |  | src/objects/p6-comets.js |
-| `sl9` | Comet Shoemaker-Levy 9 | 852,486,965 km | 2 km | 3 |  |  | src/objects/p6-comets.js |
-| `tsuchinshan` | Comet Tsuchinshan-ATLAS | 1,352,434,957 km | 5 km | 3 |  |  | src/objects/p6-comets.js |
-| `3iatlas` | 3I/ATLAS | 1,830,510,094 km | 3 km | 3 |  |  | src/objects/p6-comets.js |
-| `neowise` | Comet NEOWISE | 2,939,739,187 km | 5 km | 3 |  |  | src/objects/p6-comets.js |
-| `halley` | Halley's Comet | 5,255,399,236 km | 10 km | 3 |  |  | src/objects/p5-wonders.js |
-| `halebopp` | Comet Hale-Bopp | 7,686,403,763 km | 60 km | 3 |  |  | src/objects/p6-comets.js |
-| `oumuamua` | 'Oumuamua | 8,085,863,575 km | 156 m | 2 |  |  | src/objects/p5-wonders.js |
+| `leonids` | the Leonids | 78,594,178 km | 5,983,916 km | 3 |  |  | src/objects/p6-comets.js |
+| `kreutz` | Kreutz sungrazers | 148,228,378 km | 20 m | 2 |  |  | src/objects/p6-comets.js |
+| `perseids` | the Perseids | 161,769,265 km | 0.1 AU | 3 |  |  | src/objects/p6-comets.js |
+| `67p` | Comet 67P/Churyumov-Gerasimenko | 738,092,406 km | 5 km | 3 |  |  | src/objects/p6-comets.js |
+| `sl9` | Comet Shoemaker-Levy 9 | 852,472,796 km | 2 km | 3 |  |  | src/objects/p6-comets.js |
+| `tsuchinshan` | Comet Tsuchinshan-ATLAS | 1,352,455,451 km | 5 km | 3 |  |  | src/objects/p6-comets.js |
+| `3iatlas` | 3I/ATLAS | 1,830,526,863 km | 3 km | 3 |  |  | src/objects/p6-comets.js |
+| `neowise` | Comet NEOWISE | 2,939,750,434 km | 5 km | 3 |  |  | src/objects/p6-comets.js |
+| `halley` | Halley's Comet | 5,255,382,371 km | 10 km | 3 |  |  | src/objects/p5-wonders.js |
+| `halebopp` | Comet Hale-Bopp | 7,686,414,514 km | 60 km | 3 |  |  | src/objects/p6-comets.js |
+| `oumuamua` | 'Oumuamua | 8,085,884,163 km | 156 m | 2 |  |  | src/objects/p5-wonders.js |
 
 ## Stars & stellar remnants (35)
 
@@ -246,8 +246,8 @@ Atlas kinds, in the order of the grid (an object can be in several): solar syste
 
 | key | name | distance | size | views | flyby | tour | file |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| `cosmicweb` | the cosmic web | 149,063,536 km | 93,000,000,000 ly | 4 | yes | yes | src/06u-universe.js |
-| `universe` | the observable universe | 149,063,536 km | 93,000,000,000 ly | 2 |  | yes | src/06u-universe.js |
+| `cosmicweb` | the cosmic web | 149,063,248 km | 93,000,000,000 ly | 4 | yes | yes | src/06u-universe.js |
+| `universe` | the observable universe | 149,063,248 km | 93,000,000,000 ly | 2 |  | yes | src/06u-universe.js |
 | `bootesvoid` | Boötes Void | 700 Mly | 288,000,000 ly | 2 |  |  | src/objects/p5-wonders.js |
 | `bullet` | Bullet Cluster | 3,900 Mly | 3,600,000 ly | 2 |  |  | src/o20-extremes.js |
 | `elgordo` | El Gordo | 9,900 Mly | 7,200,000 ly | 2 |  |  | src/objects/p5-wonders.js |
@@ -264,11 +264,11 @@ Atlas kinds, in the order of the grid (an object can be in several): solar syste
 | `iss` | International Space Station | 6,792 km | 70 m | 2 |  |  | src/objects/e1-earth-live.js |
 | `hubble` | Hubble Space Telescope | 6,899 km | 9 m | 2 |  |  | src/objects/e1-earth-live.js |
 | `jwst` | James Webb Space Telescope | 1,500,000 km | 14 m | 2 |  |  | src/o21-probes.js |
-| `roadster` | Starman and the Tesla Roadster | 100,233,790 km | 10 m | 3 |  |  | src/objects/s1-roadster.js |
-| `halo` | the Halo | 1,265,844,575 km | 3 km | 3 |  |  | src/07-extras.js |
-| `newhorizons` | New Horizons | 9,721,950,370 km | 5 m | 2 |  |  | src/o21-probes.js |
-| `voyager2` | Voyager 2 | 21,552,639,859 km | 22 m | 2 |  |  | src/o21-probes.js |
-| `voyager1` | Voyager 1 | 25,818,335,161 km | 22 m | 2 |  |  | src/o21-probes.js |
+| `roadster` | Starman and the Tesla Roadster | 100,238,595 km | 10 m | 3 |  |  | src/objects/s1-roadster.js |
+| `halo` | the Halo | 1,265,848,889 km | 3 km | 3 |  |  | src/07-extras.js |
+| `newhorizons` | New Horizons | 9,721,967,996 km | 5 m | 2 |  |  | src/o21-probes.js |
+| `voyager2` | Voyager 2 | 21,552,653,622 km | 22 m | 2 |  |  | src/o21-probes.js |
+| `voyager1` | Voyager 1 | 25,818,356,341 km | 22 m | 2 |  |  | src/o21-probes.js |
 
 ## Drawn, not in the atlas (34)
 

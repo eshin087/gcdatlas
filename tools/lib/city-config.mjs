@@ -91,8 +91,25 @@ export const CITIES = [
       { id:'zonasul', name:'Copacabana, Botafogo and Sugarloaf', la:-22.958, lo:-43.178, size:3200, px:2048, bld:true },
       { id:'corcovado', name:'Corcovado', la:-22.952, lo:-43.211, size:3200, px:1536, bld:true } ],
     airports:[ { iata:'GIG', size:6400 }, { iata:'SDU', size:3200 } ] },
+  // ---- 0.22.0 (owner, 2026-10-17: Las Vegas "how it is present day"). The finer layers' photos are USDA NAIP of May 2024; the two sites that
+  // changed since (the Tropicana, imploded in October 2024, now the Athletics' ballpark; the Mirage, closed in July 2024, now Hard Rock with its
+  // guitar tower) take Sentinel-2's newest colours (`recent`). thin: buildings the page draws as models (the Sphere, the High Roller, the Luxor
+  // pyramid, Paris Las Vegas's Eiffel Tower, the STRAT's tower)
+  { key:'lasvegas', name:'Las Vegas', la:36.1155, lo:-115.1722, drive:'right', photo:'fpac',
+    // (OpenStreetMap: the Sphere, the Luxor's pyramid, the STRAT's tower; the guitar tower and the ballpark are mapped as building=construction, which the heights leave out)
+    thin:[{ id:'w976405284' }, { id:'w27858544' }, { id:'w135457469' }],
+    // (the Tropicana's site, now the ballpark (OpenStreetMap's outline, 224 m across), and the Mirage's volcano, now the guitar tower)
+    recent:[{ la:36.09927, lo:-115.16998, r:190 }, { la:36.12114, lo:-115.17299, r:85 }],
+    layers:[
+      { id:'r51', name:'The valley', la:36.13, lo:-115.17, size:51200, px:1024, bld:false },
+      { id:'r12', name:'The Strip and Downtown', la:36.130, lo:-115.165, size:12800, px:1536, bld:true },
+      { id:'south', name:'The south Strip', la:36.0975, lo:-115.1745, size:3200, px:2048, bld:true },
+      { id:'centre', name:'The centre Strip and the Sphere', la:36.1170, lo:-115.1690, size:3200, px:2048, bld:true },
+      { id:'north', name:'The north Strip and the STRAT', la:36.1420, lo:-115.1600, size:3200, px:1536, bld:true },
+      { id:'downtown', name:'Downtown and Fremont Street', la:36.1700, lo:-115.1440, size:3200, px:1536, bld:true } ],
+    airports:[ { iata:'LAS', size:6400 } ] },
 ];
 // airports' known elevations, to check OpenStreetMap's (m above sea level; official figures, aeronautical charts): JFK 4, LGA 6, EWR 5, HND 6, NRT 43, DXB 19, DWC 33, LHR 25, LGW 62, LCY 6, STN 106, LTN 160, CDG 119, ORY 89
-// (0.19.0: HKG 9, SFO 4, OAK 3, SYD 6, FCO 4, CIA 129, LAX 38, BUR 236, GIG 9, SDU 3)
+// (0.19.0: HKG 9, SFO 4, OAK 3, SYD 6, FCO 4, CIA 129, LAX 38, BUR 236, GIG 9, SDU 3; 0.22.0: LAS 665, 2,181 ft)
 export const ELE_CHECK = { JFK:4, LGA:6, EWR:5, HND:6, NRT:43, DXB:19, DWC:33, LHR:25, LGW:62, LCY:6, STN:106, LTN:160, CDG:119, ORY:89,
-  HKG:9, SFO:4, OAK:3, SYD:6, FCO:4, CIA:129, LAX:38, BUR:236, GIG:9, SDU:3 };
+  HKG:9, SFO:4, OAK:3, SYD:6, FCO:4, CIA:129, LAX:38, BUR:236, GIG:9, SDU:3, LAS:665 };

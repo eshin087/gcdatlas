@@ -48,7 +48,7 @@ const ECT = (() => {
     TH.fill(0); THB.fill(0); if (!S || !S.city) return 0;
     const list = S.city.towers.filter(t => t.thin).map(t => [t, V.len(V.sub(V.mul(unit(t.la, t.lo), R), cf))]).filter(x => x[1] < 30).sort((a, b) => a[1] - b[1]).slice(0, 4);
     list.forEach(([t], i) => { const q = M3.applyT(S.F.M, V.mul(V.sub(V.mul(unit(t.la, t.lo), R), S.p), 1000)), [hw, straight] = footOf(t);
-      TH.set([q[0], q[2], t.ground, t.h], i*4); THB.set([hw, straight, /eiffel|tokyo tower|skytree/i.test(t.name) ? 2 : 0, 0], i*4); });   // (z 2: drawn as a model, in P.sxEnvEf or P.sxEnvTk)
+      TH.set([q[0], q[2], t.ground, t.h], i*4); THB.set([hw, straight, (S.city.key === 'paris' && /eiffel/i.test(t.name)) || /tokyo tower|skytree/i.test(t.name) || (S.city.key === 'lasvegas' && /stratosphere|\bstrat\b/i.test(t.name)) ? 2 : 0, 0], i*4); });   // (z 2: drawn as a model, in P.sxEnvEf, P.sxEnvTk or P.sxEnvLV; Paris Las Vegas's Eiffel Tower stays a slender tower)
     return list.length;
   }
   // the Eiffel Tower as a model (0.13.0, FS_SX_ENV's EIFFEL copy): its foot in the site's frame, the turn of its faces, and its lights by the
@@ -95,17 +95,47 @@ const ECT = (() => {
     losangeles:{ prog:'sxEnvLA', lit:false, items:[{ name:'the Hollywood sign', la:34.1340991, lo:-118.321652, b:90, g:478,
       letters:[[-47.2, -7.7], [-34.4, -11.0], [-21.9, -8.6], [-12.6, -7.0], [-3.3, -5.7], [8.9, -0.9], [21.5, 0.7], [34.1, 2.7], [48.8, -1.7]] }] },
     rio:{ prog:'sxEnvRio', lit:true, items:[{ name:'Christ the Redeemer', la:-22.95192, lo:-43.21049, b:-15, g:700 }] },
+    // (0.22.0, Las Vegas: four landmarks. The first is a group of three models round the centre of the Strip, its frame at the middle of
+    // their parts (x east, z south), each part at its OpenStreetMap place with the turn of its own x (b: the wheel's axle, across the
+    // guitar's faces), the ground under each from the city's heights)
+    lasvegas:{ prog:'sxEnvLV', lit:true, items:[
+      { name:'the centre of the Strip', b:90, g:630, parts:[
+        { name:'the Sphere', la:36.12124, lo:-115.16207, b:90 },
+        { name:'the High Roller', la:36.11754, lo:-115.16816, b:90 },
+        { name:"Hard Rock's guitar tower", la:36.12114, lo:-115.17299, b:90 } ] },
+      { name:"the Luxor's pyramid", la:36.09547, lo:-115.17580, b:90, g:655, annex:{ name:"the Athletics' ballpark, being built", la:36.09927, lo:-115.16998, b:90 } },
+      { name:'the STRAT', la:36.14741, lo:-115.15552, b:90, g:621 },
+      { name:'the Fremont Street Experience', la:36.17040, lo:-115.14400, b:119.5, g:612 } ] },
   };
-  const LM = { k:0, at:0 };
+  // (a group's frame: at the middle of its parts)
+  for (const L of Object.values(LMK)) for (const it of L.items) if (it.parts){
+    const las = it.parts.map(q => q.la), los = it.parts.map(q => q.lo);
+    it.la = (Math.min(...las) + Math.max(...las))/2; it.lo = (Math.min(...los) + Math.max(...los))/2;
+  }
+  const LM = { k:0, at:0, fmt:null, beam:0 };
+  const LP = new Float32Array(16), LB = new Float32Array(4), LS = new Float32Array(4);
   function landmarks(S, cf, sunEl){
     const L = S && S.city && LMK[S.city.key]; if (!L) return null;
-    const u = [];
+    const u = [], ml = R*1000, hOf = (la, lo) => EDT.heightAt(V.mul(unit(la, lo), R));
     for (const it of L.items){
       const p = V.mul(unit(it.la, it.lo), R); if (V.len(V.sub(p, cf)) > 40){ u.push(null); continue; }
       const q = M3.applyT(S.F.M, V.mul(V.sub(p, S.p), 1000)), h = it.water ? null : EDT.heightAt(p);
       u.push([q[0], q[2], h != null && h > -50 ? h : it.g, (it.b - 90)*DEG]);
     }
     if (!u.some(Boolean)) return null;
+    // (a group's parts: each one's place in the group's frame (x east, z south), its ground over the group's foot, the turn of its own frame;
+    // the group's half-size, with room for the widest part)
+    const g0 = L.items[0];
+    if (g0.parts && u[0]){
+      LP.fill(0); let hx = 0, hz = 0;   // (LP: three parts, then the second landmark's annex, uLmP[4])
+      g0.parts.forEach((q, i) => { const x = (q.lo - g0.lo)*DEG*ml*Math.cos(g0.la*DEG), z = -(q.la - g0.la)*DEG*ml, h = hOf(q.la, q.lo);
+        LP.set([x, z, (h != null && h > -50 ? h : u[0][2]) - u[0][2], (q.b - 90)*DEG], i*4); hx = Math.max(hx, Math.abs(x)); hz = Math.max(hz, Math.abs(z)); });
+      LB.set([hx + 140, hz + 140, 0, 0]);
+    }
+    // (the second landmark's annex, in its frame: the ballpark beside the Luxor)
+    const g1 = L.items[1], an = g1 && g1.annex;
+    if (an && u[1]){ const x = (an.lo - g1.lo)*DEG*ml*Math.cos(g1.la*DEG), z = -(an.la - g1.la)*DEG*ml, h = hOf(an.la, an.lo);
+      LP.set([x, z, (h != null && h > -50 ? h : u[1][2]) - u[1][2], (an.b - 90)*DEG], 12); }
     // (letters standing each on its own ground: their heights over the frame's foot)
     const LY = new Float32Array(12), it0 = L.items[0];
     if (it0.letters && u[0]){ const ml = R*1000;
@@ -113,6 +143,19 @@ const ECT = (() => {
         LY[i] = (h != null && h > -50 ? h : u[0][2]) - u[0][2]; }); }
     const now = performance.now(), dt = LM.at ? Math.min((now - LM.at)/1000, 0.5) : 1; LM.at = now;
     LM.k += ((L.lit && sunEl < -1.5 ? 1 : 0) - LM.k)*Math.min(1, dt*1.5);
+    if (L.items.length > 2){
+      // (four, all within a few km of each other: the ones out of reach far away, so their boxes are never met)
+      const far = [1e7, 1e7, 0, 0], v = L.items.map((_, i) => u[i] || far);
+      // the Sphere's shows (illustrative): four, 40 s each, changing over 2 s; the Luxor's beam from sunset for about eight hours (here from
+      // the Sun 0.8 degrees under the horizon until 3:00 local time)
+      const tS = now/1000, ix = Math.floor(tS/40), f = clamp((tS % 40 - 38)/2, 0, 1);
+      let hm = 22*60;
+      try { if (!LM.fmt) LM.fmt = new Intl.DateTimeFormat('en-GB', { timeZone:S.city.tz, hour:'2-digit', minute:'2-digit', hourCycle:'h23' });
+        const pt = LM.fmt.formatToParts(new Date((jdNow() - 2440587.5)*86400000)); hm = +pt.find(x => x.type === 'hour').value*60 + +pt.find(x => x.type === 'minute').value; } catch (e) {}
+      LM.beam += ((sunEl < -0.8 && (hm >= 12*60 || hm < 3*60) ? 1 : 0) - LM.beam)*Math.min(1, dt*2);
+      LS.set([ix % 4, (ix + 1) % 4, f, LM.beam]);
+      return { prog:L.prog, u0:v[0], u1:v[1], u3:v[2], u4:v[3], u2:[LM.k, (now/1000) % 1000, 4, 0], ly:LY, lp:LP, lb:LB, ls:LS };
+    }
     const a = u[0] || u[1], b = u[1] || u[0];
     return { prog:L.prog, u0:a, u1:b, u2:[LM.k, (now/1000) % 1000, u.filter(Boolean).length > 1 && u[0] && u[1] ? 2 : 1, 0], ly:LY };
   }
