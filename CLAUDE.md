@@ -2,7 +2,7 @@
 
 This file is read automatically by Claude Code at the start of every session. It is the short, authoritative guide to how this project is built and changed. Longer explanations live in `docs/`. **New session? Read `docs/HANDOFF.md` first**: the owner's preferences, decisions that were tried and reversed, and how to ship.
 
-**Two machines (since 2026-09-29).** The owner works from a Windows desktop and a MacBook; GitHub is the only link between them. At the start of every session a hook runs `node tools/sync-check.mjs`, which fetches and reports what changed elsewhere (open PRs, branches, files you also changed here). Tell the owner what it reports before editing, integrate only when they say so, and never force-push. Details: `docs/SYNC.md`.
+**Two machines (since 2026-09-29).** The owner works from a Windows desktop and a MacBook; GitHub is the only link between them. At the start of every session a hook runs `node tools/sync-check.mjs`, which fetches, fast-forwards `main` by itself (owner, 2026-10-18: `main` never holds work of its own; it runs `npm ci` when the lockfile changed), and reports what changed elsewhere (open PRs, branches, files you also changed here). Tell the owner what it reports before editing, integrate other branches only when they say so, and never force-push. Details: `docs/SYNC.md`.
 
 ## Rule zero: only the owner's pull requests, and only when the owner says so
 
