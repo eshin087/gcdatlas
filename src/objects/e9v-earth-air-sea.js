@@ -23,18 +23,18 @@ const EAS = (() => {
   const can = /^https?:$/.test(location.protocol), R = 6371000;
   // arrivals an hour at the busiest hours, from each airport's yearly movements (2024, rounded; illustrative), and the share kept at night
   const PEAK = { JFK:30, LGA:26, EWR:28, HND:36, NRT:20, DXB:26, DWC:3, LHR:36, LGW:20, LCY:5, STN:14, LTN:10, CDG:34, ORY:17,
-    HKG:30, SFO:24, OAK:9, SYD:22, FCO:22, CIA:4, LAX:32, BUR:7, GIG:8, SDU:9 };
-  const NIGHT = { DXB:0.75, JFK:0.3, HND:0.25, HKG:0.35, LAX:0.25 };
+    HKG:30, SFO:24, OAK:9, SYD:22, FCO:22, CIA:4, LAX:32, BUR:7, GIG:8, SDU:9, LAS:34 };
+  const NIGHT = { DXB:0.75, JFK:0.3, HND:0.25, HKG:0.35, LAX:0.25, LAS:0.3 };
   // the prevailing wind (degrees, where it comes from) for calm hours, when runways are used as usual
-  const CALM = { newyork:310, tokyo:20, dubai:300, london:250, paris:250, hongkong:90, sanfrancisco:290, sydney:180, rome:250, losangeles:250, rio:150 };
-  const BOATV = { newyork:8, tokyo:7, dubai:5, london:9, paris:3.5, hongkong:7, sanfrancisco:10, sydney:8, rome:3, losangeles:8, rio:8 };
+  const CALM = { newyork:310, tokyo:20, dubai:300, london:250, paris:250, hongkong:90, sanfrancisco:290, sydney:180, rome:250, losangeles:250, rio:150, lasvegas:220 };
+  const BOATV = { newyork:8, tokyo:7, dubai:5, london:9, paris:3.5, hongkong:7, sanfrancisco:10, sydney:8, rome:3, losangeles:8, rio:8, lasvegas:4 };
   const S = { city:null, ap:[], routes:[], state:0, pts:[], n:0, vis:new Float32Array(1024), visAt:new Float32Array(1024), vi:0, line:'', seen:0 };
   const MAXP = 2048, ps = makePS(MAXP), MAXL = 1024, ls = makePS(MAXL);
   // (the planes' shapes, as lines: about four times the light of a point to read as characters)
   const lspec = { ps:ls, prog:'lnBasic', lines:true, mode:3, sb:1, size:1, rel:() => S.rel, rot:() => S.rot, rad:1e-3*KM, count:() => S.nl };
   const SHORT = { JFK:'JFK', LGA:'LaGuardia', EWR:'Newark', HND:'Haneda', NRT:'Narita', DXB:'Dubai International', DWC:'Al Maktoum', LHR:'Heathrow', LGW:'Gatwick', LCY:'London City',
     STN:'Stansted', LTN:'Luton', CDG:'Charles de Gaulle', ORY:'Orly',
-    HKG:'Hong Kong International', SFO:'SFO', OAK:'Oakland', SYD:'Sydney Airport', FCO:'Fiumicino', CIA:'Ciampino', LAX:'LAX', BUR:'Burbank', GIG:'Galeão', SDU:'Santos Dumont' };
+    HKG:'Hong Kong International', SFO:'SFO', OAK:'Oakland', SYD:'Sydney Airport', FCO:'Fiumicino', CIA:'Ciampino', LAX:'LAX', BUR:'Burbank', GIG:'Galeão', SDU:'Santos Dumont', LAS:'Harry Reid' };
   const OVER = 12;   // (airliners passing over the city an hour, at cruising height)
   const spec = { ps, prog:'ptBasic', mode:3, sb:1, size:4.5,   // (4.5 px: a light must fill a character's cell of the scene, two by two pixels, or it averages away)
     rel:() => S.rel, rot:() => S.rot, rad:1e-3*KM, count:() => S.n };
@@ -175,6 +175,7 @@ const EAS = (() => {
     const mpp = 2*tanY/sceneH, near = [];   // (metres a scene pixel is wide, a metre away)
     // (each object's visibility is checked again every few frames, round robin, and eased so nothing pops)
     const seen = (id, p) => { const j = (Math.abs(Math.floor(id)) % 1009); if ((k++ + S.vi) % 12 === 0) S.visAt[j] = hidden(cf, c, p) ? 0 : 1; S.vis[j] += (S.visAt[j] - S.vis[j])*0.25; return S.vis[j]; };
+    S.fj = 0; if (c.key === 'lasvegas' && V.len(cam) < 25000) fountains(c, t, put, seg, seen, night);   // (first, so the planes' trails never crowd them out)
     for (const pl of list){
       const f = pl.f, vz = seen(pl.id, f.p), b = pl.fade*vz; if (b < 0.01) continue;
       const toC = V.sub(cam, f.p), dist = V.len(toC), face = Math.max(V.dot(f.d, V.mul(toC, 1/Math.max(dist, 1))), 0), low = f.h < 3000;
@@ -217,6 +218,42 @@ const EAS = (() => {
     const w = S.ap.length ? ends(S.ap[0], t) : null;
     S.line = u.length ? `planes (simulated, drawn larger far off): landing ${u.join(', ')}, into the wind${w && !w.calm ? ' from ' + w.wd + '°' : ''}` : '';
   }
+  // the Fountains of Bellagio (Las Vegas, 0.22.0): more than 1,200 nozzles in the 8.5-acre lake in front of the Bellagio, shooting water up to
+  // 140 m (460 ft) in time with music (Bellagio). A show every 30 minutes from 15:00 (from noon at weekends), every 15 minutes from 20:00 to
+  // midnight, each about four minutes. Here 110 jets on the lake's curves (an outer arc, an inner one and a line of shooters through the
+  // middle), their heights in waves that run along the lines, the shooters at three moments and the finale; the music and the real
+  // choreography are not reproduced (illustrative). Lit white at night
+  const BEL = { la:36.11268, lo:-115.17420 };
+  let FT = null;
+  function fountains(c, t, put, seg, seen, night){
+    if (!FT || FT.c !== c || !FT.ok){
+      const D = Math.PI/180, uL = [Math.cos(BEL.la*D)*Math.cos(BEL.lo*D), Math.sin(BEL.la*D), -Math.cos(BEL.la*D)*Math.sin(BEL.lo*D)];
+      const h = EDT.heightAt(V.mul(uL, 6371)), base = loc(c, BEL.la, BEL.lo, (h != null && h > 100 ? h : (c.ele || 620)) + 0.5), jets = [];
+      for (let i=0;i<70;i++){ const a = -1.15 + 2.3*i/69; jets.push({ x:base[0] + 42*Math.cos(a) - 30, z:base[2] + 135*Math.sin(a), hm:58 + 18*Math.cos(a*3), line:0, i }); }
+      for (let i=0;i<30;i++){ const a = -1 + 2*i/29; jets.push({ x:base[0] + 20*Math.cos(a) - 34, z:base[2] + 80*Math.sin(a), hm:36, line:1, i }); }
+      for (let i=0;i<10;i++) jets.push({ x:base[0] - 10, z:base[2] - 90 + 20*i, hm:140, line:2, i });
+      FT = { c, y:base[1], jets, ok:h != null };   // (the lake's level from the city's heights once they are in)
+    }
+    // (the local day of the week: 1 January 1970 was a Thursday)
+    const lh = localH(c, t), um = ((t/60) % 1440 + 1440) % 1440; let off = lh*60 - um; if (off > 720) off -= 1440; if (off < -720) off += 1440;
+    const wd = ((Math.floor((t/60 + off)/1440) + 4) % 7 + 7) % 7, weekend = wd === 0 || wd === 6;
+    const m = lh*60, first = weekend ? 12*60 : 15*60;
+    if (m < first) return;
+    const start = m < 20*60 ? first + Math.floor((m - first)/30)*30 : 20*60 + Math.floor((m - 20*60)/15)*15, u = (m - start)*60;
+    if (u > 240) return;
+    const env = clamp(u/4, 0, 1)*clamp((240 - u)/3, 0, 1), fin = smooth(212, 222, u), sd = start % 97;
+    for (const j of FT.jets){
+      let h;
+      if (j.line === 2){ const shot = [55, 118, 176].some(b => u > b + j.i*0.12 && u < b + 2.5 + j.i*0.12); h = shot ? 140 : fin > 0 ? 140*fin : 0; }
+      else { const ph = j.i*(j.line ? 0.5 : 0.22) + sd, w = Math.max(0, Math.sin(u*(0.7 + 0.15*Math.sin(sd)) - ph)); h = j.hm*(0.25 + 0.75*w*w)*(1 - fin) + j.hm*1.15*fin; }
+      h *= env; if (h < 2) continue; S.fj++;   // (jets up now, seen or not)
+      const vz = seen(7e5 + j.line*100 + j.i, [j.x, FT.y + h*0.5, j.z]); if (vz < 0.01) continue;
+      // (each jet a line of water, leaning as it sways, with its spray a point of light at the top)
+      const lean = 0.18*Math.sin(u*1.1 + j.i*0.37), b = vz*(0.8 + 0.5*night), top = [j.x + Math.sin(lean)*h*0.5, FT.y + h, j.z], wc = night > 0.5 ? [1, 0.97, 0.9] : [0.97, 0.98, 1];
+      seg([j.x, FT.y, j.z], top, b*3.2, wc);
+      put(top, b*1.2, wc[0], wc[1], wc[2]);
+    }
+  }
   // the three nearest planes' labels ('landing at Heathrow'): DOM labels like the objects', beside the plane, hidden with the labels setting
   const LBL = [];
   function planeLabels(near, rel, Rw){
@@ -232,6 +269,6 @@ const EAS = (() => {
     });
   }
   const hideLabels = () => LBL.forEach(el => el.classList.remove('on'));
-  const dbg = () => ({ city:S.city && S.city.key, state:S.state, airports:S.ap.map(A => A.a.iata), routes:S.routes.length, boats:S.routes.reduce((s, r) => s + r.n, 0), points:S.n, lines:S.nl, labels:LBL.filter(el => el.classList.contains('on')).map(el => el.textContent), line:S.line });
+  const dbg = () => ({ city:S.city && S.city.key, state:S.state, airports:S.ap.map(A => A.a.iata), routes:S.routes.length, boats:S.routes.reduce((s, r) => s + r.n, 0), points:S.n, lines:S.nl, fountains:S.fj || 0, labels:LBL.filter(el => el.classList.contains('on')).map(el => el.textContent), line:S.line });
   return { tick, draw, dbg, S, ps, get line(){ return S.line; } };
 })();

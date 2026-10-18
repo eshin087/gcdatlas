@@ -62,7 +62,7 @@ const EPL = (() => {
     cities:[["Tokyo","C",35.69,139.692,9733276,"JP"],["Shanghai","c",31.222,121.458,24874500,"CN"],["Beijing","C",39.908,116.397,18960744,"CN"],["Istanbul","c",41.014,28.95,15701602,"TR"],["Lagos","c",6.454,3.395,15388000,"NG"],
       ["Mumbai","c",19.073,72.883,12691836,"IN"],["São Paulo","c",-23.547,-46.636,12400232,"BR"],["Mexico City","C",19.428,-99.128,12294193,"MX"],["Moscow","C",55.752,37.618,10381222,"RU"],["Cairo","C",30.063,31.25,9606916,"EG"],
       ["London","C",51.509,-0.126,8961989,"GB"],["New York City","c",40.714,-74.006,8804190,"US"],["Hong Kong","c",22.278,114.175,7396076,"CN"],["Rio de Janeiro","c",-22.906,-43.182,6747815,"BR"],["Sydney","c",-33.868,151.207,5638830,"AU"],
-      ["Singapore","C",1.29,103.85,5638700,"SG"],["Rome","C",41.894,12.483,2750000,"IT"],["San Francisco","c",37.775,-122.419,873965,"US"],["Cape Town","c",-33.926,18.423,4772846,"ZA"],["Los Angeles","c",34.052,-118.244,3820914,"US"],["Dubai","c",25.077,55.309,3790000,"AE"],["Paris","C",48.853,2.349,2138551,"FR"]],
+      ["Singapore","C",1.29,103.85,5638700,"SG"],["Rome","C",41.894,12.483,2750000,"IT"],["San Francisco","c",37.775,-122.419,873965,"US"],["Cape Town","c",-33.926,18.423,4772846,"ZA"],["Los Angeles","c",34.052,-118.244,3820914,"US"],["Las Vegas","c",36.175,-115.137,641903,"US"],["Dubai","c",25.077,55.309,3790000,"AE"],["Paris","C",48.853,2.349,2138551,"FR"]],
   };
   const PICK_CC = { IT:'Italy', JP:'Japan', US:'United States', GB:'United Kingdom', FR:'France', AE:'United Arab Emirates', CN:'China', IN:'India', BR:'Brazil', EG:'Egypt', AU:'Australia', MX:'Mexico', TR:'Turkey', SG:'Singapore', ZA:'South Africa', NG:'Nigeria', RU:'Russia', HK:'Hong Kong' };
   // a result in words: [what it is, the short line in the list]

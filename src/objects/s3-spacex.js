@@ -484,7 +484,7 @@ const envOn = () => FLAGS.spacex || FLAGS.realEarth;
 earth.volOff = () => envOn() && SXENV.cover;
 function camFixed(){ return M3.applyT(earth.rot, V.mul(earth.rel, -1/KM)); }
 // (the cities' order in FS_SX_ENV's cityMat, uCity.x)
-const CITY_KEYS = ['paris', 'newyork', 'tokyo', 'dubai', 'london', 'hongkong', 'sanfrancisco', 'sydney', 'rome', 'losangeles', 'rio'];
+const CITY_KEYS = ['paris', 'newyork', 'tokyo', 'dubai', 'london', 'hongkong', 'sanfrancisco', 'sydney', 'rome', 'losangeles', 'rio', 'lasvegas'];
 function drawEnv(){
   const cf = camFixed(), alt = V.len(cf) - RE_KM;
   SXENV.on = SXENV.cover = false; if (alt > 90 || alt < -1) return;
@@ -529,7 +529,9 @@ function drawEnv(){
     if (p.u.uCity) gl.uniform4f(p.u.uCity, best.city ? CITY_KEYS.indexOf(best.city.key) : -1, best.city ? best.city.ele || 0 : 0, best.place ? 1 : 0, 0);   // (which city: its materials; a famous place: its water)
     if (p.u.uThin){ const nTh = ECT.thin(best, cf); gl.uniform4fv(p.u.uThin, ECT.TH); gl.uniform4fv(p.u.uThinB, ECT.THB); gl.uniform1f(p.u.uThinN, nTh); }
     if (p.u.uEf0 && ef){ gl.uniform4f(p.u.uEf0, ef[0], ef[1], ef[2], ef[3]); gl.uniform4f(p.u.uEf1, ef[4], ef[5], ef[6], ef[7]); }
-    if (p.u.uLm0 && lm){ gl.uniform4fv(p.u.uLm0, lm.u0); gl.uniform4fv(p.u.uLm1, lm.u1); gl.uniform4fv(p.u.uLm2, lm.u2); if (p.u.uLmY) gl.uniform4fv(p.u.uLmY, lm.ly); }
+    if (p.u.uLm0 && lm){ gl.uniform4fv(p.u.uLm0, lm.u0); gl.uniform4fv(p.u.uLm1, lm.u1); gl.uniform4fv(p.u.uLm2, lm.u2); if (p.u.uLmY) gl.uniform4fv(p.u.uLmY, lm.ly);
+      if (p.u.uLm3 && lm.u3){ gl.uniform4fv(p.u.uLm3, lm.u3); gl.uniform4fv(p.u.uLm4, lm.u4); }   // (Las Vegas, 0.22.0: four landmarks, the first a group of parts, the Sphere's shows and the Luxor's beam)
+      if (p.u.uLmP && lm.lp){ gl.uniform4fv(p.u.uLmP, lm.lp); gl.uniform4fv(p.u.uLmB, lm.lb); gl.uniform4fv(p.u.uLmS, lm.ls); } }
     if (p.u.uTk0 && tk){ gl.uniform4f(p.u.uTk0, tk[0], tk[1], tk[2], tk[3]); gl.uniform4f(p.u.uTk1, tk[4], tk[5], tk[6], tk[7]); gl.uniform4f(p.u.uTk2, tk[8], tk[9], tk[10], tk[11]); }
     ETR.bind(p, best.city);
     wxUniforms(p);

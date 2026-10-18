@@ -145,12 +145,27 @@ export const FACTS = {
       { look:[-22.9519, -43.2105, 720], az:250, tilt:6, dist:600, why:'Christ the Redeemer' },
       { look:[-22.9492, -43.1545, 250], az:135, tilt:8, dist:2500, why:'Sugarloaf Mountain' } ],
   },
+  lasvegas:{
+    country:'United States', tz:'America/Los_Angeles',
+    // 2020 United States Census: 641,903 (the city). The Strip runs through Paradise, an unincorporated town of Clark County, not the city
+    population:{ n:641903, year:2020, of:'the city', source:'2020 United States Census' },
+    // Sphere: 112 m (366 ft) high, 157 m (516 ft) wide, 54,000 m2 of LED on its outside, about 1.2 million LED pucks 20 cm (8 in) apart; opened 29 September 2023 (Sphere Entertainment; Wikipedia)
+    facts:['About 640,000 people live in the city of Las Vegas. Most of the Strip lies outside it, in the town of Paradise.', 'The Sphere is 112 m tall and 157 m across, its outside covered in about 1.2 million LED pucks.'],
+    aka:'las vegas vegas sin city the strip las vegas strip las vegas boulevard paradise nevada sphere fremont street',
+    views:[
+      { look:[36.112, -115.172, 640], az:0, tilt:9, dist:6500, why:'the Strip from the south' },
+      { look:[36.1208, -115.1621, 670], az:262, tilt:7, dist:480, why:'the Sphere' },
+      { look:[36.1130, -115.1728, 650], az:65, tilt:26, dist:950, why:'the Bellagio fountains, Paris and the High Roller' } ],
+  },
 };
 
 
 // Corrections to OpenStreetMap's tower heights and names where they are known to differ from the official ones (Wikipedia, the building's own page, the Council on Tall
 // Buildings and Urban Habitat); { re: matches the OSM (English) name, h, name, kind, thin, la, lo, src }. The OpenStreetMap height is kept for every tower not listed here.
 export const TOWER_FIX = {
+  lasvegas:[
+    { re:/^Stratosphere Tower$/, name:'The STRAT', src:'OpenStreetMap (350 m, 1,149 ft: the Wikipedia figure; named Stratosphere Tower there, the STRAT since 2020)' },
+    { re:/^Trump International Hotel Las Vegas$/, h:190, src:'Wikidata and Wikipedia (622 ft; OpenStreetMap has 224 m)' } ],
   newyork:[
     { re:/^One World Trade Center$/, kind:'building', src:'OpenStreetMap (541 m with the spire, 1,776 ft: the Wikipedia figure)' },
     { re:/^3 World Trade Center$/, h:329, src:'Wikipedia (OpenStreetMap has 352 m)' },
@@ -179,4 +194,5 @@ export const TOWER_SKIP = {
   newyork:[ /^Times Square Ball$/, /^2 World Trade Center$/, /^The Torch$/, /^Trinity Commons$/ ],
   tokyo:[], dubai:[],
   london:[ /^Proposed Development/ ],
+  lasvegas:[ /^Spartacus Law Firm$/ ],   // (a law firm's name on a 145 m tower with no outline: not the tower's name)
   paris:[ /^Pullman Paris Montparnasse$/, /^Tour Légende$/, /^Tour Hertzienne de Meudon$/ ] };
