@@ -124,7 +124,7 @@ const atl = await page.evaluate(() => {
   // one kind: one heading named after it, only that kind (the S-stars are stars, not a galaxy)
   $('#atlasCats [data-cat="galaxies"]').click();
   const G = group('Galaxies'); r.gal = { note:G.note, n:G.rows.length, first:G.rows.slice(0, 3).map(x => x.name).join(', '), heads:[...document.querySelectorAll('.agroup:not([hidden])')].length,
-    stray:G.rows.filter(x => /S-stars|GW170817|Sagittarius|M87\*/.test(x.name)).map(x => x.name) };
+    stray:G.rows.filter(x => /S-stars|GW170817|Sagittarius A\*|M87\*/.test(x.name)).map(x => x.name) };
   $('#atlasAll').click();
   // one list by distance: near to far from Earth from the first row, the places we are inside last under their own heading, said in the results line
   $('#atlasSort [data-sort="distance"]').click();
@@ -166,7 +166,7 @@ const NPL = await page.evaluate(() => { const C = window.__cosmos; return C.OBJ.
 if (atl.cells !== 14) errors.push('the atlas has ' + atl.cells + ' cells ("all", 12 kinds and "on Earth" expected)');
 if (!(atl.rows >= 10)) errors.push('the atlas list has room for only ' + atl.rows + ' rows at 1280 x 800');
 if (atl.dflt.sort !== 'kind' || atl.dflt.all !== 'true' || atl.dflt.result || atl.dflt.dir !== '⇅near → far' || atl.dflt.kb || atl.dflt.flow) errors.push('the atlas default view: ' + JSON.stringify(atl.dflt));
-if (atl.gal.note !== 'from Earth' || atl.gal.heads !== 1 || atl.gal.stray.length || atl.gal.first !== 'the Milky Way, the Galactic Centre, Large Magellanic Cloud') errors.push('galaxies chosen: ' + JSON.stringify(atl.gal));
+if (atl.gal.note !== 'from Earth' || atl.gal.heads !== 1 || atl.gal.stray.length || atl.gal.first !== 'the Milky Way, the Galactic Centre, Sagittarius Dwarf') errors.push('galaxies chosen: ' + JSON.stringify(atl.gal));
 if (atl.flat !== 'Earth, Starship, #all around us, the Solar System, the Oort cloud, the cosmic web, the observable universe') errors.push('one list by distance: ' + atl.flat);
 if (atl.flatSays.join('|') !== `${NPL} places · near → far / from Earth|⇅near → far|true`) errors.push('the results line for one list by distance: ' + JSON.stringify(atl.flatSays));
 if (atl.size.join('|') !== '⇅big → small|the observable universe|93 billion ly|true size, across') errors.push('size does not start with the biggest, said short: ' + JSON.stringify(atl.size));
@@ -196,7 +196,10 @@ const cat = await page.evaluate(CATQ => {
   const order = () => [...$('#atlasList').children].filter(e => e.matches('.arow, .agroup')).map(e => e.querySelector('.an, .gt').textContent).join('|');
   for (const box of ['#search', '#atlasSearch']){
     for (const [q, name] of CATQ){ const r = find(box, q); if (r.v[0] !== name || r.kb !== name) out.push(`${box} "${q}": ${r.v.join(', ') || 'nothing'} (keyboard on ${r.kb})`); }
-    for (const q of ['M2', 'm 2', 'NGC 7089', 'ngc7089']){ const r = find(box, q); if (r.v.length) out.push(`${box} "${q}" finds ${r.v.join(', ')}`); }
+    // (numbers of nothing in the atlas find nothing; until 0.21.0 this was M2, now in the atlas, where "M2" must not find M27 or M29)
+    for (const q of ['NGC 2', 'ngc2', 'IC 1', 'ic 1']){ const r = find(box, q); if (r.v.length) out.push(`${box} "${q}" finds ${r.v.join(', ')}`); }
+    for (const [q, want] of [['M2', 'M2'], ['ngc 7089', 'M2'], ['M54', 'M54'], ['Pease 1', 'Pease 1']]){ const r = find(box, q).v[0]; if (r !== want) out.push(`${box} "${q}" finds ${r} first`); }
+    const m2 = find(box, 'M2').v.join(', '); if (m2 !== 'M2') out.push(`${box} "M2" finds ${m2}`);
     const m1 = find(box, 'M1').v.join(', '); if (m1 !== 'Crab Nebula') out.push(`${box} "M1" finds ${m1}`);
     const m4 = find(box, 'M4').v.join(', '); if (m4 !== 'M4') out.push(`${box} "M4" finds ${m4}`);
     const m16 = find(box, 'm16').v.join(', '); if (m16 !== 'Eagle Nebula, Pillars of Creation') out.push(`${box} "m16" finds ${m16}`);

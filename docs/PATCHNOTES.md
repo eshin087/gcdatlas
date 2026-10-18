@@ -5,6 +5,13 @@
      numbers with units. The newest version comes first and opens by itself; its number must match package.json (tests/smoke.mjs checks it).
      Every detail stays in docs/CHANGELOG.md, which the panel links to. -->
 
+## 0.21.0 · 18 Oct 2026 · Every Messier globular cluster
+- 25 more globular clusters, so all 29 in Messier's list are here: from M71, so loose it was long taken for an open cluster, to M54, the heart of a small galaxy the Milky Way is pulling apart.
+- Each one is shaped by its real measurements: how tight its core is, how flat it is, and the colours of its stars.
+- Pease 1, the first planetary nebula found inside a globular cluster, glows among M15's stars.
+- Ganymede, Callisto, Canopus, Tau Ceti and eight small galaxies near ours now have their own places in the atlas, with their real sizes and shapes.
+- The Messier marathon tour grows to 79 stops. 82 of Messier's 110 objects are in so far.
+
 ## 0.19.1 · 18 Oct 2026 · One of each
 - Behind the scenes: checks that stop the same star, nebula or galaxy from being added to the atlas twice.
 - Nothing changes on screen.
