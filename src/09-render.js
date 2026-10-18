@@ -944,6 +944,15 @@ function catSplit(s){
   const codes = [], rest = s.toLowerCase().replace(CAT_RE, (m, pre, p, n) => { codes.push((p === 'messier' ? 'm' : p) + n); return pre + ' '; });
   return { codes, words:rest.split(/\s+/).filter(Boolean) };
 }
+// two places in the atlas claiming one catalogue number (Messier, NGC, IC, or a Caldwell c number) in their aka: one of them is a duplicate.
+// Only listed places count: a part (M87*, the Pillars) leaves its parent's number out, and a hidden piece (M32, M110) is found through the
+// place that lists it. The smoke test and npm run catalog fail on any
+function catClash(){
+  const by = new Map();
+  for (const o of OBJ) if (o.aka && o.atlas !== false && !o.marker && GROUPS.some(([g]) => g === o.group))
+    for (const c of new Set([...catSplit(o.aka).codes, ...(o.aka.toLowerCase().match(/(?<![\w+\-\/.])c\d{1,3}(?![\w+\-])/g) || [])])) by.set(c, [...(by.get(c) || []), o.key]);
+  return [...by].filter(([, ks]) => ks.length > 1).map(([c, ks]) => `${c} is in the aka of ${ks.join(', ')}`);
+}
 const atlasRows = [], groupHeads = {}, rowOfB = new Map();
 let atlasOrder = [], atlasMoved = false;   // (the list as rendered; a catalogue number can move rows, and the next search puts them back)
 const mkHead = (title, note) => { const h = document.createElement('div'); h.className = 'agroup'; h.innerHTML = '<span class="gt"></span><span class="gnote"></span>'; h.firstChild.textContent = title; h.lastChild.textContent = note; return h; };
@@ -1768,6 +1777,6 @@ window.__cosmos = { get egl(){ return typeof EGL !== 'undefined' ? EGL : null; }
   simulate:(sec) => { for (let k=0; k<sec*30; k++) tick(1/30); return { obj:tour.obj, view:tour.view, phase:tour.phase, lock:orbit.lock }; },
   view:(i, v) => { if (typeof i === 'string') i = BYKEY[i].index; const o = OBJ[i], vp = viewParams(o, v); flight = null; shipCam.on = false; tween = null; cam.focus = i; leash.x = leash.y = 0; orbit.lock = i; orbit.frame = camFrameOf(o); orbit.yaw = vp.yaw; orbit.pitch = vp.pitch; orbit.dist = orbit.distT = vp.dist; orbit.off = vp.off; orbit.offFn = vp.offFn; orbit.target = V.add(frel(o), vp.off); setInfo(i); applyOrbit(); tick(0); } };
 // (the atlas headings and chips, for tools/catalog.mjs, and the seed and the catalogue numbers the smoke test checks; a line of its own so it stays clear of edits to the hooks above)
-Object.assign(window.__cosmos.dbg, { GROUPS, CATS, catsOf, ATL, seedObjects:SEED_OBJECTS, catSplit });
+Object.assign(window.__cosmos.dbg, { GROUPS, CATS, catsOf, ATL, seedObjects:SEED_OBJECTS, catSplit, catClash });
 window.__cosmos.sx = SXDBG;   // (SpaceX launches: runs, missions, the launch camera; s4-spacex-run.js)
 requestAnimationFrame(frame);

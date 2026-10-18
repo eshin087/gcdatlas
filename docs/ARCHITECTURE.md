@@ -58,6 +58,8 @@ addObj({
 });
 ```
 
+`key` is the object's identity (share links, the seen list, tours) and must be new: `addObj` throws on a key already taken, so the page does not start (0.19.1). Catalogue numbers in `aka` must be too: two listed objects with one Messier, NGC, IC or Caldwell number fail the smoke test and `npm run catalog` (`catClash` in `09-render.js`).
+
 Views: `d` direction in the object frame, `k` distance in bounding radii, `off` look-at offset, `hold` seconds, `drift` orbit speed. A view with `to:{...}` is a camera move (flyby) played over its hold; `offW:'dist'` keeps the subject in frame on long pull-backs. `tourViews:[0, 2, 1]` on the object limits (and orders) the views a tour plays there; picked by itself the object still loops through all of them.
 
 Helpers: `addStar`, `namedStar`, `addBody` (planets and moons with IAU rotation), `addGalaxy` (parametric spiral/elliptical/ring), `addProbe` (spacecraft models), `addMarker` (labels only), `clusterPS`, `makeSpikes`, `orbitLine`, `addComet` and `addShower` (`src/objects/p6-comets.js`).

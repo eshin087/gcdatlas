@@ -5,6 +5,10 @@
      numbers with units. The newest version comes first and opens by itself; its number must match package.json (tests/smoke.mjs checks it).
      Every detail stays in docs/CHANGELOG.md, which the panel links to. -->
 
+## 0.19.1 · 18 Oct 2026 · One of each
+- Behind the scenes: checks that stop the same star, nebula or galaxy from being added to the atlas twice.
+- Nothing changes on screen.
+
 ## 0.19.0 · 8 Oct 2026 · Six more cities
 - Hong Kong, San Francisco, Sydney, Rome, Los Angeles and Rio de Janeiro in 3D, in the same model style, with their traffic, planes, boats, local time and real weather.
 - Their landmarks in their real shapes and sizes: the Golden Gate Bridge, the Sydney Opera House, the Colosseum, St Peter's, the Hollywood sign and Christ the Redeemer.

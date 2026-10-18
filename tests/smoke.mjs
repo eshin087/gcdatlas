@@ -214,6 +214,9 @@ const cat = await page.evaluate(CATQ => {
   $('#atlasReset').click(); $('#atlasClose').click();
   return out; }, CATQ);
 errors.push(...cat);
+// no two places in the atlas claim one catalogue number in their aka (catClash in 09-render.js): one of them would be a duplicate. A reused
+// key never gets this far: addObj throws and the page does not start
+errors.push(...(await page.evaluate(() => window.__cosmos.dbg.catClash())).map(s => 'two places claim one catalogue number: ' + s));
 // the Halo tour switch right of tours (0.9.9, owner review: "a typical toggle", in place of "☾ halo ○──"): the plain tours button, then one
 // control with the words "Halo tour" and a pill (a round knob in a track 34 to 40 px by 18 to 20 px), role switch, named for what it does.
 // On, the Halo tour starts with the tour picked, the knob slides right and the track lights up, the info panel shows the place (not the
