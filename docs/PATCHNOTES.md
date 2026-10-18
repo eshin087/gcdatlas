@@ -12,6 +12,10 @@
 - Ganymede, Callisto, Canopus, Tau Ceti and eight small galaxies near ours now have their own places in the atlas, with their real sizes and shapes.
 - The Messier marathon tour grows to 79 stops. 82 of Messier's 110 objects are in so far.
 
+## 0.19.1 · 18 Oct 2026 · One of each
+- Behind the scenes: checks that stop the same star, nebula or galaxy from being added to the atlas twice.
+- Nothing changes on screen.
+
 ## 0.19.0 · 8 Oct 2026 · Six more cities
 - Hong Kong, San Francisco, Sydney, Rome, Los Angeles and Rio de Janeiro in 3D, in the same model style, with their traffic, planes, boats, local time and real weather.
 - Their landmarks in their real shapes and sizes: the Golden Gate Bridge, the Sydney Opera House, the Colosseum, St Peter's, the Hollywood sign and Christ the Redeemer.

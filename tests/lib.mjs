@@ -18,13 +18,16 @@ export async function openPage({ width = 1280, height = 800, phone = false, fade
   const page = await context.newPage();
   if (now != null) await page.clock.setFixedTime(now);
   const errors = [];
-  page.on('pageerror', e => errors.push('pageerror: ' + e.message));
+  // (a script error before the page is up, such as addObj refusing a key already taken, stops the page: say so at once, not after a 60 s wait)
+  let started = false, fail; const failed = new Promise((_, no) => { fail = no; }); failed.catch(() => {});
+  page.on('pageerror', e => { errors.push('pageerror: ' + e.message); if (!started) fail(new Error('the page did not start: ' + e.message)); });
   page.on('console', m => { if (m.type() === 'error' && !/ERR_|Failed to load resource/.test(m.text())) errors.push('console: ' + m.text().slice(0, 300)); });
   // compile shaders synchronously and keep full quality, so screenshots are deterministic; skip the daily card
   await page.addInitScript(({ fade, freeze, day, settings }) => { window.__noAdapt = true; window.__syncCompile = true; if (freeze) window.__freeze = true; try { localStorage.setItem('gcdatlas.dailySeen', JSON.stringify(day)); if (!fade || settings) localStorage.setItem('gcdatlas.settings', JSON.stringify({ ...(fade ? {} : { fadeUI:'off' }), ...settings })); } catch (e) {} }, { fade, freeze, day:new Date(now ?? Date.now()).toISOString().slice(0, 10), settings });
   if (init) await page.addInitScript(init);
   await page.goto(url || PAGE);   // (url: over http, for what loads only there, such as the Earth's images: tests/earth.mjs)
-  await page.waitForFunction(() => window.__cosmos && window.__cosmos.OBJ, null, { timeout:60000 });
+  await Promise.race([page.waitForFunction(() => window.__cosmos && window.__cosmos.OBJ, null, { timeout:60000 }), failed]).catch(async e => { await browser.close(); throw e; });
+  started = true;
   return { browser, page, errors };
 }
 export function report(name, errors, extra = ''){

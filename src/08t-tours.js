@@ -53,6 +53,8 @@ const TOURS = [
     ['universe', 'The biggest thing of all: everything whose light has had time to reach us, 93 billion light-years across.'],
   ] },
   { id:'home', name:'our neighbourhood', blurb:'the Solar System and the nearest stars', stops:[
+    // (apollo11, parker, olympus and perseverance are places still to come, docs/CONTENT.md: tourStops leaves out a key with no object, so
+    // the tour and the Halo tour skip them until they exist)
     ['earth'], ['iss'], ['moon'], ['apollo11'], ['sun'], ['parker'], ['mercury'], ['venus'], ['mars'], ['olympus'], ['perseverance'], ['ceres'], ['vesta'], ['jupiter'], ['io'], ['europa'],
     ['saturn'], ['titan'], ['enceladus'], ['uranus'], ['neptune'], ['pluto'], ['arrokoth'], ['halley'], ['voyager1'], ['oort'], ['alphacen'], ['proxima'], ['proximab'],
   ] },
