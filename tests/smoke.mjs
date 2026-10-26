@@ -120,7 +120,8 @@ const atl = await page.evaluate(() => {
   const ss = group('Solar System').rows, iE = ss.findIndex(x => x.name === 'Earth'), moon = ss[iE + 1];
   r.solar = ss.slice(0, 6).map(x => x.name + ' ' + x.d).join(' · ');
   if (ss[0].name !== 'the Solar System' || ss[1].name !== 'the Sun' || ss[ss.length - 1].name !== 'the Oort cloud') out.push('Solar System heading order: ' + ss.map(x => x.name).join(', '));
-  if (!moon || moon.name !== 'the Moon' || !moon.child || !/ km from Earth$/.test(moon.d) || !/^home · 1\.0\d AU$/.test(ss[iE].d)) out.push('Earth and the Moon under it: ' + JSON.stringify(ss.slice(iE, iE + 2)));
+  // (Earth's distance from the Sun runs 0.98 to 1.02 AU over the year: late October reads 0.99)
+  if (!moon || moon.name !== 'the Moon' || !moon.child || !/ km from Earth$/.test(moon.d) || !/^home · (0\.9[89]|1\.0[0-2]) AU$/.test(ss[iE].d)) out.push('Earth and the Moon under it: ' + JSON.stringify(ss.slice(iE, iE + 2)));
   // one kind: one heading named after it, only that kind (the S-stars are stars, not a galaxy)
   $('#atlasCats [data-cat="galaxies"]').click();
   const G = group('Galaxies'); r.gal = { note:G.note, n:G.rows.length, first:G.rows.slice(0, 3).map(x => x.name).join(', '), heads:[...document.querySelectorAll('.agroup:not([hidden])')].length,
@@ -292,6 +293,21 @@ const allSeen = await page.evaluate(() => { const $ = s => document.querySelecto
   e.querySelector('button').click(); r.after = [window.__cosmos.dbg.ATL.unseen, document.querySelectorAll('.arow:not([hidden])').length]; return r; });
 if (allSeen.empty !== 'you have seen all 8 black holes ✓show them all' || !allSeen.done || allSeen.n !== '✓' || allSeen.after.join() !== 'false,8') errors.push('every black hole seen, with "not seen yet": ' + JSON.stringify(allSeen));
 await page.evaluate(() => { localStorage.removeItem('gcdatlas.atlas'); localStorage.removeItem('gcdatlas.seen'); });
+// share pages (0.24.0): every key the build baked into __SHARE_PAGES must be a place that still exists and may be shared (a dead key
+// would make share() copy a link whose redirect goes nowhere); a place added since `npm run og -- --all` only falls back to a #-link
+{ const sp = await page.evaluate(() => { const c = window.__cosmos, d = c.dbg;
+    const keys = Array.isArray(window.__SHARE_PAGES) ? window.__SHARE_PAGES : null;
+    return { keys:!!keys, dead:(keys || []).filter(k => !c.BYKEY[k] || !d.shareable(c.BYKEY[k])), missing:keys ? d.shareList().filter(e => !keys.includes(e.key)).length : -1,
+      page:d.sharePage(c.BYKEY.m87bh), own:d.sharePage(c.BYKEY['earth-iconic-giza']), not:d.sharePage(c.BYKEY.m32 || c.OBJ.find(o => o.atlas === false && !o.own && !o.marker)) }; });
+  if (!sp.keys) errors.push('the page carries no __SHARE_PAGES list (build.mjs)');
+  else {
+    if (sp.dead.length) errors.push('share pages for places that are gone or not shareable: ' + sp.dead.join(', ') + ' (npm run og -- --all)');
+    if (sp.missing) console.log(`note: ${sp.missing} places have no share page yet (npm run og -- --all, or --meta, lists them)`);
+    if (sp.page !== '/p/m87bh') errors.push('sharePage(m87bh) gives ' + JSON.stringify(sp.page));
+    if (sp.own !== '/p/earth-iconic-giza') errors.push('sharePage(the Pyramids of Giza) gives ' + JSON.stringify(sp.own));
+    if (sp.not !== '') errors.push('a hidden object gets a share page: ' + JSON.stringify(sp.not));
+  }
+}
 // crafted share links must not stop the page from starting (they used to: #o=constructor, a non-numeric date)
 for (const h of ['#o=constructor', '#o=__proto__', '#o=earth&jd=abc&deep=x&c=1,NaN,-5']){
   await page.goto('about:blank'); await page.goto(PAGE + h);   // (a real load: changing only the hash would not restart the page)

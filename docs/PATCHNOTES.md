@@ -5,6 +5,11 @@
      numbers with units. The newest version comes first and opens by itself; its number must match package.json (tests/smoke.mjs checks it).
      Every detail stays in docs/CHANGELOG.md, which the panel links to. -->
 
+## 0.24.0 · 25 Oct 2026 · Links that show the place
+- Share a place and the link now unfurls as that place on Discord, Slack, X, WhatsApp and the rest: its name, a line about it and its own picture.
+- The copied link still opens exactly the view you were on, and every old link keeps working.
+- The text copy in photo mode now ends with the place's link, so a pasted picture says where it lives.
+
 ## 0.23.0 · 18 Oct 2026 · Three moons and two pairs of stars
 - Saturn's moons Tethys, Dione and Rhea join the atlas, each with its own real markings: Tethys's giant crater Odysseus and its 2,000 km canyon, Dione's bright ice cliffs, Rhea's young ray crater Inktomi.
 - All three are where they really are along their orbits, so they pass through Saturn's shadow at the real times.

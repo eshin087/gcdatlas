@@ -1,0 +1,1272 @@
+[
+ {
+  "key": "milkyway",
+  "name": "the Milky Way",
+  "fact": "About 200 billion stars. Arms, bar and our place in the Orion Spur follow radio and Gaia maps; nobody has ever seen it from outside."
+ },
+ {
+  "key": "lmc",
+  "name": "Large Magellanic Cloud",
+  "fact": "A small galaxy orbiting ours, bright enough to see by eye from the southern hemisphere. Its Tarantula Nebula is the most active star factory in the Local Group."
+ },
+ {
+  "key": "smc",
+  "name": "Small Magellanic Cloud",
+  "fact": "A dwarf galaxy being torn apart by the Large Magellanic Cloud and the Milky Way, trailing a bridge of gas and young stars behind it."
+ },
+ {
+  "key": "m33",
+  "name": "Triangulum Galaxy",
+  "fact": "A loose, flocculent spiral full of giant star-forming regions. On a dark night it is the most distant thing some people can see with the naked eye."
+ },
+ {
+  "key": "sgrdsph",
+  "name": "Sagittarius Dwarf",
+  "fact": "Hidden behind the crowded middle of the Milky Way, it was found only in 1994. Our galaxy is tearing it into a stream of stars that loops right around the sky, and the globular cluster M54 sits at its heart."
+ },
+ {
+  "key": "fornaxd",
+  "name": "Fornax Dwarf",
+  "fact": "Found by Harlow Shapley in 1938, it holds six globular clusters of its own. The brightest was seen by John Herschel in 1835, a century before the galaxy itself."
+ },
+ {
+  "key": "sculptord",
+  "name": "Sculptor Dwarf",
+  "fact": "The first dwarf spheroidal galaxy ever found, reported by Harlow Shapley in 1938 from photographs taken in South Africa. Most of its stars are more than 10 billion years old."
+ },
+ {
+  "key": "leoi",
+  "name": "Leo I",
+  "fact": "It lies a third of a degree north of Regulus, the bright star at the heart of Leo, whose glare makes it hard to see. One of the Milky Way's most distant satellites, it swung past our galaxy about a billion years ago."
+ },
+ {
+  "key": "dracod",
+  "name": "Draco Dwarf",
+  "fact": "Its stars move so fast that the galaxy must be held together by far more mass than they have. For every Sun's worth of light it holds about 100 Suns' worth of mass or more, so it is a favourite place to hunt for signs of dark matter."
+ },
+ {
+  "key": "ngc6822",
+  "name": "Barnard's Galaxy",
+  "fact": "E. E. Barnard found it in 1884. In 1925 Edwin Hubble measured its Cepheid stars and showed it lies far outside the Milky Way, one of the first proofs that other galaxies exist."
+ },
+ {
+  "key": "ic1613",
+  "name": "IC 1613",
+  "fact": "Max Wolf found it in 1906. We see it through a clear patch of our own galaxy and it holds little dust, so astronomers use its stars to check the rungs of the cosmic distance ladder."
+ },
+ {
+  "key": "wlm",
+  "name": "Wolf-Lundmark-Melotte",
+  "fact": "A lonely galaxy at the edge of the Local Group that seems never to have met another galaxy. Max Wolf found it in 1909, and in 2022 the James Webb Space Telescope photographed its stars to read its history."
+ },
+ {
+  "key": "m81",
+  "name": "Bode's Galaxy",
+  "fact": "A textbook spiral whose arms were stirred up by a close pass with its neighbour M82 about 300 million years ago."
+ },
+ {
+  "key": "m82",
+  "name": "Cigar Galaxy",
+  "fact": "Forming stars ten times faster than the Milky Way. Supernova-driven winds blast red filaments of hydrogen out of both faces of the disk."
+ },
+ {
+  "key": "m101",
+  "name": "Pinwheel Galaxy",
+  "fact": "Nearly twice the width of the Milky Way, seen almost face-on, its lopsided arms studded with more than 3,000 star-forming regions."
+ },
+ {
+  "key": "m104",
+  "name": "Sombrero Galaxy",
+  "fact": "A huge glowing bulge ringed by a dark lane of dust. It hosts about 2,000 globular clusters and a billion-solar-mass black hole."
+ },
+ {
+  "key": "cena",
+  "name": "Centaurus A",
+  "fact": "A giant elliptical still digesting a spiral galaxy it swallowed. Its black hole fires jets a million light-years long."
+ },
+ {
+  "key": "cosmicweb",
+  "name": "the cosmic web",
+  "fact": "Galaxies gather into clusters strung along filaments hundreds of millions of light-years long, around voids. The famous clusters and voids here are at their real positions; the web between them is a statistical model."
+ },
+ {
+  "key": "universe",
+  "name": "the observable universe",
+  "fact": "A sphere 93 billion light-years across centred on us. Its edge is the cosmic microwave background, the afterglow of the Big Bang released 380,000 years after it began. (The pattern is illustrative.)"
+ },
+ {
+  "key": "sun",
+  "name": "the Sun",
+  "fact": "A million Earths would fit inside. Its visible surface boils with convection cells, dark sunspots and looping prominences of glowing hydrogen."
+ },
+ {
+  "key": "solarsystem",
+  "name": "the Solar System",
+  "fact": "Planets shown where they are today, on their true orbits. The asteroid belt hides gaps carved by Jupiter; two swarms of Trojans share its orbit."
+ },
+ {
+  "key": "oort",
+  "name": "the Oort cloud",
+  "fact": "Trillions of comet nuclei surround the Sun out to a light-year or more, a third of the way to the nearest star. None has ever been seen directly."
+ },
+ {
+  "key": "mercury",
+  "name": "Mercury",
+  "fact": "A scorched, cratered world with almost no air: 430 °C by day, −180 °C at night. Its year is shorter than two of its own days."
+ },
+ {
+  "key": "venus",
+  "name": "Venus",
+  "fact": "Almost Earth's twin in size, smothered by clouds of sulphuric acid. The surface is 465 °C under 92 times Earth's air pressure."
+ },
+ {
+  "key": "mars",
+  "name": "Mars",
+  "fact": "Rust-red dust, polar ice caps, Olympus Mons (three times the height of Everest) and a canyon as long as the United States."
+ },
+ {
+  "key": "uranus",
+  "name": "Uranus",
+  "fact": "Knocked over by an ancient collision, it rolls around the Sun with its axis tilted 98°, so each pole gets 42 years of daylight."
+ },
+ {
+  "key": "neptune",
+  "name": "Neptune",
+  "fact": "The windiest world known: storms race at 2,000 km/h around a deep-blue methane atmosphere. It takes 165 years to orbit the Sun once."
+ },
+ {
+  "key": "pluto",
+  "name": "Pluto",
+  "fact": "A world of nitrogen glaciers, water-ice mountains and a vast pale heart, seen close up only once, by New Horizons in 2015."
+ },
+ {
+  "key": "earth",
+  "name": "Earth",
+  "fact": "The only world known to have life. Real coastlines, weather systems pushed by the trade winds and westerlies, city lights on the night side and auroras over the poles."
+ },
+ {
+  "key": "moon",
+  "name": "the Moon",
+  "fact": "Born from a giant impact 4.5 billion years ago. The dark \"seas\" are ancient lava plains; bright rays splash out from young craters like Tycho."
+ },
+ {
+  "key": "jupiter",
+  "name": "Jupiter",
+  "fact": "Over twice the mass of all the other planets combined. The Great Red Spot is a storm wider than Earth that has raged for at least 190 years."
+ },
+ {
+  "key": "io",
+  "name": "Io",
+  "fact": "The most volcanic world known. Tidal squeezing by Jupiter melts its interior, feeding hundreds of volcanoes and lava lakes."
+ },
+ {
+  "key": "europa",
+  "name": "Europa",
+  "fact": "A shell of ice cracked into long red streaks, floating on a global ocean holding twice the water of Earth's seas."
+ },
+ {
+  "key": "ganymede",
+  "name": "Ganymede",
+  "fact": "The largest moon in the Solar System, wider than the planet Mercury but with less than half its mass. It is the only moon known to make its own magnetic field, and a salty ocean lies buried under its ice."
+ },
+ {
+  "key": "callisto",
+  "name": "Callisto",
+  "fact": "The most heavily cratered world in the Solar System, almost as wide as Mercury. Its dark, icy surface has barely changed in billions of years, and a salty ocean may lie deep beneath it."
+ },
+ {
+  "key": "sgra",
+  "name": "Sagittarius A*",
+  "fact": "Its event horizon is 17 times wider than the Sun. Light skimming past bends into a ring; the approaching side of the disk glows brighter and bluer. Its real feeding disk is dimmer than shown."
+ },
+ {
+  "key": "sstars",
+  "name": "S2 and the S-stars",
+  "fact": "Tracking these stars for 30 years proved Sgr A* is a black hole (Nobel Prize 2020). S2 swings within 120 AU of it every 16 years, reaching 2.5% of light speed."
+ },
+ {
+  "key": "galcentre",
+  "name": "the Galactic Centre",
+  "fact": "Millions of stars packed within a few light-years of Sgr A*, the magnetised threads of the Radio Arc, and the Central Molecular Zone, the densest gas in the galaxy."
+ },
+ {
+  "key": "3c273",
+  "name": "3C 273",
+  "fact": "A black hole of nearly a billion Suns feeding so fast its core outshines the whole galaxy 100 times. Its jet runs 200,000 light-years. Inner parts are drawn magnified, as the scale bar shows."
+ },
+ {
+  "key": "sn1987a",
+  "name": "SN 1987A",
+  "fact": "In 1987 a blue supergiant's core collapsed in under a second. The flash lit up rings the star shed 20,000 years earlier; then the blast hit them. Replayed on a loop."
+ },
+ {
+  "key": "crab",
+  "name": "Crab Nebula",
+  "fact": "The wreck of a star seen exploding in 1054. A city-sized neutron star spinning 30 times a second at its heart powers the whole nebula."
+ },
+ {
+  "key": "crabpulsar",
+  "name": "Crab Pulsar",
+  "fact": "A ball of neutrons as dense as an atomic nucleus, spinning 30 times a second. Beams from its magnetic poles sweep past Earth like a lighthouse."
+ },
+ {
+  "key": "m51",
+  "name": "Whirlpool Galaxy",
+  "fact": "The arms are a density wave that stars drift through, lighting up pink star-forming nebulae. The small galaxy NGC 5195 tugs on the end of one arm."
+ },
+ {
+  "key": "antennae",
+  "name": "Antennae Galaxies",
+  "fact": "Two spirals in the middle of a collision. Tides fling stars into long tails and colliding gas ignites bursts of star formation. Replayed here: 600 million years in a minute."
+ },
+ {
+  "key": "pillars",
+  "name": "Pillars of Creation",
+  "fact": "Towers of cold gas and dust are eroded by ultraviolet light from the young cluster NGC 6611. Stars forming inside their tips fire jets out of the dust."
+ },
+ {
+  "key": "catseye",
+  "name": "Cat's Eye Nebula",
+  "fact": "A dying Sun-like star puffed off a shell every ~1,500 years, leaving a bull's-eye of rings around twisted inner bubbles lit by its exposed hot core."
+ },
+ {
+  "key": "rsoph",
+  "name": "RS Ophiuchi",
+  "fact": "A red giant overflows its Roche lobe and feeds a white dwarf. Every ~15 years the piled-up hydrogen ignites in a nova that blasts out an hourglass shell (last in 2021)."
+ },
+ {
+  "key": "saturn",
+  "name": "Saturn",
+  "fact": "Its icy rings span 20 Earths yet are about 10 metres thick. Titan, bigger than Mercury, circles far outside them wrapped in orange haze."
+ },
+ {
+  "key": "titan",
+  "name": "Titan",
+  "fact": "Bigger than Mercury and wrapped in a thick orange haze. Beneath it lie lakes and seas of liquid methane, rain and rivers: the only other world with standing liquid on its surface."
+ },
+ {
+  "key": "enceladus",
+  "name": "Enceladus",
+  "fact": "A small, brilliant ice moon whose south pole sprays geysers of salty water from an ocean below into space, feeding Saturn's E ring."
+ },
+ {
+  "key": "mimas",
+  "name": "Mimas",
+  "fact": "A ball of ice 396 km across with one enormous crater, Herschel, 130 km wide: about a third of the moon's own width. Its walls rise about 5 km and a peak 6 km high stands in the middle, which is why Mimas looks like the Death Star from Star Wars."
+ },
+ {
+  "key": "tethys",
+  "name": "Tethys",
+  "fact": "A moon 1,062 km across made almost entirely of water ice: its density, 0.98 g/cm³, is just under water's. Ithaca Chasma, a canyon up to 100 km wide and about 3 km deep, runs some 2,000 km across it, and the crater Odysseus is 445 km wide, more than two fifths of the moon's width."
+ },
+ {
+  "key": "dione",
+  "name": "Dione",
+  "fact": "An icy moon 1,123 km across. Its darker trailing side is streaked with bright cliffs of ice, some of them hundreds of metres high, the walls of canyons where the dark surface material has fallen off; its gravity and shape suggest an ocean about 65 km deep under 100 km of ice."
+ },
+ {
+  "key": "rhea",
+  "name": "Rhea",
+  "fact": "Saturn's second-largest moon, 1,527 km across, about three quarters ice and one quarter rock. In 2010 Cassini flew through a whisper of oxygen and carbon dioxide around it, the first oxygen atmosphere sampled directly at a world other than Earth."
+ },
+ {
+  "key": "gw170817",
+  "name": "GW170817",
+  "fact": "Two neutron stars spiral in, shaking spacetime with gravitational waves, collide, collapse to a black hole and fling out a kilonova that forged gold. Replayed on a loop."
+ },
+ {
+  "key": "alphacen",
+  "name": "Alpha Centauri",
+  "fact": "Two Sun-like stars circle each other every 80 years, 4.37 light-years away. The red dwarf Proxima, the closest star of all, orbits them far out."
+ },
+ {
+  "key": "proxima",
+  "name": "Proxima Centauri",
+  "fact": "A small, cool, flaring red dwarf 4.25 light-years away. Its planet Proxima b orbits in 11 days inside the zone where water could be liquid."
+ },
+ {
+  "key": "proximab",
+  "name": "Proxima b",
+  "fact": "An Earth-mass planet 7.5 million km from its star, closer than Mercury is to the Sun, yet only warm because Proxima is so dim."
+ },
+ {
+  "key": "sirius",
+  "name": "Sirius",
+  "fact": "Twice the Sun's mass and 25 times as bright. Its faint partner Sirius B is a white dwarf: a Sun's worth of matter squeezed into a ball the size of Earth."
+ },
+ {
+  "key": "siriusb",
+  "name": "Sirius B",
+  "fact": "The exposed core of a dead star, about the size of Earth but as massive as the Sun. A teaspoon of it would weigh several tonnes."
+ },
+ {
+  "key": "vega",
+  "name": "Vega",
+  "fact": "Spins so fast (once every 12.5 hours) it bulges at the equator and has a hot pole and a cooler waist. We happen to look straight down on its pole."
+ },
+ {
+  "key": "polaris",
+  "name": "Polaris",
+  "fact": "A Cepheid supergiant that breathes in and out every 4 days. Earth's axis happens to point almost straight at it, so the whole northern sky turns around it."
+ },
+ {
+  "key": "rigel",
+  "name": "Rigel",
+  "fact": "A blue-white supergiant about 120,000 times as luminous as the Sun. It is burning through its fuel so fast it will explode within a few million years."
+ },
+ {
+  "key": "antares",
+  "name": "Antares",
+  "fact": "So large that, placed where the Sun is, its surface would reach beyond the orbit of Mars. A hot blue companion orbits in its dusty wind."
+ },
+ {
+  "key": "deneb",
+  "name": "Deneb",
+  "fact": "About 200,000 times as luminous as the Sun. From 2,600 light-years away it still shines as the tail of the Swan."
+ },
+ {
+  "key": "arcturus",
+  "name": "Arcturus",
+  "fact": "An old star that has run out of hydrogen in its core and swollen to 25 times the Sun's width: a preview of the Sun in about 5 billion years."
+ },
+ {
+  "key": "canopus",
+  "name": "Canopus",
+  "fact": "The second-brightest star in the night sky, a white giant 73 times the Sun's width and about 16,600 times as luminous. Since Mariner 4 in 1964, spacecraft have steered by it to keep themselves pointed the right way."
+ },
+ {
+  "key": "aldebaran",
+  "name": "Aldebaran",
+  "fact": "An orange giant 44 times wider than the Sun. Pioneer 10 is heading its way and will pass it in about 2 million years."
+ },
+ {
+  "key": "barnard",
+  "name": "Barnard's Star",
+  "fact": "An ancient red dwarf racing across the sky, the second-closest star system to the Sun. Four small planets were found around it in 2024-25."
+ },
+ {
+  "key": "tauceti",
+  "name": "Tau Ceti",
+  "fact": "A Sun-like star 11.9 light-years away, older than the Sun and poorer in metals. In 1960 it was one of the first two stars searched for alien radio signals, and four planets a few times Earth's mass may orbit it."
+ },
+ {
+  "key": "epseri",
+  "name": "Epsilon Eridani",
+  "fact": "A young, active star about 500 million years old, ringed by belts of icy debris like a young Solar System."
+ },
+ {
+  "key": "capella",
+  "name": "Capella",
+  "fact": "Two giant stars, each about 2.5 times the Sun's mass, circling each other every 104 days, 0.74 AU apart. The cooler one, 12 times the Sun's width, is near the end of burning helium in its core; the hotter, 9 times the Sun's width, has left the main sequence and is still swelling toward the red giant stage."
+ },
+ {
+  "key": "altair",
+  "name": "Altair",
+  "fact": "Spins once every 9 hours, so fast it is squashed 20% flatter at the poles. Interferometers have imaged its bright poles and dim equator."
+ },
+ {
+  "key": "spica",
+  "name": "Spica",
+  "fact": "Two hot blue stars 0.13 AU apart, closer than Mercury is to the Sun, circling each other every four days. The bigger one, 11 times the Sun's mass, spins fast enough to bulge about 6% at its equator, and its partner's pull stretches it a few per cent more; it will probably end as a supernova."
+ },
+ {
+  "key": "trappist1",
+  "name": "TRAPPIST-1",
+  "fact": "A star barely larger than Jupiter with seven rocky planets packed inside an orbit smaller than Mercury's. Three sit where liquid water is possible."
+ },
+ {
+  "key": "trappist1e",
+  "name": "TRAPPIST-1e",
+  "fact": "The most Earth-like of the seven: about Earth's size and density, in the zone where water could stay liquid. It probably keeps one side facing its star, as the Moon does with Earth."
+ },
+ {
+  "key": "betelgeuse",
+  "name": "Betelgeuse",
+  "fact": "Placed where the Sun is, it would swallow Mercury, Venus, Earth and Mars. Its surface is a few giant boiling cells; in 2019-20 it dimmed when it coughed out a cloud of dust. It will explode as a supernova."
+ },
+ {
+  "key": "etacar",
+  "name": "Eta Carinae",
+  "fact": "In the 1840s this star blew off ten Suns' worth of gas and briefly became the second-brightest star in the sky. That debris is the Homunculus. It may explode as a supernova or hypernova."
+ },
+ {
+  "key": "magnetar",
+  "name": "SGR 1806-20",
+  "fact": "A neutron star with a magnetic field a thousand trillion times Earth's. On 27 December 2004 its crust cracked and released more energy in 0.2 s than the Sun does in 250,000 years. Replayed on a loop."
+ },
+ {
+  "key": "omegacen",
+  "name": "Omega Centauri",
+  "fact": "Ten million stars packed into a ball 150 light-years across, possibly the stripped core of a small galaxy the Milky Way swallowed. Fast stars at its centre betray a black hole of ~8,000 Suns."
+ },
+ {
+  "key": "andromeda",
+  "name": "Andromeda Galaxy",
+  "fact": "A trillion stars 2.5 million light-years away, the most distant thing most people can see without a telescope. It is falling toward us at 110 km/s and will merge with the Milky Way in about 4.5 billion years."
+ },
+ {
+  "key": "m87",
+  "name": "M87",
+  "fact": "One of the most massive galaxies nearby, swarming with some 12,000 globular clusters. From its core a jet of plasma shoots out at nearly the speed of light."
+ },
+ {
+  "key": "m87jet",
+  "name": "the M87 jet",
+  "fact": "Electrons spiral in magnetic fields at 99% of the speed of light. Blobs in the jet appear to move up to six times faster than light, an illusion caused by their speed toward us."
+ },
+ {
+  "key": "m87bh",
+  "name": "M87*",
+  "fact": "Its event horizon is wider than our entire Solar System: Neptune's orbit would fit inside it 60 times over. The Event Horizon Telescope photographed its glowing ring in 2019."
+ },
+ {
+  "key": "hltau",
+  "name": "HL Tauri",
+  "fact": "A star less than a million years old. Its disk of dust is already carved into rings and gaps, probably by young planets sweeping up material. Colours show the dust glow ALMA sees."
+ },
+ {
+  "key": "ton618",
+  "name": "TON 618",
+  "fact": "A black hole of about 40 billion Suns powering a quasar 140 trillion times brighter than the Sun. Its event horizon would swallow the Solar System out to 50 times Neptune's distance."
+ },
+ {
+  "key": "bullet",
+  "name": "Bullet Cluster",
+  "fact": "Two clusters collided at 4,500 km/s. Their galaxies and invisible dark matter (blue, mapped by gravitational lensing) sailed through; their hot gas (pink, seen in X-rays) crashed and lagged behind."
+ },
+ {
+  "key": "jadesz14",
+  "name": "JADES-GS-z14-0",
+  "fact": "Seen by JWST as it was just 290 million years after the Big Bang. Already bright and surprisingly large, it is one of the most distant galaxies ever confirmed."
+ },
+ {
+  "key": "voyager1",
+  "name": "Voyager 1",
+  "fact": "Launched in 1977, it flew past Jupiter and Saturn and in 2012 became the first craft to enter interstellar space. Its radio signal, 20 watts, takes about a day to reach us."
+ },
+ {
+  "key": "voyager2",
+  "name": "Voyager 2",
+  "fact": "Voyager 1's twin took the grand tour past all four giant planets and crossed into interstellar space in 2018, heading south below the plane of the planets."
+ },
+ {
+  "key": "newhorizons",
+  "name": "New Horizons",
+  "fact": "Flew past Pluto in 2015 and the icy Kuiper-belt object Arrokoth in 2019, and is still heading out of the Solar System."
+ },
+ {
+  "key": "jwst",
+  "name": "James Webb Space Telescope",
+  "fact": "Parked 1.5 million km from Earth, always in Earth's shadow side, behind a sunshield the size of a tennis court. Its 6.5 m gold mirror sees the first galaxies."
+ },
+ {
+  "key": "iss",
+  "name": "International Space Station",
+  "fact": "The largest thing humans have built in space: a football pitch of solar wings and modules, lived in continuously since November 2000. It circles Earth every 93 minutes at 28,000 km/h."
+ },
+ {
+  "key": "hubble",
+  "name": "Hubble Space Telescope",
+  "fact": "A school-bus-sized telescope above the blur of the atmosphere. In 35 years it has measured the expansion of the universe and looked back to galaxies 13 billion years old."
+ },
+ {
+  "key": "earth-iconic-everest",
+  "name": "Mount Everest and the Himalaya",
+  "fact": "Mount Everest, on the border of Nepal and China, is the highest mountain above sea level: 8,849 m. Nepal and China agreed that height in 2020."
+ },
+ {
+  "key": "earth-iconic-grandcanyon",
+  "name": "Grand Canyon",
+  "fact": "The Grand Canyon in Arizona is 446 km long, up to 29 km wide and up to about 1,800 m deep. The Colorado River cut it through the rock."
+ },
+ {
+  "key": "earth-iconic-alps",
+  "name": "The Alps: Matterhorn and Mont Blanc",
+  "fact": "Mont Blanc, about 4,806 m high, is the highest peak in the Alps; its snowy top rises and falls by a few metres from year to year. The Matterhorn, 4,478 m, stands on the border of Switzerland and Italy."
+ },
+ {
+  "key": "earth-iconic-kilimanjaro",
+  "name": "Mount Kilimanjaro",
+  "fact": "Kilimanjaro in Tanzania is Africa's highest mountain: 5,895 m above sea level. It is a volcano that stands alone, just over 3 degrees south of the equator, with ice on its summit."
+ },
+ {
+  "key": "earth-iconic-fuji",
+  "name": "Mount Fuji",
+  "fact": "Mount Fuji is Japan's highest mountain, a volcano 3,776 m high. It last erupted in 1707."
+ },
+ {
+  "key": "earth-iconic-yosemite",
+  "name": "Yosemite Valley",
+  "fact": "El Capitan, in Yosemite Valley, California, is a granite wall that rises about 900 m from the valley floor to its top. Half Dome rises at the other end of the valley."
+ },
+ {
+  "key": "earth-iconic-torresdelpaine",
+  "name": "Torres del Paine",
+  "fact": "Torres del Paine National Park is in Chilean Patagonia. Torres means towers in Spanish, and paine means blue in the Tehuelche language."
+ },
+ {
+  "key": "earth-iconic-denali",
+  "name": "Denali",
+  "fact": "Denali, in Alaska, is the highest mountain in North America: 6,190 m above sea level. Its name comes from a Koyukon word for high, and since 2025 the US government calls it Mount McKinley."
+ },
+ {
+  "key": "earth-iconic-richat",
+  "name": "Richat Structure, Sahara",
+  "fact": "The Richat Structure in Mauritania is a ring of eroded rock about 40 km across. Early space crews used it as a landmark."
+ },
+ {
+  "key": "earth-iconic-amazon",
+  "name": "Meeting of Waters, Amazon",
+  "fact": "Near Manaus in Brazil, the dark Rio Negro meets the pale Solimoes, and below them the river is called the Amazon. The two waters flow side by side with a sharp line between them and take about 100 km to mix fully."
+ },
+ {
+  "key": "earth-iconic-nile",
+  "name": "Nile Delta",
+  "fact": "The Nile Delta in Egypt fans out to about 240 km of Mediterranean coast. It is green farmland in a desert."
+ },
+ {
+  "key": "earth-iconic-uluru",
+  "name": "Uluru and Kata Tjuta",
+  "fact": "Uluru, in Australia's Northern Territory, rises 348 m above the plain and is 863 m above sea level. Much of the rock lies underground."
+ },
+ {
+  "key": "earth-iconic-okavango",
+  "name": "Okavango Delta",
+  "fact": "The Okavango Delta in Botswana is where a river ends in the Kalahari sand, not the sea. In flood, its water spreads over as much as 15,000 km²."
+ },
+ {
+  "key": "earth-iconic-sossusvlei",
+  "name": "Sossusvlei dunes, Namib",
+  "fact": "Sossusvlei, in the Namib Desert of Namibia, is a clay pan among red dunes. The dune called Big Daddy is about 325 m high."
+ },
+ {
+  "key": "earth-iconic-gbr",
+  "name": "Great Barrier Reef: Whitsundays and Heart Reef",
+  "fact": "The Great Barrier Reef off Queensland is made of more than 2,900 reefs and 900 islands along 2,300 km. It is the largest coral reef system on Earth."
+ },
+ {
+  "key": "earth-iconic-hawaii",
+  "name": "Hawaii: the Big Island and Kilauea",
+  "fact": "Kilauea, on the Big Island of Hawaii, is one of the most active volcanoes on Earth. Mauna Kea, on the same island, rises 4,207 m above sea level."
+ },
+ {
+  "key": "earth-iconic-iceland",
+  "name": "Iceland: Vatnajokull and Jokulsarlon",
+  "fact": "Vatnajokull is the biggest ice cap in Iceland. On its southern edge, the volcano Oraefajokull holds the highest point in the country, Hvannadalshnukur: 2,110 m."
+ },
+ {
+  "key": "earth-iconic-antarctic",
+  "name": "Antarctica: Ross Island and the Ross Ice Shelf",
+  "fact": "The Ross Ice Shelf is the largest floating ice shelf in Antarctica, about 500,000 km². Mount Erebus, on Ross Island at its edge, is the southernmost active volcano on Earth: 3,794 m."
+ },
+ {
+  "key": "earth-iconic-greenland",
+  "name": "Greenland: Ilulissat Icefjord",
+  "fact": "Sermeq Kujalleq feeds the Ilulissat Icefjord in Greenland. It is one of the fastest glaciers on Earth: in 2012 it moved up to 46 m a day."
+ },
+ {
+  "key": "earth-iconic-maldives",
+  "name": "The Maldives",
+  "fact": "The Maldives are a chain of 26 coral atolls in the Indian Ocean. It is the lowest country on Earth: the ground is about 1.5 m above sea level on average."
+ },
+ {
+  "key": "earth-iconic-borabora",
+  "name": "Bora Bora",
+  "fact": "Bora Bora, in French Polynesia, is what is left of an extinct volcano, ringed by a lagoon and a reef. Its peak, Mount Otemanu, is 727 m high."
+ },
+ {
+  "key": "earth-iconic-halong",
+  "name": "Ha Long Bay",
+  "fact": "Ha Long Bay in Vietnam has about 1,600 limestone islands and islets rising from the sea. UNESCO made it a World Heritage Site in 1994."
+ },
+ {
+  "key": "earth-iconic-geiranger",
+  "name": "Geirangerfjord",
+  "fact": "Geirangerfjord in Norway is a narrow fjord about 15 km long, with waterfalls dropping straight into it. UNESCO listed it in 2005."
+ },
+ {
+  "key": "earth-iconic-palm",
+  "name": "Palm Jumeirah, Dubai",
+  "fact": "Palm Jumeirah in Dubai is an island built from sea sand and mountain rock, begun in 2001. From above it is a palm tree with 17 fronds."
+ },
+ {
+  "key": "earth-iconic-panama",
+  "name": "Panama Canal",
+  "fact": "The Panama Canal is about 82 km long. Locks lift ships 26 m up to Gatun Lake and lower them again on the other side."
+ },
+ {
+  "key": "earth-iconic-greatwall",
+  "name": "Great Wall at Mutianyu",
+  "fact": "All the walls and trenches of the Great Wall of China, from every dynasty, add up to 21,196 km (China's 2012 survey). Mutianyu is a restored stretch northeast of Beijing."
+ },
+ {
+  "key": "earth-iconic-giza",
+  "name": "Pyramids of Giza",
+  "fact": "The Great Pyramid of Giza was built about 4,500 years ago. It was 146.6 m high when new and is 138.5 m high now."
+ },
+ {
+  "key": "earth-iconic-suez",
+  "name": "Suez Canal",
+  "fact": "The Suez Canal in Egypt joins the Mediterranean and the Red Sea. It opened in 1869 and is now 193 km long."
+ },
+ {
+  "key": "earth-iconic-threegorges",
+  "name": "Three Gorges Dam",
+  "fact": "The Three Gorges Dam on China's Yangtze River is 2,335 m long and 181 m high. Its power station is the biggest in the world, at 22,500 MW."
+ },
+ {
+  "key": "earth-iconic-hoover",
+  "name": "Hoover Dam and Lake Mead",
+  "fact": "Hoover Dam, on the border of Nevada and Arizona, is 221 m high. Lake Mead behind it is the biggest reservoir in the United States by capacity."
+ },
+ {
+  "key": "orion",
+  "name": "Orion Nebula",
+  "fact": "The nearest big star factory, visible to the naked eye as the fuzzy middle \"star\" of Orion's sword. Four hot young stars at its heart, the Trapezium, light the whole cloud."
+ },
+ {
+  "key": "horsehead",
+  "name": "Horsehead Nebula",
+  "fact": "A pillar of cold, dusty gas that happens to look like a horse's head, silhouetted against glowing hydrogen lit by the star sigma Orionis."
+ },
+ {
+  "key": "helix",
+  "name": "Helix Nebula",
+  "fact": "One of the closest planetary nebulae: the outer layers of a dying Sun-like star, blown into a double ring that looks like a giant eye. Its inner edge is peppered with thousands of comet-shaped knots."
+ },
+ {
+  "key": "ringneb",
+  "name": "Ring Nebula",
+  "fact": "A glowing barrel of gas thrown off by a dying star, seen almost end-on so it looks like a smoke ring. The blue-green centre is oxygen; the red rim is hydrogen and nitrogen."
+ },
+ {
+  "key": "carina",
+  "name": "Carina Nebula",
+  "fact": "Four times bigger than the Orion Nebula and home to some of the most massive stars known, including Eta Carinae. Its dust pillars, like Mystic Mountain, are being carved by their light."
+ },
+ {
+  "key": "veil",
+  "name": "Veil Nebula",
+  "fact": "The expanding wreckage of a star that exploded 10,000 to 20,000 years ago. The blast wave is still ploughing into surrounding gas, lighting it up in long twisted filaments."
+ },
+ {
+  "key": "eagle",
+  "name": "Eagle Nebula",
+  "fact": "A cavity 20 light-years wide, blown into a cold cloud by the hot young stars of NGC 6611. What is left of the cloud stands in columns pointing back at the cluster: the Pillars of Creation, the 9-light-year Spire and a dozen smaller trunks."
+ },
+ {
+  "key": "sculptor",
+  "name": "Sculptor Galaxy",
+  "fact": "One of the brightest galaxies in our sky and one of the dustiest. Its core is forming stars so fast that the explosions drive a wind of gas out of the galaxy."
+ },
+ {
+  "key": "cartwheel",
+  "name": "Cartwheel Galaxy",
+  "fact": "A smaller galaxy punched straight through this one a few hundred million years ago. The collision sent a ripple outward like a stone dropped in a pond, and the expanding ring is lit up with new stars."
+ },
+ {
+  "key": "hoag",
+  "name": "Hoag's Object",
+  "fact": "A nearly perfect ring of young blue stars around a ball of old yellow ones, with an empty gap between them. Nobody is sure how it formed. Through the gap you can see another, far more distant ring galaxy."
+ },
+ {
+  "key": "quintet",
+  "name": "Stephan's Quintet",
+  "fact": "Four galaxies caught in a slow-motion pile-up 290 million light-years away. One of them is ramming through the group so fast it has lit a shock wave bigger than the Milky Way. The fifth galaxy is a foreground impostor."
+ },
+ {
+  "key": "ngc1275",
+  "name": "NGC 1275",
+  "fact": "A monster galaxy at the centre of the Perseus Cluster. Its black hole blows bubbles in the surrounding hot gas, and long red filaments of cooling gas, some wider than the Milky Way, hang around it like seaweed."
+ },
+ {
+  "key": "uyscuti",
+  "name": "UY Scuti",
+  "fact": "Placed where the Sun is, its surface would reach most of the way to Jupiter. If it were a hollow ball, hundreds of millions of Suns would fit inside. Even so it is only 7 to 10 times the Sun's mass: it is enormous but thin."
+ },
+ {
+  "key": "stephenson218",
+  "name": "Stephenson 2-18",
+  "fact": "If its measured size is right, its surface would reach beyond the orbit of Saturn. Its distance is uncertain by more than half, so it may be smaller, but it is certainly one of the giants of the galaxy."
+ },
+ {
+  "key": "tarantula",
+  "name": "Tarantula Nebula",
+  "fact": "A star factory in the Large Magellanic Cloud so bright that, if it were as close as the Orion Nebula, it would cast shadows on Earth. Its central cluster R136 holds the heaviest stars known."
+ },
+ {
+  "key": "r136a1",
+  "name": "R136a1",
+  "fact": "Between 200 and 300 times the mass of the Sun and about 7 million times as bright. Stars this heavy blow themselves apart with winds of thousands of km/s and live only a few million years."
+ },
+ {
+  "key": "wr140",
+  "name": "WR 140",
+  "fact": "A Wolf-Rayet star and an O-type giant on an 8-year orbit. Each time they swing close, their colliding winds squeeze out a puff of carbon soot. The James Webb telescope saw 17 of these shells nested like ripples."
+ },
+ {
+  "key": "gaiabh1",
+  "name": "Gaia BH1",
+  "fact": "The closest black hole we know of, 1,560 light-years away. It is not feeding, so it gives off no light at all: astronomers found it in 2022 from the wobble of the Sun-like star that circles it every 186 days. Look through it at that star and its light bends into arcs around the shadow."
+ },
+ {
+  "key": "cygx1",
+  "name": "Cygnus X-1",
+  "fact": "The first object widely accepted as a black hole (1971). Every 5.6 days it circles a blue supergiant 40 times the Sun's mass, stripping gas into a disk hot enough to shine in X-rays. Stephen Hawking famously bet it was not a black hole, and lost."
+ },
+ {
+  "key": "tde",
+  "name": "A star torn apart",
+  "fact": "When a star wanders too close to a giant black hole, the difference in gravity across it pulls it into a long stream of gas: \"spaghettification\". Half the debris is flung away; the rest falls back, forms a disk and flares for months. This one is modelled on AT2019qiz, the closest such flare yet seen."
+ },
+ {
+  "key": "gw150914",
+  "name": "GW150914",
+  "fact": "1.3 billion years ago two black holes of 36 and 29 Suns spiralled together and merged. They gave off no light, but three Suns' worth of energy left as ripples in spacetime, which reached detectors on Earth on 14 September 2015."
+ },
+ {
+  "key": "oumuamua",
+  "name": "'Oumuamua",
+  "fact": "A reddish object a few hundred metres long (its size and shape are uncertain) that came from another star, swung past the Sun and is leaving forever at 26 km/s. It tumbled end over end and sped up slightly, as a comet would, without showing any tail."
+ },
+ {
+  "key": "arrokoth",
+  "name": "Arrokoth",
+  "fact": "Two flattened lumps of ice that drifted together gently 4.5 billion years ago and stuck. New Horizons flew past it in 2019, 6.6 billion km from home: the most distant world any spacecraft has visited."
+ },
+ {
+  "key": "halley",
+  "name": "Halley's Comet",
+  "fact": "A dirty snowball about 15 km long on a 76-year orbit. Near the Sun it grows a glowing coma and two tails: curved dust and straight blue gas, pushed away from the Sun. It was last close in 1986 and returns in 2061."
+ },
+ {
+  "key": "ceres",
+  "name": "Ceres",
+  "fact": "A round world 940 km across holding a quarter of the asteroid belt's mass. NASA's Dawn found bright patches of salt in Occator crater, left by briny water welling up from below."
+ },
+ {
+  "key": "kepler16b",
+  "name": "Kepler-16b",
+  "fact": "The first planet seen passing in front of two stars at once (2011). From its cloud tops there would be double sunrises and double sunsets. It is a cold gas giant, not a desert world."
+ },
+ {
+  "key": "cnc55",
+  "name": "55 Cancri",
+  "fact": "A yellow dwarf a little smaller than the Sun with five known planets, one of them a lava world skimming its surface."
+ },
+ {
+  "key": "cnc55e",
+  "name": "55 Cancri e",
+  "fact": "Almost twice Earth's width and eight times its mass, so close to its star that its surface is probably molten rock. JWST measured its day side at about 1,500 °C, cooler than bare rock would be, a hint of a thick atmosphere perhaps breathed out by the magma."
+ },
+ {
+  "key": "kelt9",
+  "name": "KELT-9",
+  "fact": "A hot, fast-spinning A0 star twice the Sun's size, with a giant planet roasting in a polar orbit around it."
+ },
+ {
+  "key": "kelt9b",
+  "name": "KELT-9b",
+  "fact": "A gas giant puffed up to nearly twice Jupiter's width, with a day side around 4,300 °C: hotter than most stars. Its molecules are torn apart and its atmosphere is boiling off into space."
+ },
+ {
+  "key": "hr8799",
+  "name": "HR 8799",
+  "fact": "One of the first planetary systems ever photographed directly (2008). Four giant planets, each several times Jupiter's mass, glow in infrared from the heat of their birth, some 30 to 40 million years ago."
+ },
+ {
+  "key": "hr8799b",
+  "name": "HR 8799 b",
+  "fact": "A young giant planet still glowing from its formation, about 1,000 K at its cloud tops."
+ },
+ {
+  "key": "casa",
+  "name": "Cassiopeia A",
+  "fact": "The shredded remains of a massive star whose light from the explosion reached Earth around the 1660s, though nobody is known to have seen it. JWST sees its debris as knots of orange and pink, a shock front ahead of it, and a curious green curtain nicknamed the Green Monster."
+ },
+ {
+  "key": "wr124",
+  "name": "WR 124",
+  "fact": "A star 30 times the Sun's mass in its last brief, violent stage, throwing off its outer layers. The ejected gas cools into clumps of dust that JWST sees glowing in infrared, ten light-years across."
+ },
+ {
+  "key": "southernring",
+  "name": "Southern Ring Nebula",
+  "fact": "Shells of gas thrown off by a dying star, layer after layer. The faint star at the centre, not the bright one beside it, made the nebula; JWST showed for the first time that it is wrapped in dust."
+ },
+ {
+  "key": "bubble",
+  "name": "Bubble Nebula",
+  "fact": "The wind of a single star about 45 times the Sun's mass, blowing at 1,700 km/s, has inflated a bubble seven light-years wide in the gas around it. The star sits off-centre because the cloud is denser on one side."
+ },
+ {
+  "key": "pleiades",
+  "name": "the Pleiades",
+  "fact": "About a thousand young stars born together some 100 to 125 million years ago. Their brightest members light up a dust cloud the cluster happens to be passing through, in streaks of blue."
+ },
+ {
+  "key": "einsteincross",
+  "name": "Einstein Cross",
+  "fact": "Four images of one quasar, whose light set out about 10 billion years ago, arranged around the core of a galaxy far nearer to us. The galaxy's gravity bends the quasar's light along four paths. Seen from anywhere but here, the cross would fall apart."
+ },
+ {
+  "key": "bootesvoid",
+  "name": "Boötes Void",
+  "fact": "A roughly spherical hole in the cosmic web some 330 to 400 million light-years across. A region that size would normally hold thousands of galaxies; this one holds about sixty. From its middle, beyond the stars of your own galaxy, you would see almost no other galaxies."
+ },
+ {
+  "key": "elgordo",
+  "name": "El Gordo",
+  "fact": "Two giant clusters of galaxies smashing together, together weighing about 3 million billion Suns. The collision heats its gas to about 170 million °C and drives shock waves that glow in radio at both ends."
+ },
+ {
+  "key": "tabby",
+  "name": "Tabby's Star",
+  "fact": "Kepler saw this star dim irregularly, once by 22%, with no pattern a planet could make. Its light dims more in blue than in red, the signature of fine dust: most likely uneven clouds of it, perhaps from shattered comets or moons."
+ },
+ {
+  "key": "halebopp",
+  "name": "Comet Hale-Bopp",
+  "fact": "Found in July 1995 by Alan Hale and Thomas Bopp, it became one of the brightest comets of the last century, visible to the naked eye for about 18 months, a record. Its nucleus is about 60 km across, several times bigger than most."
+ },
+ {
+  "key": "neowise",
+  "name": "Comet NEOWISE",
+  "fact": "Found by NASA's NEOWISE space telescope on 27 March 2020, it became a naked-eye comet with a long curved dust tail in July 2020. Its nucleus is about 5 km across."
+ },
+ {
+  "key": "tsuchinshan",
+  "name": "Comet Tsuchinshan-ATLAS",
+  "fact": "Found by China's Purple Mountain Observatory in January 2023, and on its own by the ATLAS survey in February. In mid-October 2024 Earth passed through the plane of its orbit, and dust spread along that orbit showed as a thin spike pointing toward the Sun: an anti-tail."
+ },
+ {
+  "key": "3iatlas",
+  "name": "3I/ATLAS",
+  "fact": "Found on 1 July 2025 by the ATLAS survey telescope in Chile: only the third object known to come from another star. It swept past the Sun just inside the orbit of Mars and is heading back into interstellar space; its speed hints that it may be older than the Solar System."
+ },
+ {
+  "key": "67p",
+  "name": "Comet 67P/Churyumov-Gerasimenko",
+  "fact": "The comet ESA's Rosetta orbited from 2014 to 2016, and the first one landed on (by Philae, on 12 November 2014). Two lobes 4.1 and 2.6 km long, joined by a neck like a rubber duck, and about half as dense as water."
+ },
+ {
+  "key": "sl9",
+  "name": "Comet Shoemaker-Levy 9",
+  "fact": "Jupiter's gravity tore this comet into about 21 pieces in July 1992. Two years later, from 16 to 22 July 1994, they hit Jupiter one after another at 60 km/s: the first collision between two Solar System bodies ever watched."
+ },
+ {
+  "key": "kreutz",
+  "name": "Kreutz sungrazers",
+  "fact": "Pieces of one giant comet that broke up centuries ago, still on nearly the same orbit, which skims the Sun's corona as close as about 130,000 km above its surface. The SOHO spacecraft has found over 4,000 of them; most are only a few metres to tens of metres across and boil away."
+ },
+ {
+  "key": "perseids",
+  "name": "the Perseids",
+  "fact": "Every August Earth runs through the dust shed by Comet Swift-Tuttle, whose nucleus is 26 km across. The grains, mostly the size of sand, hit the air at 59 km/s and burn up as shooting stars 80 to 120 km up."
+ },
+ {
+  "key": "leonids",
+  "name": "the Leonids",
+  "fact": "Comet Tempel-Tuttle, 3.6 km across, returns every 33 years and leaves fresh trails of dust; when Earth hits one, the November Leonids become a storm, as in 1966, when thousands of meteors a minute fell over the western US. At about 70 km/s they are the fastest of the big yearly showers."
+ },
+ {
+  "key": "vesta",
+  "name": "Vesta",
+  "fact": "The second-heaviest body in the asteroid belt, a squashed ball about 525 km across. A giant impact dug Rheasilvia, a crater about 500 km wide around its south pole, and left a mountain in the middle about 22 km high. NASA's Dawn orbited Vesta in 2011 and 2012."
+ },
+ {
+  "key": "bennu",
+  "name": "Bennu",
+  "fact": "A loose pile of rubble about 500 m wide, shaped like a spinning top, with a ridge round its middle and boulders everywhere. NASA's OSIRIS-REx scooped up 121.6 g of it and dropped the sample off at Earth on 24 September 2023. It has a 1 in 2,700 chance of hitting Earth in 2182."
+ },
+ {
+  "key": "peg51b",
+  "name": "51 Pegasi b",
+  "fact": "Found in 1995 by Michel Mayor and Didier Queloz, who shared half of the 2019 Nobel Prize in Physics for it. A gas giant about half Jupiter's mass, it circles its star every 4.2 days, far closer than Mercury is to the Sun."
+ },
+ {
+  "key": "k218b",
+  "name": "K2-18 b",
+  "fact": "A world 2.6 times Earth's width and 8.6 times its mass, orbiting where its star's warmth could allow liquid water. In 2023 JWST found methane and carbon dioxide in its hydrogen-rich air, and it may hide a deep ocean. A claimed hint of dimethyl sulfide, a gas that on Earth comes only from living things, has not been confirmed, and it can also form without life."
+ },
+ {
+  "key": "hd189733b",
+  "name": "HD 189733 b",
+  "fact": "A gas giant a little bigger than Jupiter. In 2013 Hubble measured its colour: deep blue, probably from a haze of tiny silicate grains, the stuff of sand and glass. Its day side is over 1,000 °C, and winds of several thousand km/h may blow that glass sideways as rain."
+ },
+ {
+  "key": "gaiabh3",
+  "name": "Gaia BH3",
+  "fact": "A black hole 33 times the Sun's mass, 1,926 light-years away in Aquila: the heaviest found in our galaxy that was made by a star. It gives off no light; Gaia found it in 2024 from the wobble of an ancient giant star that circles it every 11.6 years."
+ },
+ {
+  "key": "tcrb",
+  "name": "T Coronae Borealis",
+  "fact": "A red giant and a white dwarf, 3,000 light-years away. About every 80 years, gas that the white dwarf has pulled off the giant explodes on the dwarf's surface, and for a few days the pair can be seen without a telescope. It erupted in 1866 and 1946, and astronomers expect the next eruption soon."
+ },
+ {
+  "key": "lagoon",
+  "name": "Lagoon Nebula",
+  "fact": "A cloud of glowing hydrogen about 110 by 50 light-years, where new stars are forming. A lane of dark dust across it gives it its name. On one side of the dark lane the young star Herschel 36 lights up the Hourglass; the young cluster NGC 6530 sits on the other."
+ },
+ {
+  "key": "m13",
+  "name": "Great Hercules Cluster",
+  "fact": "Several hundred thousand stars in a ball about 145 light-years across, around 12 billion years old. In 1974 the Arecibo radio telescope beamed a short message toward it. Travelling at the speed of light, it will take about 25,000 years to get there."
+ },
+ {
+  "key": "dumbbell",
+  "name": "Dumbbell Nebula",
+  "fact": "The first planetary nebula ever found, by Charles Messier in 1764: the outer layers of a dying Sun-like star, blown off over the last 10,000 years or so. From Earth its brightest gas looks like an apple core."
+ },
+ {
+  "key": "owl",
+  "name": "Owl Nebula",
+  "fact": "A round shell of gas thrown off by a dying star some 10,000 years ago. Two darker patches inside it look like an owl's eyes: they are the two ends of one barrel-shaped hollow in the shell, tilted about 45 degrees to our view."
+ },
+ {
+  "key": "trifid",
+  "name": "Trifid Nebula",
+  "fact": "Three kinds of nebula in one: a red cloud of glowing hydrogen, split into three lobes by dark lanes of dust, and a blue cloud of dust beside it that only reflects starlight. A young, very hot star at its middle lights it up."
+ },
+ {
+  "key": "omega",
+  "name": "Omega Nebula",
+  "fact": "One of the brightest star-forming regions in our galaxy. Its brightest gas forms a bar with a hook at one end, a swan or a Greek omega. Massive young stars inside are eating into the dark cloud beside it, where new stars are still forming."
+ },
+ {
+  "key": "beehive",
+  "name": "Beehive Cluster",
+  "fact": "Over a thousand stars born together some 600 to 700 million years ago. Known since ancient times as a little cloud, it was seen as stars by Galileo in 1610. Planets have been found round several of its stars."
+ },
+ {
+  "key": "wildduck",
+  "name": "Wild Duck Cluster",
+  "fact": "One of the richest and most massive open clusters known: thousands of stars born together about 300 million years ago. Its brightest stars form a V, like a flight of wild ducks."
+ },
+ {
+  "key": "ptolemy",
+  "name": "Ptolemy's Cluster",
+  "fact": "A bright cluster by the tail of Scorpius, easy to see with the naked eye and the farthest south of all the Messier objects. Ptolemy described it nearly 1,900 years ago as a nebula following the sting of Scorpius."
+ },
+ {
+  "key": "m3",
+  "name": "M3",
+  "fact": "Some 400,000 Suns' worth of stars about 11 billion years old, and the first object in his catalogue that Messier discovered himself (1764). It holds about 240 RR Lyrae stars, more than almost any other globular cluster, each brightening and fading every half a day or so."
+ },
+ {
+  "key": "m4",
+  "name": "M4",
+  "fact": "The nearest globular cluster to us, about 12 billion years old. Hubble found some of the oldest white dwarfs known in it, and its one known pulsar has a planet, among the oldest planets known."
+ },
+ {
+  "key": "m22",
+  "name": "M22",
+  "fact": "Probably the first globular cluster ever found, in 1665, and one of the brightest in our sky. Radio telescopes found two black holes inside it in 2012, and it hides a small planetary nebula."
+ },
+ {
+  "key": "sunflower",
+  "name": "Sunflower Galaxy",
+  "fact": "A spiral without long, clear arms: its stars and dust lie in many short arm segments, like the seeds of a sunflower. A faint loop of stars round it is all that is left of a small galaxy it swallowed."
+ },
+ {
+  "key": "blackeye",
+  "name": "Black Eye Galaxy",
+  "fact": "A dark band of dust sweeps across one side of its bright centre, like a black eye. Its outer gas turns the opposite way to its inner gas and stars, probably a sign that it took in gas from a small galaxy long ago."
+ },
+ {
+  "key": "m83",
+  "name": "Southern Pinwheel Galaxy",
+  "fact": "A bright, nearly face-on barred spiral, crowded with pink star-forming regions. Astronomers have seen six supernovae explode in it since 1923, among the most for any galaxy."
+ },
+ {
+  "key": "m77",
+  "name": "M77",
+  "fact": "One of the best-known Seyfert galaxies, whose centres blaze with gas falling into a black hole: here one of about 10 million Suns, hidden behind a ring of dust. In 2022 the IceCube detector at the South Pole found evidence of neutrinos coming from it."
+ },
+ {
+  "key": "m65",
+  "name": "M65",
+  "fact": "One of three spirals close together in Leo, the Leo Triplet. Its arms are wound tightly and it has little gas left, so it forms few new stars now."
+ },
+ {
+  "key": "m66",
+  "name": "M66",
+  "fact": "The brightest of the Leo Triplet. Its arms are lopsided, probably stirred by a close pass with its neighbour NGC 3628 about 800 million years ago."
+ },
+ {
+  "key": "m106",
+  "name": "M106",
+  "fact": "Water molecules swirling round its central black hole shine as natural masers. Tracking them gave its distance by pure geometry, the first such distance to a galaxy beyond our Local Group. Two extra arms of hot gas, seen in radio and X-rays, mark where jets from its black hole heat the gas in its disc."
+ },
+ {
+  "key": "phantom",
+  "name": "Phantom Galaxy",
+  "fact": "A textbook spiral seen almost exactly face-on, its two long arms traced by pink star-forming regions. It is faint for a Messier object, hence the name. JWST's 2022 picture showed its dust as a lace of filaments."
+ },
+ {
+  "key": "m84",
+  "name": "M84",
+  "fact": "A big, smooth galaxy near the heart of the Virgo Cluster, at the start of the curved line of galaxies called Markarian's Chain. Its central black hole of about 850 million Suns fires two jets that show in radio light."
+ },
+ {
+  "key": "m86",
+  "name": "M86",
+  "fact": "One of the few galaxies coming toward us. It falls through the Virgo Cluster toward us at about 1,300 km/s, faster than the cluster itself moves away from us, so its light is shifted to the blue. Its hot gas streams off behind it in a long plume."
+ },
+ {
+  "key": "littledumbbell",
+  "name": "Little Dumbbell Nebula",
+  "fact": "One of the faintest objects in Messier's list, found by Pierre Méchain in 1780 and given two NGC numbers because it was thought to be two clouds side by side. A ring of gas seen nearly edge-on makes the bright bar, and two faint lobes of gas are blown out on either side of it."
+ },
+ {
+  "key": "m78",
+  "name": "M78",
+  "fact": "A cloud of dust that shines only by the light of a close pair of young, hot stars at its head, scattered back toward us and mostly blue. Dozens of young stars, some firing jets, are forming in and around it."
+ },
+ {
+  "key": "m24",
+  "name": "Sagittarius Star Cloud",
+  "fact": "Not a cluster but a window: a gap in the dust of our galaxy through which we see a crowd of stars far off toward its inner parts. Dark clouds of dust such as Barnard 92 hang in front of it, and the open cluster NGC 6603 is seen within it."
+ },
+ {
+  "key": "m6",
+  "name": "Butterfly Cluster",
+  "fact": "Its brightest stars outline a butterfly with open wings. Most are hot and blue-white, but the brightest, BM Scorpii, is an orange giant; on the sky it is the Messier object nearest the centre of our galaxy."
+ },
+ {
+  "key": "m23",
+  "name": "M23",
+  "fact": "A rich, scattered cluster in the Milky Way's band in Sagittarius, found by Messier in 1764. Over a thousand of its stars have been picked out by their shared motion."
+ },
+ {
+  "key": "m25",
+  "name": "M25",
+  "fact": "A bright cluster you can see without a telescope from a dark site. One of its stars, U Sagittarii, is a Cepheid: it swells and shrinks, brightening and fading every 6.7 days, and helps set the scale of distances in space."
+ },
+ {
+  "key": "m29",
+  "name": "M29",
+  "fact": "A small, young cluster of hot stars in Cygnus, dimmed several times over by the dust between us. Its brightest stars form a small box with a little triangle above it, a shape nicknamed the Cooling Tower."
+ },
+ {
+  "key": "m34",
+  "name": "M34",
+  "fact": "A bright, loose cluster in Perseus, just visible to the naked eye from a dark site. Its stars are about 220 million years old, a stage between the young Pleiades and the older Hyades; how fast its stars spin gives a matching age."
+ },
+ {
+  "key": "m35",
+  "name": "M35",
+  "fact": "A big, bright cluster at the feet of Gemini, about the size of the full Moon on the sky. The small, dimmer cluster NGC 2158 beside it is about four times farther away and about ten times older."
+ },
+ {
+  "key": "m36",
+  "name": "M36",
+  "fact": "The youngest of the three bright clusters in Auriga: hot blue stars with no red giants yet. About eight times closer, it would look much like the Pleiades."
+ },
+ {
+  "key": "m37",
+  "name": "M37",
+  "fact": "The richest of the three bright clusters in Auriga, with thousands of stars; about a dozen of them have swollen into red giants. It even holds a planetary nebula, one of only a handful known in an open cluster."
+ },
+ {
+  "key": "m38",
+  "name": "M38",
+  "fact": "The third of Auriga's bright clusters. Its brightest stars are said to form a cross or a starfish, and a few yellow giants shine among its brightest members."
+ },
+ {
+  "key": "m39",
+  "name": "M39",
+  "fact": "A large, loose cluster in Cygnus, easy in binoculars: a few dozen bright stars spread over an area about the size of the full Moon."
+ },
+ {
+  "key": "m41",
+  "name": "M41",
+  "fact": "A bright cluster four degrees south of Sirius, with an orange giant near its middle. It may be the faint patch Aristotle noted around 325 BC; if so, it is the faintest object recorded in ancient times."
+ },
+ {
+  "key": "m46",
+  "name": "M46",
+  "fact": "A rich cluster of thousands of stars. The small ring of a planetary nebula seen at its edge, NGC 2438, is probably not part of it: it moves differently and seems to lie well in front."
+ },
+ {
+  "key": "m47",
+  "name": "M47",
+  "fact": "A bright, coarse cluster. Messier wrote down its position wrongly, so for nearly two centuries no one knew which cluster he meant, until it was matched to NGC 2422 in 1959."
+ },
+ {
+  "key": "m52",
+  "name": "M52",
+  "fact": "A rich young cluster in Cassiopeia that Messier found in 1774 while following a comet. Its brightest member is a yellow supergiant."
+ },
+ {
+  "key": "m67",
+  "name": "M67",
+  "fact": "About 4 billion years old, the oldest open cluster in Messier's list and nearly as old as the Sun, which it matches in make-up. Its Sun-like stars spin once in about 26 days, as the Sun does."
+ },
+ {
+  "key": "m103",
+  "name": "M103",
+  "fact": "The last entry in Messier's catalogue as he published it in 1781: a young cluster of hot stars in Cassiopeia and, by Gaia, the farthest open cluster in his list."
+ },
+ {
+  "key": "m2",
+  "name": "M2",
+  "fact": "One of the more massive globulars, about 620,000 times the Sun's mass. Its stretched orbit swings from about 2,900 light-years from the Galactic centre out to 61,000 light-years."
+ },
+ {
+  "key": "m5",
+  "name": "M5",
+  "fact": "Gottfried Kirch and Maria Margarethe Kirch first saw it in 1702 while watching a comet. William Herschel first made out its stars in 1791 and counted about 200."
+ },
+ {
+  "key": "m9",
+  "name": "M9",
+  "fact": "One of the globulars nearest the Galactic centre, about 5,600 light-years from it. Dust in the dark cloud Barnard 64 dims its light."
+ },
+ {
+  "key": "m10",
+  "name": "M10",
+  "fact": "M10 and its neighbour in the sky, M12, are only about 1,000 light-years apart in space. Both lie about 16,600 light-years from us."
+ },
+ {
+  "key": "m12",
+  "name": "M12",
+  "fact": "The Milky Way's pull has stripped M12 of about a million of its lightest stars, about four times as many stars as it still has."
+ },
+ {
+  "key": "m14",
+  "name": "M14",
+  "fact": "A nova flared in M14 in 1938, but nobody noticed until 1964. Amelia Wehlau found it on old photographic plates taken by Helen Sawyer Hogg."
+ },
+ {
+  "key": "m15",
+  "name": "M15",
+  "fact": "One of the densest globulars known, with a collapsed core. In 1928 Francis Pease found the planetary nebula Pease 1 in it, the first one found inside a globular cluster."
+ },
+ {
+  "key": "m19",
+  "name": "M19",
+  "fact": "The most flattened globular in Harris's catalogue, with an ellipticity of 0.27. It lies only about 4,700 light-years from the Galactic centre."
+ },
+ {
+  "key": "m28",
+  "name": "M28",
+  "fact": "In 1987 astronomers found a pulsar in M28 that spins about 330 times a second. It was the first pulsar ever found in a globular cluster."
+ },
+ {
+  "key": "m30",
+  "name": "M30",
+  "fact": "Its stars have crowded into a tiny collapsed core. At about 13 billion years, it is among the oldest globulars measured."
+ },
+ {
+  "key": "m53",
+  "name": "M53",
+  "fact": "One of the farthest of Messier's globulars, about 60,500 light-years away. Its stars hold only about 1/125 of the Sun's share of iron."
+ },
+ {
+  "key": "m54",
+  "name": "M54",
+  "fact": "The heart of the Sagittarius Dwarf, a small galaxy the Milky Way is pulling apart. Messier found it in 1778, so it was the first globular cluster from another galaxy ever seen, though nobody knew that until the galaxy was found in 1994."
+ },
+ {
+  "key": "m55",
+  "name": "M55",
+  "fact": "A big, loose globular, grainy even in binoculars. Lacaille found it in 1752 while observing from South Africa."
+ },
+ {
+  "key": "m56",
+  "name": "M56",
+  "fact": "A faint, loose globular half-way between Albireo and Gamma Lyrae. Its orbit suggests it came from Gaia-Enceladus, a small galaxy the Milky Way swallowed."
+ },
+ {
+  "key": "m62",
+  "name": "M62",
+  "fact": "Chandra found 43 X-ray sources in its crowded inner part. Most such sources are pairs in which a white dwarf or neutron star pulls gas from a companion."
+ },
+ {
+  "key": "m68",
+  "name": "M68",
+  "fact": "Unlike most globulars, it lies in the half of the sky away from the Galactic centre. Its orbit suggests it came from a small galaxy the Milky Way swallowed, whose stars now form the Helmi streams."
+ },
+ {
+  "key": "m69",
+  "name": "M69",
+  "fact": "The most metal-rich globular in Messier's list, with about a quarter of the Sun's share of iron. M69 and M70 are only about 2,000 light-years apart."
+ },
+ {
+  "key": "m70",
+  "name": "M70",
+  "fact": "Comet Hale-Bopp was discovered beside M70 on 23 July 1995: Thomas Bopp found it while looking at the cluster. Its core has collapsed."
+ },
+ {
+  "key": "m71",
+  "name": "M71",
+  "fact": "M71 is so loose that for many years astronomers thought it was an open cluster. In the 1970s they agreed it is a sparse globular."
+ },
+ {
+  "key": "m72",
+  "name": "M72",
+  "fact": "One of the faintest and farthest of Messier's globulars: its light set out about 54,500 years ago."
+ },
+ {
+  "key": "m75",
+  "name": "M75",
+  "fact": "A small, very compact globular about 67,000 light-years away, one of the farthest in Messier's list. Harlow Shapley put it in his densest class, I."
+ },
+ {
+  "key": "m79",
+  "name": "M79",
+  "fact": "M79 lies in the half of the sky away from the Galactic centre. Its orbit suggests it was born in a small galaxy that the Milky Way swallowed long ago."
+ },
+ {
+  "key": "m80",
+  "name": "M80",
+  "fact": "One of the densest globulars. Hubble found more than twice as many blue stragglers there as in other clusters it surveyed: stars that look younger than the rest. A nova, T Scorpii, flared in it in 1860."
+ },
+ {
+  "key": "m92",
+  "name": "M92",
+  "fact": "One of the oldest and most metal-poor globulars. Age estimates run from about 12.8 billion years (2013) to 13.8 billion years (2023)."
+ },
+ {
+  "key": "m107",
+  "name": "M107",
+  "fact": "The last Messier object to be found. Pierre Méchain saw it in April 1782, but it joined the list only in 1947, when Helen Sawyer Hogg added it."
+ },
+ {
+  "key": "pease1",
+  "name": "Pease 1",
+  "fact": "The first planetary nebula found inside a globular cluster: a shell of gas thrown off by a dying star among M15's ancient stars. Francis Pease found it in 1928, and only three more are known in globulars."
+ },
+ {
+  "key": "roadster",
+  "name": "Starman and the Tesla Roadster",
+  "fact": "On 6 February 2018 the first Falcon Heavy carried a cherry-red Tesla Roadster, with a mannequin in a spacesuit called Starman at the wheel, as its test payload. The car is still fixed to the rocket's upper stage, coasting round the Sun on an orbit that crosses the paths of both Earth and Mars. Its dashboard screen read DON'T PANIC!"
+ },
+ {
+  "key": "starship",
+  "name": "Starship",
+  "fact": "The largest rocket ever flown: about 120 m tall with its Super Heavy booster (124 m in its newest version), lifting off on 33 Raptor engines. Both stages are built to be reused. Here it stands on the launch mount at Starbase, Texas, beside the tower whose arms catch the booster."
+ },
+ {
+  "key": "falcon9",
+  "name": "Falcon 9",
+  "fact": "The rocket that made reuse routine: a 70 m two-stage rocket whose first stage lands itself on a ship at sea or back near the pad, then flies again. Some boosters have flown more than 30 times."
+ },
+ {
+  "key": "dragon",
+  "name": "Crew Dragon",
+  "fact": "SpaceX's capsule for crew and cargo, 8.1 m tall with its trunk. Since May 2020 Crew Dragon has carried astronauts to and from the International Space Station; it docks by itself."
+ },
+ {
+  "key": "falconheavy",
+  "name": "Falcon Heavy",
+  "fact": "Three Falcon 9 cores side by side, 27 engines at liftoff. On its first flight, on 6 February 2018, it sent a Tesla Roadster into orbit round the Sun, and both side boosters landed back at Cape Canaveral, seconds apart."
+ },
+ {
+  "key": "halo",
+  "name": "the Halo",
+  "fact": "A long-range cruiser from a civilisation that learned to fold space. Seen from above it is a trident: a needle-shaped bow and two crescent arms sweeping back to the engines at their tips. Between the arms floats its heart, a captured ball of star plasma inside two rings of light. It roams round the wonders of the universe, a couple of minutes at each, then moves on: light speed for short hops, a fold through space for long ones. At each place it does a job or two: a sensor scan, a weapons test, a skim through a gas giant or a star, or an outing by Pip, its little drone. (The Halo and Pip are the only made-up things in this atlas.)"
+ }
+]
