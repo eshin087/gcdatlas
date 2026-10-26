@@ -103,7 +103,8 @@ $('#dailyGo').addEventListener('click', () => {
   goTo(DAILY.o.index); const n = dailyStreak(); toast(n > 1 ? `today's discovery · ${n} days in a row` : "today's discovery · come back tomorrow for another");
 });
 $('#dailyShare').addEventListener('click', () => {
-  const url = location.origin + location.pathname + '#o=' + DAILY.o.key;
+  const pg = sharePage(DAILY.o);
+  const url = pg && /^https?:$/.test(location.protocol) ? location.origin + pg : location.origin + location.pathname + '#o=' + DAILY.o.key;
   (navigator.clipboard ? navigator.clipboard.writeText(`Today's discovery on gcdatlas: ${DAILY.o.name} ${url}`) : Promise.reject()).then(() => toast('link copied'), () => toast(url));
 });
 $('#dailyClose').addEventListener('click', () => { store.set('dailySeen', DAILY.key); $('#daily').hidden = true; });
@@ -214,7 +215,8 @@ $('#phText').addEventListener('click', () => {
     gl.bindFramebuffer(gl.FRAMEBUFFER, RT.cellFBO); gl.readPixels(0, 0, cols, rows, gl.RGBA, gl.UNSIGNED_BYTE, buf); gl.bindFramebuffer(gl.FRAMEBUFFER, null);
     const lines = [];
     for (let y = rows - 1; y >= 0; y--){ let l = ''; for (let x = 0; x < cols; x++){ const gi = buf[(y*cols + x)*4 + 3]; l += gi === 255 ? ' ' : (atlas.chars[gi] || ' '); } lines.push(l.replace(/\s+$/, '')); }
-    const txt = lines.join('\n').replace(/^\n+|\n+$/g, '') + `\n\n${OBJ[infoObj].name} · gcdatlas.com\n`;
+    const o = OBJ[infoObj];
+    const txt = lines.join('\n').replace(/^\n+|\n+$/g, '') + `\n\n${o.name} · gcdatlas.com${sharePage(o)}\n`;
     const fallback = () => { download(new Blob([txt], { type:'text/plain' }), shotName('txt')); toast('saved as a text file'); };
     if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(txt).then(() => toast(`copied ${cols} x ${rows} characters · paste into any monospaced text`), fallback);
     else fallback();

@@ -59,5 +59,36 @@ else {
     for (const s of KEEP) if (re.test(s)) bad.push('gets the small page: ' + s);
   }
 }
-console.log(bad.length ? 'preview: FAIL\n  ' + bad.join('\n  ') : `preview: ok (${prev.length} bytes, ${want.length} tags)`);
+// ---------------------------------------------------------------- the share pages (0.24.0): /p/<key> for every place in
+// tools/data/share-meta.json, each tiny, with the place's own tags, picture and redirect, the same for every user agent
+let shareN = 0;
+{
+  const metaFile = 'tools/data/share-meta.json';
+  if (!fs.existsSync(path.join(ROOT, metaFile))) bad.push(metaFile + ' is missing (npm run og -- --all, or --meta)');
+  else {
+    const places = JSON.parse(read(metaFile)), pDir = path.join(ROOT, 'dist', 'p');
+    const have = fs.existsSync(pDir) ? fs.readdirSync(pDir) : [];
+    if (places.length < 200) bad.push(`share-meta.json lists only ${places.length} places`);
+    if (have.length !== places.length) bad.push(`dist/p has ${have.length} pages for ${places.length} places`);
+    const escA = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    for (const e of places){
+      if (!/^[a-z0-9-]+$/.test(e.key)){ bad.push('a key that cannot be a path: ' + e.key); continue; }
+      if (!fs.existsSync(path.join(pDir, e.key + '.html'))){ bad.push('no page for ' + e.key); continue; }
+      const t = read('dist/p/' + e.key + '.html');
+      if (t.length > 3000) bad.push(`p/${e.key} is ${t.length} bytes`);
+      if (!t.includes(`<meta property="og:title" content="${escA(e.name)}">`)) bad.push(`p/${e.key}: og:title is not its name`);
+      if (!t.includes(`'o=${e.key}&'`) || !t.includes(`url=/#o=${e.key}`)) bad.push(`p/${e.key}: the redirect does not open the place`);
+      const img = ((t.match(/property="og:image" content="([^"]+)"/) || [])[1] || '').replace(/^https?:\/\/[^/]+\//, '');
+      if (!img || !fs.existsSync(path.join(ROOT, 'dist', img))) bad.push(`p/${e.key}: og:image /${img} is not in dist`);
+      if (/<script src|<link rel="stylesheet"/.test(t)) bad.push(`p/${e.key}: loads something`);
+      shareN++;
+    }
+    // the list baked into the page must match, so share() never copies a link to a page that is not there
+    const inj = (page.match(/window\.__SHARE_PAGES=(\[[^\]]*\])/) || [])[1], keys = inj ? JSON.parse(inj) : null;
+    if (!keys) bad.push('dist/index.html carries no __SHARE_PAGES list');
+    else if (keys.length !== places.length || keys.some((k, i) => k !== places[i].key)) bad.push('__SHARE_PAGES does not match share-meta.json');
+    if (/window\.__SHARE_PAGES=\[/.test(read('dist/artifact.html'))) bad.push('the artifact build carries __SHARE_PAGES (it is served without /p)');
+  }
+}
+console.log(bad.length ? 'preview: FAIL\n  ' + bad.join('\n  ') : `preview: ok (${prev.length} bytes, ${want.length} tags, ${shareN} share pages)`);
 process.exit(bad.length ? 1 : 0);

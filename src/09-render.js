@@ -1643,7 +1643,7 @@ function viewHash(){
   // (on the Halo tour, the place the panel shows: a link cannot bring back the ship where it is now)
   const ht = htShowsPlace(), p = new URLSearchParams(), i = orbit.lock >= 0 && !ht ? orbit.lock : infoObj, o = OBJ[i];
   p.set('o', o.key);
-  if (o.earthSpot) p.set('g', EPL.hashOf(o));
+  if (o.earthSpot){ const g = EPL.hashOf(o); if (g) p.set('g', g); }   // (a famous place's own object needs no g: its key is enough)
   if (orbit.lock >= 0 && !flight && !ht) p.set('c', orbit.yaw.toFixed(3) + ',' + orbit.pitch.toFixed(3) + ',' + (orbit.distT/o.rad).toPrecision(4));
   if (cmp) p.set('vs', cmp.b.key);
   if (tour.on) p.set('tour', TOUR_ID);
@@ -1678,9 +1678,19 @@ function applyHash(){
   else startShow(o.index, 0);   // a shared or reloaded view starts playing its angles, like any picked object
   return true;
 }
+// a place in the atlas (or a famous place on Earth) has a share page, /p/<key> (build.mjs): its own preview tags and picture for the
+// link-preview bots, and a script that sends people straight on into the atlas. __SHARE_PAGES (written into the page by build.mjs from
+// tools/data/share-meta.json) lists the keys whose pages exist: a place added since `npm run og -- --all` falls back to the plain #-link.
+const shareable = o => !!o && !o.marker && ((o.atlas !== false && !!o.group) || o.own === true);
+const sharePage = o => shareable(o) && Array.isArray(window.__SHARE_PAGES) && window.__SHARE_PAGES.includes(o.key) ? '/p/' + o.key : '';
+const shareList = () => OBJ.filter(o => shareable(o)).map(o => ({ key:o.key, name:o.name, fact:o.fact || '', own:!!o.own }));
+function shareUrl(){
+  const h = viewHash(), p = new URLSearchParams(h), o = BYKEY[p.get('o')], pg = o && sharePage(o);
+  if (pg && /^https?:$/.test(location.protocol)){ p.delete('o'); const q = p.toString(); return location.origin + pg + (q ? '?' + q : ''); }
+  return location.href.split('#')[0] + '#' + h;
+}
 async function share(){
-  const url = location.href.split('#')[0] + '#' + viewHash();
-  try { await navigator.clipboard.writeText(url); toast('link copied · it opens exactly this view'); }
+  try { await navigator.clipboard.writeText(shareUrl()); toast('link copied · it opens exactly this view'); }
   catch (e) { try { history.replaceState(null, '', '#' + viewHash()); } catch (e2) {} toast('copy the page address to share this exact view'); }
 }
 $('#btnShare').addEventListener('click', share);
@@ -1777,6 +1787,7 @@ window.__cosmos = { get egl(){ return typeof EGL !== 'undefined' ? EGL : null; }
   simulate:(sec) => { for (let k=0; k<sec*30; k++) tick(1/30); return { obj:tour.obj, view:tour.view, phase:tour.phase, lock:orbit.lock }; },
   view:(i, v) => { if (typeof i === 'string') i = BYKEY[i].index; const o = OBJ[i], vp = viewParams(o, v); flight = null; shipCam.on = false; tween = null; cam.focus = i; leash.x = leash.y = 0; orbit.lock = i; orbit.frame = camFrameOf(o); orbit.yaw = vp.yaw; orbit.pitch = vp.pitch; orbit.dist = orbit.distT = vp.dist; orbit.off = vp.off; orbit.offFn = vp.offFn; orbit.target = V.add(frel(o), vp.off); setInfo(i); applyOrbit(); tick(0); } };
 // (the atlas headings and chips, for tools/catalog.mjs, and the seed and the catalogue numbers the smoke test checks; a line of its own so it stays clear of edits to the hooks above)
-Object.assign(window.__cosmos.dbg, { GROUPS, CATS, catsOf, ATL, seedObjects:SEED_OBJECTS, catSplit, catClash });
+Object.assign(window.__cosmos.dbg, { GROUPS, CATS, catsOf, ATL, seedObjects:SEED_OBJECTS, catSplit, catClash, shareable, sharePage, shareList });
+window.__cosmos.shareUrl = shareUrl;
 window.__cosmos.sx = SXDBG;   // (SpaceX launches: runs, missions, the launch camera; s4-spacex-run.js)
 requestAnimationFrame(frame);

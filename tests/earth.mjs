@@ -85,8 +85,10 @@ try {
     if (!s0.tour || !s0.tour.includes(s0.n + ' stops')) errors.push('no tour of the ' + s0.n + ' famous places: ' + s0.tour);
     await page.evaluate(() => { const c = window.__cosmos; c.ssRate = 0; c.epl.go(c.epl.PICKS.mountains.find(r => r[0] === 'Mount Everest')); });
     const t = await until(page, () => { const c = window.__cosmos, p = c.plc.byKey('everest'); return !c.flight && c.plc.dbg().env === 'place-everest' && p.ed.layers.every(L => L.state === 2); }, null, 150, 'Everest drawn with its own layers');
-    const s = await page.evaluate(() => { const c = window.__cosmos, o = c.OBJ[c.orbit.lock]; return { key:o && o.key, ro:o && o.readout ? o.readout() : '', views:o && o.views.length, sun:c.egr.dbg().sun, cam:c.plc.dbg().cam }; });
+    const s = await page.evaluate(() => { const c = window.__cosmos, o = c.OBJ[c.orbit.lock]; return { key:o && o.key, ro:o && o.readout ? o.readout() : '', views:o && o.views.length, sun:c.egr.dbg().sun, cam:c.plc.dbg().cam, share:c.shareUrl() }; });
     if (s.key !== 'earth-iconic-everest') errors.push('the place flown to is ' + s.key + ', not Everest\'s own');
+    // over http the share button copies the place's own page (0.24.0), with the camera carried in the query
+    if (!s.share.startsWith(URL0 + 'p/earth-iconic-everest')) errors.push("Everest's share link is not its share page: " + s.share);
     if (!/Copernicus DEM/.test(s.ro) || !/Sentinel/.test(s.ro)) errors.push("Everest's readout has no credits for its images and heights: " + s.ro);
     if (!(s.sun > 10)) errors.push(`Everest was not flown to by day: the Sun ${s.sun} degrees up`);
     const m = await page.evaluate(() => { const c = window.__cosmos, o = c.OBJ[c.orbit.lock], la = o.place.la; c.epl.panKm(o, 30, 0); const n = c.OBJ[c.orbit.lock]; return { moved:n !== o && n.earthSpot && !n.own, stays:o.place.la === la, env:c.plc.dbg().env }; });
