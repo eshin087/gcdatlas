@@ -87,8 +87,8 @@ const meta = `<meta charset="utf-8">
 // per-place share pages (0.24.0): /p/<key>, about 1.4 KB, served to everyone alike (no user-agent sniffing: the script sends people
 // straight on into the atlas with whatever camera the query carries, and a preview bot only reads the tags). Made from
 // tools/data/share-meta.json (`npm run og -- --all`; `--meta` refreshes the list alone after a content pack), with the place's own
-// picture when assets/og/<key>.jpg exists, else the site's og.jpg. On a Vercel preview the tags carry the deployment's own address,
-// so /p links pasted during review unfurl from the preview itself.
+// picture when assets/og/<key>.jpg exists, else the site's og.jpg. On a Vercel preview the tags carry the deployment's own address
+// rather than production's (not that bots can read a preview: previews sit behind Vercel authentication).
 const HOST = process.env.VERCEL_ENV && process.env.VERCEL_ENV !== 'production' && process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'https://gcdatlas.com';
 let shareKeys = [];
 const metaFile = path.join(ROOT, 'tools', 'data', 'share-meta.json');
