@@ -90,7 +90,10 @@
   </div>
   <div class="aresult" id="atlasResult" hidden><span class="rtxt"><span id="atlasResultTxt"></span><span class="rnote" id="atlasResultNote"></span></span><button class="chip rreset" id="atlasReset" title="Back to the default view">reset</button></div>
   <div class="sr" id="atlasLive" aria-live="polite"></div>
-  <div id="atlasList" class="atlas-list" role="listbox" aria-label="Objects"></div>
+  <!-- the line under the last row (0.24.2, owner): the home page's link to /places, every place as a page, so it passes the site's links on to
+       them. It is here in the page itself, not made by the script: without WebGL 2 the script stops at once, and a crawler that cannot draw
+       still finds the link. src/09-render.js keeps it last in the list -->
+  <div id="atlasList" class="atlas-list" role="listbox" aria-label="Objects"><div class="aend" id="atlasEnd">real positions and sizes · <a href="/places" target="_blank" rel="noopener">every place as a page &rsaquo;</a></div></div>
   </div>
   <!-- the collection: a tray of badges over the bottom of the list, opened from the footer line -->
   <div class="btray" id="badgeTray" role="region" aria-label="Badges" hidden>

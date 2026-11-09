@@ -1004,7 +1004,11 @@ function earthFill(q){
 // (the names arrive after the first letters are typed: the search runs again)
 EPL.onLoad.push(() => { if (searchEl.value || atlasSearch.value) filterAtlas(searchEl.value || atlasSearch.value, true); });
 const atlasEmpty = document.createElement('div'); atlasEmpty.className = 'atlas-empty'; atlasEmpty.innerHTML = '<div></div><button type="button"></button>';
-const atlasEnd = Object.assign(document.createElement('div'), { className:'aend', textContent:'real positions and sizes' });
+// the line under the last row, with the link to /places, every place as a page (0.24.2): in the page's own HTML (src/01-body.html), so a
+// crawler that cannot run this script finds it too. Served alone (the artifact build, or dist/index.html opened as a file) there is no
+// /places beside the page: the link goes to the site's
+const atlasEnd = $('#atlasEnd');
+if (!window.__SHARE_PAGES || !/^https?:$/.test(location.protocol)) atlasEnd.querySelector('a').href = 'https://gcdatlas.com/places';
 
 // the controls
 const toolsEl = $('#atlasTools'), sortBtns = [...document.querySelectorAll('#atlasSort [data-sort]')], dirBtn = $('#atlasDir'), allBtn = $('#atlasAll'), unseenBtn = $('#atlasUnseen'), catGrid = $('#atlasCats');

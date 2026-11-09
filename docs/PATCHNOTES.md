@@ -5,6 +5,10 @@
      numbers with units. The newest version comes first and opens by itself; its number must match package.json (tests/smoke.mjs checks it).
      Every detail stays in docs/CHANGELOG.md, which the panel links to. -->
 
+## 0.24.2 · 9 Nov 2026 · Every place's page, from the atlas
+- The last line of the atlas list now links to every place as a page to read (gcdatlas.com/places). It opens in a new tab, so the atlas stays where you left it.
+- The browser tab now says what this is: gcdatlas · the real universe, drawn in ASCII.
+
 ## 0.24.1 · 8 Nov 2026 · A page for every place
 - Every place in the atlas has a page of its own to read: its picture, what it is, how far away and how big, and more places like it. See them all at gcdatlas.com/places.
 - Search engines can find these pages now, so looking up a place can lead you here.
