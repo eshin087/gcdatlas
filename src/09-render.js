@@ -1789,6 +1789,8 @@ window.__cosmos = { get egl(){ return typeof EGL !== 'undefined' ? EGL : null; }
   view:(i, v) => { if (typeof i === 'string') i = BYKEY[i].index; const o = OBJ[i], vp = viewParams(o, v); flight = null; shipCam.on = false; tween = null; cam.focus = i; leash.x = leash.y = 0; orbit.lock = i; orbit.frame = camFrameOf(o); orbit.yaw = vp.yaw; orbit.pitch = vp.pitch; orbit.dist = orbit.distT = vp.dist; orbit.off = vp.off; orbit.offFn = vp.offFn; orbit.target = V.add(frel(o), vp.off); setInfo(i); applyOrbit(); tick(0); } };
 // (the atlas headings and chips, for tools/catalog.mjs, and the seed and the catalogue numbers the smoke test checks; a line of its own so it stays clear of edits to the hooks above)
 Object.assign(window.__cosmos.dbg, { GROUPS, CATS, catsOf, ATL, seedObjects:SEED_OBJECTS, catSplit, catClash, shareable, sharePage, shareList });
+// (the numbers the atlas shows, for the place pages that tools/og-image.mjs --meta writes: the same formatters, so a page never says other numbers)
+Object.assign(window.__cosmos.dbg, { catOf, distFromEarth, earthDist, sunDist, sunAU, fmtDist, fmtLen, FROM_SUN:[...FROM_SUN] });
 window.__cosmos.shareUrl = shareUrl;
 window.__cosmos.sx = SXDBG;   // (SpaceX launches: runs, missions, the launch camera; s4-spacex-run.js)
 requestAnimationFrame(frame);

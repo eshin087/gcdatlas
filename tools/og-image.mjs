@@ -5,6 +5,8 @@
 //                                                draws assets/og/<key>.jpg for the pictures that are missing (--force draws them all again,
 //                                                --only=a,b a few), prunes pictures of places that are gone, sheet in tests/out/og/all-sheet.jpg
 //   node tools/og-image.mjs --meta               only refresh tools/data/share-meta.json (after a content pack, before the pictures)
+//                                                share-meta.json also holds what each place's own page says (0.24.1: /places/<key>, build.mjs):
+//                                                its kind, catalogue numbers, distance, size and the panel's numbers, read from the page
 //   --wait=6000                                  how long to let a view settle before the still
 // Drawn on the real GPU (--use-angle=d3d11, as tools/lab-shots.mjs), with the interface hidden and the name and address set in the
 // page's own type over a dark band at the bottom. dist/ is served over http because the Earth's tiles, the global maps and a famous
@@ -72,13 +74,85 @@ async function snap(k, v){
 // how much light the picture's middle holds (the band comes after): the empty sky's JPEG-black reads about 7
 const central = async raw => { const s = await sharp(raw).extract({ left:300, top:115, width:600, height:400 }).stats(); return (s.channels[0].mean + s.channels[1].mean + s.channels[2].mean)/3; };
 
+// ---------------------------------------------------------------- what each place's page says (0.24.1, /places/<key>, written by build.mjs)
+// Read in the page, with the atlas's own formatters (dbg), so a page says what the info panel and the atlas list say. Runs in the page.
+function placeText(MADE_UP){
+  const c = window.__cosmos, d = c.dbg, B = c.BYKEY, LY = 9.4607e12;
+  const KINDS = d.CATS.filter(([id]) => id !== 'all'), kindIds = new Set(KINDS.map(k => k[0]));
+  const list = d.shareList(), keys = new Set(list.map(e => e.key));
+  const objOf = p => typeof p === 'string' ? B[p] : p || null;
+  const dist = (a, b) => Math.hypot(a[0] - b[0], a[1] - b[1], a[2] - b[2]);
+  const ly = s => s.replace(/\bly\b/g, 'light-years');
+  const fmtCode = s => s.replace(/^(m|ngc|ic)(\d+)([a-z]?)$/, (x, p, n, l) => (p === 'm' ? 'M' : p.toUpperCase() + ' ') + n + l.toUpperCase());
+  // catalogue numbers of things drawn but left out of the atlas (M32 and M110 with Andromeda, the Quintet's galaxies, NGC 6603 in M24) are
+  // drawn with the place whose aka carries them, and so is the NGC or IC number written right after such a Messier number ("m32 ngc 221")
+  const hidden = new Set();
+  for (const o of c.OBJ) if (!o.marker && o.atlas === false && d.GROUPS.some(([g]) => g === o.group))
+    for (const k of d.catSplit(o.key + ' ' + o.name + ' ' + (o.aka || '')).codes) hidden.add(k);
+  const holeProg = B.sgra && B.sgra.prog;   // (the black holes' program: their size is the event horizon, as atlasSize has it)
+  const places = list.map(e => {
+    const o = B[e.key], own = !!o.own, made = MADE_UP.includes(o.key), par = objOf(o.parent);
+    const raw = d.catSplit(o.aka || '').codes, seen = new Set(), codes = [], drawnWith = [];
+    for (let i = 0; i < raw.length; i++){
+      const k = raw[i]; if (seen.has(k)) continue; seen.add(k);
+      if (!hidden.has(k)){ codes.push(fmtCode(k)); continue; }
+      let s = fmtCode(k); const nx = raw[i + 1];
+      if (/^m\d/.test(k) && nx && /^(ngc|ic)\d/.test(nx) && !hidden.has(nx) && !seen.has(nx)){ s += ' (' + fmtCode(nx) + ')'; seen.add(nx); i++; }
+      drawnWith.push(s);
+    }
+    for (const m of new Set((o.aka || '').toLowerCase().match(/(?<![\w+\-\/.])c\d{1,3}(?![\w+\-])/g) || [])) codes.push('Caldwell ' + m.slice(1));
+    // where it is: the line under the name in the info panel (syncWhere), and for the Solar System and the comets the atlas's number,
+    // from the Sun or a moon from its planet (rowSun); "today" goes, since the page gives the day its numbers are from
+    const de = (o.distEarth || '').replace(/ today$/, '').replace(/^here on Earth$/, 'on Earth');
+    // (Earth has none: its type already says home, and its distance from the Sun is in the list of facts)
+    const where = o.key === 'earth' ? null : ly(de ? de + (/away|here|around|from|edge|centre|inside|on Earth/.test(de) ? '' : ' away') : d.distFromEarth(o));
+    let fromSun = null;
+    if (d.FROM_SUN.includes(o.group) && o.key !== 'sun' && d.sunDist(o) > 1e-9){
+      if (o.group === 'solar' && par && par !== B.sun && par.group === 'solar') fromSun = d.fmtDist(dist(o.pos, par.pos)) + ' from ' + par.name.replace(/^the /, '');
+      else fromSun = / from the Sun$/.test(o.distEarth || '') ? o.distEarth : d.sunAU(d.sunDist(o)) + ' from the Sun';
+      fromSun = ly(fromSun); if (where && where.includes(fromSun)) fromSun = null;
+    }
+    // its true size across, only where the atlas has it measured (a black hole's event horizon, a star's surface, a solid body, a cluster's
+    // stars): elsewhere the atlas's number is the drawn extent, and the panel's own numbers say how big it is. Not for a comet or a meteor
+    // stream (their size is how they are drawn) or an explosion or collision (a moment of a replay)
+    const hole = !!holeProg && o.prog === holeProg, cats = d.catsOf(o);
+    const r = own || made || o.group === 'comets' || cats.includes('events') ? 0 : hole ? o.rad/20 : (o.sizeR || (o.starR ? o.starR*o.rad : o.solid ? o.rad*o.solid : 0));
+    let ro = ''; try { ro = o.readout ? String(o.readout()) : ''; } catch (err) {}
+    // the order of the list of places: as the atlas lists them, near to far, from the Sun in the Solar System (a moon right after its planet)
+    const rank = own ? 0 : d.FROM_SUN.includes(o.group) ? (o.group === 'solar' && par && par !== B.sun && par.group === 'solar' ? d.sunDist(par) + dist(o.pos, par.pos)*1e-6 : d.sunDist(o)) : d.earthDist(o);
+    return { key:o.key, name:o.name, fact:(e.fact || '').replace(/\s+/g, ' ').trim(), type:(o.type || '').replace(/\s+/g, ' ').trim(),
+      group:own ? 'earth' : o.group, kinds:own ? ['earth'] : cats.filter(k => kindIds.has(k)), madeUp:made || undefined,
+      // (the made-up ship roams: where it is now says nothing on a page)
+      codes, drawnWith, where:made ? null : where, fromSun, size:r > 0 ? ly(d.fmtLen(2*r*LY, 3)) + (hole ? ' across (event horizon)' : ' across') : null,
+      readout:made ? ro.split('\n').filter(l => /made up/.test(l)).join('\n') : ro,
+      parent:par && keys.has(par.key) && !made ? par.key : null,
+      // (numbers that move with time: the Solar System's distances, the comets', the craft's)
+      moving:!own && !made && (d.FROM_SUN.includes(o.group) || o.group === 'travel'),
+      at:own && o.place ? [+o.place.la0.toFixed(4), +o.place.lo0.toFixed(4)] : undefined,
+      rank, distLy:d.earthDist(o), views:(o.views || []).length };
+  });
+  return { groups:d.GROUPS, kinds:Object.fromEntries(KINDS.map(([id, , many, one, head]) => [id, [one, many, head]])), places };
+}
+// the panel's numbers on a page that stays as it is: what only the live atlas can say goes (a countdown or a simulation's clock, a visit
+// counter, live data that did not load, what to click), and so does "in 9 days" before a date. Lines that say how the atlas draws or speeds
+// up a place stay ("sped up here", "drawn as ..."): the page shows its picture, and its link opens the atlas
+const LIVE = [/^(core collapse|next nova|starquake|merger) in [\d.]+ s\b/, /^t = [+-]?[\d.]+ Myr$/, /^\d+ of \d+ fragments have hit$/, /^visit \d+$/, /^roaming round /, /^typical orbit\b/, /^pick it to /, /^weather now\b/];
+const TRIM = [[/\s*\(year [\d.]+\)/g, ''], [/: in \d+ days?\b/g, ''], [/\bin \d+ days?, on /g, 'on ']];
+const liveFree = t => String(t || '').split('\n').map(line => { let s = line; for (const [a, b] of TRIM) s = s.replace(a, b);
+  return s.split(' · ').map(x => x.trim()).filter(x => x && !LIVE.some(re => re.test(x))).join(' · '); }).filter(Boolean);
+// the only made-up place (its fact and readout say so): no size, no parent (it roams), only the readout's line that says it is made up
+const MADE_UP = ['halo'];
+
 let targets, sheetAll = null;
 if (ALL || METAONLY){
   // the list of share pages comes from the page itself (dbg.shareList: the atlas's places and the famous places on Earth), so the
   // pages, the share button and this tool can never disagree about who has one
-  const list = await page.evaluate(() => window.__cosmos.dbg.shareList().map(e => ({ key:e.key, name:e.name, fact:(e.fact || '').replace(/\s+/g, ' ').trim(), views:(window.__cosmos.BYKEY[e.key].views || []).length })));
-  fs.writeFileSync(META, JSON.stringify(list.map(({ key, name, fact }) => ({ key, name, fact })), null, 1));
-  console.log(`tools/data/share-meta.json: ${list.length} places`);
+  const data = await page.evaluate(placeText, MADE_UP);
+  const list = data.places;
+  for (const p of list) p.readout = liveFree(p.readout);
+  const now = new Date(), made = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;   // (the day here)
+  fs.writeFileSync(META, JSON.stringify({ made, groups:data.groups, kinds:data.kinds, places:list.map(({ views, ...p }) => p) }, null, 1));
+  console.log(`tools/data/share-meta.json: ${list.length} places (their text as on ${made})`);
   if (METAONLY){ await browser.close(); server.close(); process.exit(0); }
   fs.mkdirSync(OG, { recursive:true });
   for (const f of fs.readdirSync(OG)) if (f.endsWith('.jpg') && !list.some(e => e.key + '.jpg' === f)){ fs.rmSync(path.join(OG, f)); console.log('pruned ' + f); }

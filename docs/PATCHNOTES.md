@@ -12,6 +12,12 @@
 - A big one (magnitude 7 or more) in the last day gets a note when you look at Earth.
 - Turn them off in settings, under show: quakes & fires.
 
+## 0.24.1 · 8 Nov 2026 · A page for every place
+- Every place in the atlas has a page of its own to read: its picture, what it is, how far away and how big, and more places like it. See them all at gcdatlas.com/places.
+- Search engines can find these pages now, so looking up a place can lead you here.
+- A button on each page opens the place in the atlas. Shared links still open the atlas straight away.
+- Visits to these pages are counted the way the atlas counts them: the page's address only, no cookies, nothing kept on your device.
+
 ## 0.24.0 · 25 Oct 2026 · Links that show the place
 - Share a place and the link now unfurls as that place on Discord, Slack, X, WhatsApp and the rest: its name, a line about it and its own picture.
 - The copied link still opens exactly the view you were on, and every old link keeps working.
