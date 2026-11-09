@@ -4,6 +4,15 @@ All notable changes, newest first. Dates are UTC.
 
 ## Unreleased
 
+## 0.27.1 · 2026-11-09
+
+**The Moon's places, from an independent review** (Codex could not review #63: its account had reached its usage limit. The owner merged 0.27.0 before these fixes were pushed, so they ship on their own)
+- Flights to a place on the Moon land on the turning Moon's frame (`camFrame` on the place objects, which 08-camera.js follows to the end): the clock eases to the place's morning while the flight comes in, and the camera's end angle was fixed in space when the flight began, so it swung round at the landing (13 degrees for each day the clock moved) and could come in through the ground.
+- The ground under the horizon no longer shows black sky: a ray grazing a plain closes on it a fraction of its height a step, so near-horizontal rays ran out of their 190 steps (from a camera 4 m up, rays 0.1 to 1.5 degrees below the horizon). Now past 170 of 236 steps a ray within two pixels of the ground lands there, and one still on its way down when the steps run out meets level ground at the height under the camera, not far past where it stopped; the walk toward the Sun keeps its steps.
+- Apollo 15 and Hadley Rille have six layers for four slots: from low down the widest goes first, then the one whose loss costs least (sharpness against the next wider one times how much of the ground round the camera it holds). The 25 km layer was the one dropped before, so the rille and the Apennine front came from 400 m pixels.
+- A flight round the Moon to above a place that was cut short (another flight, a paused tour) no longer keeps the maps loaded and later flights in real time; the place locked on draws its ground only while the camera is over its side of the Moon; offline the painted globe stays and no ground is credited.
+- The camera keeps 12 m from a lander's middle and 1.5 m clear of its top (tests/moon.mjs checks); Tycho and Copernicus have their real sizes in the atlas (85 and 96 km; Hadley Rille keeps 1.2 km, its width); a place opened straight from a link in the lunar night eases to its morning.
+
 ## 0.27.0 · 2026-11-09
 
 **The real Moon** (the "surfaces" pack of docs/CONTENT.md, begun on the Moon; owner's picks of 2026-11-08: nine places, NASA's map of the whole Moon on its globe, the landers as small labelled models, a tour)

@@ -5,6 +5,12 @@
      numbers with units. The newest version comes first and opens by itself; its number must match package.json (tests/smoke.mjs checks it).
      Every detail stays in docs/CHANGELOG.md, which the panel links to. -->
 
+## 0.27.1 · 9 Nov 2026 · Smoother landings on the Moon
+- Flying down to a place on the Moon no longer swings the camera round at the very end.
+- Standing by a lander, the ground now reaches all the way to the horizon.
+- Hadley Rille and the Apollo 15 site keep their sharpest ground in view.
+- Tycho and Copernicus show their real sizes in the atlas: 85 km and 96 km across.
+
 ## 0.27.0 · 9 Nov 2026 · The Moon up close
 - Fly down to Tranquility Base and the other five Apollo landing sites, Hadley Rille, Tycho and Copernicus, drawn in 3D from NASA's Lunar Reconnaissance Orbiter photos and heights.
 - Each lunar module's descent stage stands where its crew left it, as a small labelled model.

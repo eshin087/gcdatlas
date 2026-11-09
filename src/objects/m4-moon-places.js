@@ -11,7 +11,7 @@ const MPL = (() => {
   // la, lo: the place's middle (a landing site's lander: LROC's coordinates of 28 July 2016, Wagner et al. 2017, Icarus 283, 92); site: its layers in
   // MOON_DETAIL; lm: its lander (name, and how it is turned, degrees); sun: the light it is shown in (elevation, morning or evening);
   // views: [east, up, south] toward the camera, distance (m), the point looked at (m east, up, north of the middle); h0: the ground's height
-  // (m above the 1,737.4 km sphere) until the layers are in
+  // (m above the 1,737.4 km sphere) until the layers are in; size: km across (the IAU's), where a place has one
   const DEF = [
     { key:'apollo11', name:'Tranquility Base', type:'Apollo 11 landing site on the Moon', la:0.67416, lo:23.47314, site:'apollo11', h0:-1926,
       lm:{ name:'Eagle', yaw:0 }, sun:{ el:11, am:true }, tags:['human'],
@@ -61,13 +61,13 @@ const MPL = (() => {
       fact:'Gene Cernan and Harrison Schmitt, a geologist, landed Challenger in the valley of Taurus-Littrow on 11 December 1972, the last people to walk on the Moon so far. At Shorty crater they found orange soil, beads of volcanic glass.',
       ro:'landed 11 December 1972 · 22 h 4 min outside in three drives · 110.5 kg of rock and soil brought home',
       views:[[[0.3, 0.12, -0.95], 6000, [-1500, 300, -2000]], [[-0.55, 0.5, 0.67], 32000, [0, 0, 2000]], [[0.5, 0.12, 0.86], 34, [0, 1.2, 0]]] },
-    { key:'tycho', name:'Tycho', type:'a young crater on the Moon', la:-43.31, lo:-11.36, site:'tycho', h0:-1560, sun:{ el:25, am:true },
+    { key:'tycho', name:'Tycho', type:'a young crater on the Moon', la:-43.31, lo:-11.36, site:'tycho', h0:-1560, sun:{ el:25, am:true }, size:85.3,
       cap:'Tycho, about 108 million years old: one of the youngest big craters on the near side, its bright rays splashed across the Moon.',
       aka:'tycho crater central peak rays surveyor 7 tycho brahe',
       fact:'One of the youngest big craters on the Moon\'s near side, 85 km wide and 4.8 km deep, thought to be about 108 million years old. Its bright rays reach across much of the near side. Surveyor 7 landed in 1968 on the rock it threw out, about 28 km north of its rim.',
       ro:'85 km wide · 4.8 km deep · central peak about 2 km high · about 108 million years old',
       views:[[[0.05, 0.42, 0.9], 110000, [0, -1500, 0]], [[0.3, 0.8, 0.5], 150000, [0, 0, 0]], [[-0.066, 0.062, 0.996], 9035, [92, -1500, -963]]] },
-    { key:'copernicus', name:'Copernicus', type:'a crater on the Moon', la:9.62, lo:-20.08, site:'copernicus', h0:-3376, sun:{ el:20, am:true },
+    { key:'copernicus', name:'Copernicus', type:'a crater on the Moon', la:9.62, lo:-20.08, site:'copernicus', h0:-3376, sun:{ el:20, am:true }, size:96.1,
       cap:'Copernicus, about 800 million years old: 96 km across, its walls stepped in terraces, its floor crowned with mountains.',
       aka:'copernicus crater central peaks terraces rays',
       fact:'A crater 96 km wide and about 800 million years old, with terraced walls and a cluster of mountains in the middle. Its age comes from glass in Apollo 12\'s soil thought to have been thrown out by the impact.',
@@ -95,12 +95,13 @@ const MPL = (() => {
     for (let k=-0.125;k<=0.125;k+=1/96){ const t = best + k, s = sunAt(p, t), sc = Math.abs(s.el - p.sun.el) + (s.east === p.sun.am ? 0 : 50); if (sc < bs - 1e-9){ bs = sc; best = t; } }
     return best;
   }
-  // the camera stays a little above the ground under it (and 1.5 m clear of the lander's top at a landing site)
+  // the camera stays a little above the ground under it, and 1.5 m clear of the lander's top (3.4 m) within 6 m of it at a landing site
   function clearGround(o){
     const dM = orbit.dist/KM, offL = M3.applyT(o.R0, V.mul(orbit.off, 1/KM));
     for (let k=0;k<3;k++){
       const d = sphL(orbit.yaw, orbit.pitch), eL = V.add(offL, V.mul(d, dM)), eye = V.add(V.mul(o.u, R + o.hNow/1000), M3.apply(o.F.M, eL));
-      const r = V.len(eye), g = MDT.heightAt(eye, o.siteS), need = ((g == null ? o.hNow : g) + Math.max(2.5, orbit.dist/KM*1000*0.015))/1000 - (r - R);
+      const lmN = o.place.lm && Math.hypot(eL[0], eL[2])*1000 < 6 ? 4.9 : 0;
+      const r = V.len(eye), g = MDT.heightAt(eye, o.siteS), need = ((g == null ? o.hNow : g) + Math.max(2.5, lmN, orbit.dist/KM*1000*0.015))/1000 - (r - R);
       if (!(need > 0)) break;
       orbit.pitch = Math.min(orbit.pitch + need/Math.max(dM, 0.001)*1.05, 1.5);
     }
@@ -113,7 +114,8 @@ const MPL = (() => {
     const rad = KM;   // (1 km: views give distances in km)
     const views = p.views.map(([d, dist, look]) => { const off = [look[0]/1000, look[1]/1000, -look[2]/1000]; return { d:V.norm(d), k:dist/1000, off:() => off, hold:11, drift:0.012 }; });
     const o = addObj({ key:p.key, name:p.name, label:p.name, type:p.type, group:'solar', tags:p.tags || [], parent:moon, offset:[0, 0, 0], rad, layer:3,
-      noImpostor:true, pxMin:1, visFn:() => 1, noLabel:true, noWaypoint:true, labelRange:0, labelDisc:0.001, minZoom:0.002, sortKey:1.0011 + i*1e-5,
+      noImpostor:true, pxMin:1, visFn:() => 1, noLabel:true, noWaypoint:true, labelRange:0, labelDisc:0.001, minZoom:p.lm ? 0.012 : 0.002, sortKey:1.0011 + i*1e-5,
+      ...(p.size ? { sizeR:p.size/2*KM } : {}), camFrame(){ return this.R0; },
       atlasDist:'on the Moon', surfOf:moon, moonSpot:true, aka:p.aka, fact:p.fact, views, tourViews:[0, 2], R0:M3.I(),
       readout(){ const ln = [llTxt(p.la, p.lo) + ' · ' + p.ro]; if (MENV.on && MENV.site && MENV.site.key === p.site && MENV.alt < 200) ln.push(credit); return ln.join('\n'); },
       update(){ placeOn(this, p); }, flyIn(vp, done){ return flyIn(this, p, vp, done); } });
@@ -154,7 +156,12 @@ const MPL = (() => {
     return true;
   }
   // once a tick: start easing the clock when a flight to a place is near the Moon; keep the place's layers wanted while it is the one
+  let lastLock = -1;
   function tick(){
+    if (pend && (!flight || flight.obj !== moon)) pend = null;
+    // (a place opened without a flight, from a shared link: in the lunar night, the clock eases to its morning as a flight's would)
+    if (orbit.lock !== lastLock){ lastLock = orbit.lock; const o = OBJ[orbit.lock];
+      if (o && o.moonSpot && !flight && !pendDay && sunAt(o.place, ssDays).el < 2) dayTo(dayFor(o.place), 2.5); }
     if (pendDay){ const o = pendDay.o, d = V.len(V.sub(cam.rel, frel(moon)))/KM;
       if ((orbit.lock === o.index && !flight) || d < 30*R){ dayTo(pendDay.at, d < 3*R ? 2.5 : 3.5); pendDay = null; }
       else if (!flight || (flight.obj !== o && flight.obj !== moon)) pendDay = null; }

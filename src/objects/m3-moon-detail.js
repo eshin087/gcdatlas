@@ -76,7 +76,15 @@ const MDT = (() => {
   function bind(pr, S, F, cm){
     const d = EDT.dummy(), alt = V.len(cm) - R, g = V.mul(cm, R/Math.max(V.len(cm), 1)), near = L => V.len(V.sub(g, V.mul(L.c, R))) + Math.max(alt, 0);
     let ls = S ? S.layers.filter(L => ready(L) && !(L.size < 20000 && near(L) > (L.size < 5000 ? L.size/1000*3 + 3 : L.size/1000*6 + 10))) : [];
-    while (ls.length > 4) ls.splice(ls.length - 2, 1);
+    // (more than four ready, as at Apollo 15 and Hadley Rille with six: from low down the widest goes first, since past the horizon the
+    // whole Moon's map serves; then the one whose loss costs least, how much sharper it is than the next wider one times how much of the
+    // ground round the camera it holds)
+    while (ls.length > 4){
+      const n = ls.length; let bi = n - 1;
+      if (!(ls[n - 1].size > 300000 && ls[n - 2].size >= 100000 && alt < 20)){ let bs = 1e9;
+        for (let i=0;i<n-1;i++){ const L = ls[i], w = Math.max(0, 1 - near(L)/(L.size/1000*0.75)), sc = ls[i + 1].size/L.size*w; if (sc < bs){ bs = sc; bi = i; } } }
+      ls.splice(bi, 1);
+    }
     ub.C.fill(0); ub.E.fill(0); ub.N.fill(0); ub.X.fill(0);
     ls.forEach((L, i) => {
       const c = M3.applyT(F.M, V.mul(V.sub(V.mul(L.c, R), V.mul(S.c, R)), 1000)), e = M3.applyT(F.M, L.e), n = M3.applyT(F.M, L.n);
@@ -94,7 +102,8 @@ const MDT = (() => {
     if (ls.length) S.used = GT;
     return ls;
   }
-  return { sites, tick, bind, heightAt, camM, nearest, R, set want(S){ want = S || null; }, get want(){ return want; },
+  const has = S => !!S && S.layers.some(ready);
+  return { sites, tick, bind, heightAt, camM, nearest, has, R, set want(S){ want = S || null; }, get want(){ return want; },
     get ready(){ return sites.flatMap(S => S.layers.filter(ready).map(L => S.key + '-' + L.id)); } };
 })();
 // ---------------------------------------------------------------- drawing the ground round a place (after the Moon's own volume; the globe under it is not drawn once it covers it)
@@ -102,11 +111,11 @@ const MENV = { on:false, fade:0, site:null, alt:1e9, layers:0 };
 function moonEnvOn(){ return FLAGS.realMoon && MDT.sites.length > 0; }
 function drawMoonEnv(){
   MENV.on = false;
-  // (without the map, offline, only at a place: zooming in on the painted Moon must not swap it for a bare grey sphere)
-  if (!moonEnvOn() || !progReady(P.moonEnv) || (!MGL.ready() && !MDT.want)) return;
+  // (without the map only once a place's own layers are in: offline nothing loads, and the painted globe stays)
+  if (!moonEnvOn() || !progReady(P.moonEnv) || (!MGL.ready() && !MDT.has(MDT.want))) return;
   const cm = MDT.camM(), alt = V.len(cm) - MDT.R; MENV.alt = alt;
   if (!(alt < 700) || alt < -20) return;
-  const nb = MDT.want ? { S:MDT.want, d:0 } : MDT.nearest(cm); if (!nb || nb.d > 900) return;
+  const nb = MDT.want ? { S:MDT.want, d:V.len(V.sub(V.mul(cm, MDT.R/Math.max(V.len(cm), 1)), V.mul(MDT.want.c, MDT.R))) } : MDT.nearest(cm); if (!nb || nb.d > 900) return;
   const S = nb.S, fade = 1 - smooth(450, 680, alt);
   if (fade < 0.01) return;
   MENV.on = true; MENV.fade = fade; MENV.site = S;
@@ -122,7 +131,7 @@ function drawMoonEnv(){
     MGL.bindMaps(p, 'uMgC', 'uMgH');
     gl.uniform4f(p.u.uMg, MGL.ready() ? 1 : 0, MGL.H ? MGL.H.base : 0, MGL.H ? MGL.H.step : 1, 0);
     gl.uniformMatrix3fv(p.u.uMgM, false, F.M);
-    gl.uniform4f(p.u.uP0, cl[0], cl[1], cl[2], fade); gl.uniform4f(p.u.uP1, L[0], L[1], L[2], 0); gl.uniform4f(p.u.uP2, E[0], E[1], E[2], 0.07*lit);
+    gl.uniform4f(p.u.uP0, cl[0], cl[1], cl[2], fade); gl.uniform4f(p.u.uP1, L[0], L[1], L[2], MDT.heightAt(cm, S) ?? 0); gl.uniform4f(p.u.uP2, E[0], E[1], E[2], 0.07*lit);
     // (the exposure near the ground, as the eyes adjust: level ground of the place's usual brightness in the middle of the view comes out at
     // about 0.45 in display terms whatever the Sun's height and the view, by the shader's light law, so slopes toward the Sun read brighter
     // and slopes away darker; the lander keeps a fixed one, a little more when the Sun is very low. uP3.x: the relief's exaggeration from high up)
