@@ -74,7 +74,7 @@ The ground round the pads is real: aerial photos (Starbase as of January 2026), 
 - **Scale ladder.** Drag one marker from the Moon to the observable universe; let go near a name to fly there.
 - **Flybys** past the giants (the Sun, UY Scuti, TON 618, the Milky Way) that show just how big they are.
 - **Time machine.** Run the Solar System forwards or back, or watch the constellations drift over 200,000 years.
-- **Live Earth.** Every active satellite at its real position, and the next rocket launches at their pads.
+- **Live Earth.** Every active satellite at its real position, the next rocket launches at their pads, this week's earthquakes and the last day's fires.
 - **Screensaver** (`Z`). Full screen, the interface fades, and an endless shuffled tour plays with the music.
 - **Photo mode** (`P`). Frame a shot, then save it as a picture or copy it as ASCII text.
 - **Today's discovery.** One object a day, the same for everyone, with a streak to keep.
@@ -129,5 +129,6 @@ These are plans and ideas, not promises. They will land one at a time.
 - Earth's coastlines: [Natural Earth](https://www.naturalearthdata.com/) via [world-atlas](https://github.com/topojson/world-atlas)
 - Planet orbits: JPL approximate Keplerian elements; body orientations: IAU WGCCRE
 - Satellites: [CelesTrak](https://celestrak.org/) general perturbations data; launches: [The Space Devs](https://thespacedevs.com/) Launch Library 2
+- Earthquakes: [U.S. Geological Survey](https://earthquake.usgs.gov/), Earthquake Hazards Program; fires: [NASA FIRMS](https://earthdata.nasa.gov/firms) (part of NASA's LANCE and ESDIS); clouds: [NASA GIBS](https://earthdata.nasa.gov/gibs) (part of NASA's ESDIS)
 - The ground round the launch sites: NOAA NGS and USDA NAIP aerial photos, Copernicus Sentinel-2 satellite images, AWS Terrain Tiles, buildings © OpenStreetMap contributors; the weather there: [Open-Meteo](https://open-meteo.com/)
 - Object facts and measurements: NASA, ESA, ESO and the published literature (see [docs/ACCURACY.md](docs/ACCURACY.md))
