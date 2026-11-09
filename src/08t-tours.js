@@ -53,13 +53,15 @@ const TOURS = [
     ['universe', 'The biggest thing of all: everything whose light has had time to reach us, 93 billion light-years across.'],
   ] },
   { id:'home', name:'our neighbourhood', blurb:'the Solar System and the nearest stars', stops:[
-    // (apollo11, parker, olympus and perseverance are places still to come, docs/CONTENT.md: tourStops leaves out a key with no object, so
-    // the tour and the Halo tour skip them until they exist)
+    // (parker, olympus and perseverance are places still to come, docs/CONTENT.md: tourStops leaves out a key with no object, so the tour and
+    // the Halo tour skip them until they exist; apollo11, Tranquility Base, came in 0.27.0)
     ['earth'], ['iss'], ['moon'], ['apollo11'], ['sun'], ['parker'], ['mercury'], ['venus'], ['mars'], ['olympus'], ['perseverance'], ['ceres'], ['vesta'], ['jupiter'], ['io'], ['europa'],
     ['saturn'], ['titan'], ['enceladus'], ['uranus'], ['neptune'], ['pluto'], ['arrokoth'], ['halley'], ['voyager1'], ['oort'], ['alphacen'], ['proxima'], ['proximab'],
   ] },
   // (0.15.0: the famous places on Earth with their own layers, e9p-earth-places.js, west round the world; not listed without the real Earth)
   { id:'earth', name:'wonders of Earth', blurb:'mountains, deserts, coasts, ice and what people built, up close', stops:PLC.tour.map(k => [k]) },
+  // (0.27.0: the places on the Moon, m4-moon-places.js: the six landings in order, then two of its youngest big craters; not listed without the real Moon)
+  { id:'moon', name:'footsteps on the Moon', blurb:'the six Apollo landings in order, then Tycho and Copernicus', stops:MPL.tour.map(k => [k, MPL.caps[k]]) },
   { id:'galaxies', name:'galaxies', blurb:'islands of stars, near and far', stops:[
     ['milkyway'], ['lmc'], ['smc'], ['andromeda'], ['m33'], ['sculptor'], ['m81'], ['m82'], ['m51'], ['m101'], ['m104'], ['cena'], ['antennae'], ['m87'],
     ['quintet'], ['ngc1275'], ['cartwheel'], ['hoag'], ['cosmicweb'],

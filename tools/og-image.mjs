@@ -62,8 +62,14 @@ async function snap(k, v){
   const own = await page.evaluate(([k, v]) => { const c = window.__cosmos, o = c.BYKEY[k];
     c.setTour(false);
     if (o.own){ const d = c.plc.sunFor(o, +v); if (d != null) c.setDays(d); c.tick(0); }
-    c.view(k, +v); return !!o.own; }, [k, v]);
-  if (own){
+    // (a place on the Moon, 0.27.0: in its morning light, as a flight there would show it)
+    if (o.moonSpot){ c.ssRate = 0; c.setDays(c.mpl.dayFor(c.mpl.byKey(k))); c.tick(0); }
+    c.view(k, +v); return o.moonSpot ? 'moon' : !!o.own; }, [k, v]);
+  if (own === 'moon'){
+    // (its own site's ground: right after another place the last one's is still drawn for a frame)
+    await page.waitForFunction(k => { const c = window.__cosmos, d = c.mpl.dbg(); return d.env === c.mpl.byKey(k).site && d.layers >= 3 && d.fade > 0.99; }, k, { timeout:60000 }).catch(() => {});
+    await page.waitForTimeout(Math.max(wait, 4000));
+  } else if (own){
     const pk = k.replace('earth-iconic-', '');
     await page.waitForFunction(pk => { const d = window.__cosmos.plc.dbg(), L = d.layers.find(s => s.startsWith(pk + ' '));
       const [a, b] = (L ? L.split(' ')[1] : '0/1').split('/'); return (d.env || '').includes(pk) || +a >= +b; }, pk, { timeout:25000 }).catch(() => {});
@@ -105,9 +111,10 @@ function placeText(MADE_UP){
     // from the Sun or a moon from its planet (rowSun); "today" goes, since the page gives the day its numbers are from
     const de = (o.distEarth || '').replace(/ today$/, '').replace(/^here on Earth$/, 'on Earth');
     // (Earth has none: its type already says home, and its distance from the Sun is in the list of facts)
-    const where = o.key === 'earth' ? null : ly(de ? de + (/away|here|around|from|edge|centre|inside|on Earth/.test(de) ? '' : ' away') : d.distFromEarth(o));
+    // (a place on a body's surface, 0.27.0: the places on the Moon are "on the Moon", with no distance from its middle)
+    const where = o.key === 'earth' ? null : o.surfOf ? 'on ' + o.surfOf.name : ly(de ? de + (/away|here|around|from|edge|centre|inside|on Earth/.test(de) ? '' : ' away') : d.distFromEarth(o));
     let fromSun = null;
-    if (d.FROM_SUN.includes(o.group) && o.key !== 'sun' && d.sunDist(o) > 1e-9){
+    if (d.FROM_SUN.includes(o.group) && o.key !== 'sun' && !o.surfOf && d.sunDist(o) > 1e-9){
       if (o.group === 'solar' && par && par !== B.sun && par.group === 'solar') fromSun = d.fmtDist(dist(o.pos, par.pos)) + ' from ' + par.name.replace(/^the /, '');
       else fromSun = / from the Sun$/.test(o.distEarth || '') ? o.distEarth : d.sunAU(d.sunDist(o)) + ' from the Sun';
       fromSun = ly(fromSun); if (where && where.includes(fromSun)) fromSun = null;
@@ -119,7 +126,9 @@ function placeText(MADE_UP){
     const r = own || made || o.group === 'comets' || cats.includes('events') ? 0 : hole ? o.rad/20 : (o.sizeR || (o.starR ? o.starR*o.rad : o.solid ? o.rad*o.solid : 0));
     let ro = ''; try { ro = o.readout ? String(o.readout()) : ''; } catch (err) {}
     // the order of the list of places: as the atlas lists them, near to far, from the Sun in the Solar System (a moon right after its planet)
-    const rank = own ? 0 : d.FROM_SUN.includes(o.group) ? (o.group === 'solar' && par && par !== B.sun && par.group === 'solar' ? d.sunDist(par) + dist(o.pos, par.pos)*1e-6 : d.sunDist(o)) : d.earthDist(o);
+    const solarRank = x => { const p = objOf(x.parent); return x.group === 'solar' && p && p !== B.sun && p.group === 'solar' ? d.sunDist(p) + dist(x.pos, p.pos)*1e-6 : d.sunDist(x); };
+    // (a place on the Moon right after the Moon, in the atlas's order)
+    const rank = own ? 0 : o.surfOf && par ? solarRank(par) + 1e-9*(o.sortKey || 0) : d.FROM_SUN.includes(o.group) ? solarRank(o) : d.earthDist(o);
     return { key:o.key, name:o.name, fact:(e.fact || '').replace(/\s+/g, ' ').trim(), type:(o.type || '').replace(/\s+/g, ' ').trim(),
       group:own ? 'earth' : o.group, kinds:own ? ['earth'] : cats.filter(k => kindIds.has(k)), madeUp:made || undefined,
       // (the made-up ship roams: where it is now says nothing on a page)

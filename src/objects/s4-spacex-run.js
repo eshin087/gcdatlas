@@ -379,7 +379,7 @@ function dayStep(dt){ if (DAY.T > 0){ DAY.t += dt; const e = smoother(clamp(DAY.
 // (near the ground, watching a launch or visiting a place on Earth, the Solar System clock runs in real time, so the Sun stays put and the
 // ground does not spin round)
 function clockStep(){
-  const want = LCAM.on || (SX.pend && flight) || (SXENV.on && SXENV.alt < 40) || EPL.hold();
+  const want = LCAM.on || (SX.pend && flight) || (SXENV.on && SXENV.alt < 40) || EPL.hold() || MPL.hold();   // (MPL: a place on the Moon, 0.27.0)
   if (want && sxRatePrev == null){ sxRatePrev = ssRate; ssRate = 1/86400; }
   else if (!want && sxRatePrev != null){ if (ssRate === 1/86400) ssRate = sxRatePrev; sxRatePrev = null; }
 }

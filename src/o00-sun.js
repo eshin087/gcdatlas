@@ -213,6 +213,12 @@ vec2 vorc(vec3 p){ vec3 i = floor(p), f = fract(p); float d1 = 8.; vec3 id = vec
 float craters(vec3 n, float sc){ vec2 v = vorc(n*sc); float r = 0.18 + 0.3*v.y; float rim = exp(-pow((v.x - r)/0.05, 2.)); float bowl = smoothstep(r, r*0.6, v.x); return rim*0.5 - bowl*0.35*step(0.35, v.y); }
 vec3 gL = vec3(0., 1., 0.), gEm = vec3(0.);   // light direction for surfaces that depend on it, and light a surface gives off by itself
 vec3 gN = vec3(0.);                            // the slope of drawn relief at the point, added to the normal the light sees
+#ifdef MOON_MAP
+// (0.27.0, the Moon's own copy, P.moonMap: NASA's map of the whole Moon, m1-moon-map.js. uMg: (how far it has faded in, 0, the relief's
+// exaggeration, the colour's level of detail); uMgS: the heights' (base, step) in metres. Heights are two bytes, high in R, low in G)
+uniform sampler2D uMgC; uniform sampler2D uMgH; uniform vec4 uMg; uniform vec4 uMgS;
+float moonMapH(vec2 uv){ vec2 t = textureLod(uMgH, uv, 0.).rg; return uMgS.x + (t.r*65280. + t.g*255.)*uMgS.y; }
+#endif
 // ---- helpers for the Solar System's bodies
 vec3 unTone(vec3 c){ return -log(1. - clamp(c, 0., 0.985)); }
 // a direction on the unit sphere from latitude and east longitude, in degrees
@@ -386,6 +392,22 @@ vec3 solSurf(vec3 n){
 #elif KIND == 6
   { // the Moon: the maria (lava plains) at their real selenographic places, cratered highlands, the South Pole-Aitken basin,
     // bright rayed craters (Tycho, Copernicus, Kepler, Aristarchus, Proclus; Giordano Bruno and Jackson on the far side), Orientale's rings
+#ifdef MOON_MAP
+    // (0.27.0: NASA's map of the whole Moon once it is in, m1-moon-map.js: the LRO WAC mosaic's albedo and colour, the relief from LOLA's
+    // heights, steeper than real by uMg.z so it shows in characters; the painted Moon below only while the map fades in)
+    vec3 mapC = vec3(0.), gM = vec3(0.); float mapK = uMg.x;
+    if(mapK > 0.){
+      vec2 uv = vec2(ll.y/360. + 0.5, 0.5 - ll.x/180.);
+      mapC = textureLod(uMgC, uv, uMg.w).rgb;
+      // the slope from the heights a texel either side, east and north (m over m), as the painted relief's gN
+      vec2 tx = 1./vec2(textureSize(uMgH, 0)); float cl = max(cos(radians(ll.x)), 0.05);
+      float he = moonMapH(uv + vec2(tx.x, 0.)) - moonMapH(uv - vec2(tx.x, 0.)), hn = moonMapH(uv - vec2(0., tx.y)) - moonMapH(uv + vec2(0., tx.y));
+      vec3 ea = normalize(vec3(n.z, 0., -n.x) + vec3(0., 0., 1e-6)), no = cross(n, ea);
+      float m = 1737400.*6.2832;
+      gM = (ea*he/(2.*tx.x*m*cl) + no*hn/(2.*tx.y*m*0.5))*uMg.z;
+      if(mapK > 0.999){ gN += gM; return mapC; }
+    }
+#endif
     vec2 w = ll + (vec2(fbm3(n*3.3 + 5.), fbm3(n*3.3 + 17.)) - 0.5)*vec2(7., 9.);
     float m = 0.;
     m += area(w, 33., -16., 10., 12.) + 0.8*area(w, 44., -31., 3., 5.);                    // Imbrium, Sinus Iridum
@@ -406,7 +428,14 @@ vec3 solSurf(vec3 n){
     vec3 c = mix(hi, mc, mare)*(1. + a);
     float ry = rays(n, sph(-43.3, -11.2), 0.6, 1.) + rays(n, sph(9.6, -20.1), 0.25, 2.)*0.9 + rays(n, sph(8.1, -38.), 0.14, 3.)*0.8 + rays(n, sph(23.7, -47.4), 0.08, 4.)
       + rays(n, sph(16.1, 46.8), 0.12, 5.)*0.7 + rays(n, sph(36., 103.), 0.14, 6.)*0.8 + rays(n, sph(22., -163.), 0.16, 7.)*0.7;
-    return mix(c, vec3(0.86, 0.86, 0.84), clamp(ry, 0., 1.)*0.8);
+    vec3 painted = mix(c, vec3(0.86, 0.86, 0.84), clamp(ry, 0., 1.)*0.8);
+#ifdef MOON_MAP
+    // (while the map fades in, about a second: the painted relief gives way to the real)
+    gN = gN*(1. - mapK) + gM*mapK;
+    return mix(painted, mapC, mapK);
+#else
+    return painted;
+#endif
   }
 #elif KIND == 7
   { // Io: sulphur plains, reddish-brown poles, dark volcanic calderas (Loki the biggest), the red ring of Pele, white sulphur dioxide frost

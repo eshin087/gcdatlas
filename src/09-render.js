@@ -470,6 +470,14 @@ const earthMarks = FLAGS.realEarth ? EPL.ALL_PICKS.map(r => {
   return { el, row:r, u:[Math.cos(r[2]*DEG)*Math.cos(r[3]*DEG), Math.sin(r[2]*DEG), -Math.cos(r[2]*DEG)*Math.sin(r[3]*DEG)],
     pri:city3d ? 3 : k === 'C' || k === 'c' ? 1.2 + Math.log10(r[4])*0.1 : k === 'm' ? 1 + r[4]/9000 : 0.8, min:city3d ? 110 : k === 'C' || k === 'c' ? 135 : 230 };
 }) : [];
+// the places on the Moon (0.27.0, m4-moon-places.js), marked on its globe the same way once it is big on the screen; a click flies down to one
+const moonMarks = MPL.places.map(p => {
+  const el = document.createElement('button'); el.className = 'lab emark e3d'; el.tabIndex = -1;
+  el.textContent = p.name; el.title = 'Fly down to ' + p.name;
+  el.addEventListener('click', () => { hideHint(); lockOn(p.obj.index); });
+  $('#labels').appendChild(el);
+  return { el, u:p.u, pri:3, min:110 };
+});
 function updateLabels(){
   const focus = tour.on ? tour.obj : orbit.lock;
   const clean = focus >= 0 ? focus : cam.focus;   // the object whose disc stays free of other labels (in free flight: the one the camera is centred on)
@@ -512,6 +520,17 @@ function updateLabels(){
       cand.push({ i:-2, el:m.el, pr, rpx:2, pri:m.pri, earthMark:true });
     }
   }
+  moonMarks.forEach(m => { m.el._show = false; });
+  if (labelsOn && moonMarks.length && !SKYV.on && moon.rpx > 110 && !moon.hidden && !cmp && !(MENV.on && MENV.fade > 0.5)){
+    const RMk = MDT.R*KM;
+    for (const m of moonMarks){
+      if (m.min > moon.rpx) continue;
+      const nw = M3.apply(moon.rot, m.u), rel = V.add(moon.rel, V.mul(nw, RMk));
+      if (V.dot(nw, rel) > -0.12*V.len(rel)) continue;   // (on the far side, or too near the edge of the disc)
+      const pr = projectCSS(rel); if (!pr) continue;
+      cand.push({ i:-2, el:m.el, pr, rpx:2, pri:m.pri, earthMark:true });
+    }
+  }
   // labels hide behind planets, stars and black holes that stand in front of them
   const occ = [];
   for (const o of OBJ){
@@ -547,6 +566,7 @@ function updateLabels(){
   for (const el of labelEls) if (el.classList.contains('on') !== el._show) el.classList.toggle('on', el._show);
   for (const el of starEls) if (el.classList.contains('on') !== el._show) el.classList.toggle('on', el._show);
   for (const m of earthMarks) if (m.el.classList.contains('on') !== m.el._show) m.el.classList.toggle('on', m.el._show);
+  for (const m of moonMarks) if (m.el.classList.contains('on') !== m.el._show) m.el.classList.toggle('on', m.el._show);
 }
 
 function updateHUD(dt){
@@ -1096,6 +1116,7 @@ const rowDist = r => r.dfix || fmtDist(earthDist(r.o));
 // grouped under the headings, the Solar System and the comets are measured from the Sun, and a moon from its planet
 function rowSun(r){
   const k = r.o.key;
+  if (r.par && r.o.surfOf) return 'on ' + r.par.o.name;   // (a place on a body's surface, 0.27.0: the places on the Moon)
   if (r.par) return fmtDist(V.len(V.sub(r.o.pos, r.par.o.pos))) + ' from ' + r.par.o.name.replace(/^the /, '');
   if (k === 'sun') return 'centre';
   if (/ from the Sun$/.test(r.o.distEarth || '')) return r.o.distEarth.replace(/ from the Sun$/, '');   // (the Oort cloud: 2,000 to 100,000 AU)
@@ -1115,8 +1136,13 @@ function sectionRows(rows, fromSun){
   const moonD = r => V.len(V.sub(r.o.pos, r.par.o.pos));
   const top = rows.filter(r => !r.par || lone(r)), ks = new Map(top.map(r => [r, key(lone(r) || r)])), out = [];
   top.sort((a, b) => (lone(a) && lone(a) === lone(b) ? moonD(a) - moonD(b) : near(ks.get(a), ks.get(b), a, b))*ATL.dir);
-  top.forEach(r => { out.push(r); r.branch = false; const kids = rows.filter(q => q.par === r), kd = new Map(kids.map(q => [q, moonD(q)]));
-    kids.sort((a, b) => (kd.get(a) - kd.get(b))*ATL.dir); kids.forEach(q => { q.branch = true; }); out.push(...kids); });
+  // (a row's own rows under it, and theirs under them: the places on the Moon, 0.27.0, sit under the Moon, which sits under Earth; places on
+  // a surface come first, in their own order)
+  const add = (r, depth) => { out.push(r); r.branch = depth > 0; r.deep = depth > 1;
+    const kids = rows.filter(q => q.par === r), kd = new Map(kids.map(q => [q, moonD(q)]));
+    kids.sort((a, b) => (a.o.surfOf && b.o.surfOf ? (a.o.sortKey ?? 0) - (b.o.sortKey ?? 0) : a.o.surfOf ? -1 : b.o.surfOf ? 1 : kd.get(a) - kd.get(b))*ATL.dir);
+    kids.forEach(q => add(q, depth + 1)); };
+  top.forEach(r => add(r, 0));
   return out;
 }
 function flatRows(){
@@ -1225,7 +1251,7 @@ function filterAtlas(q, keep){
   // (places on Earth go first when no name in the atlas starts with the words typed: "paris" lists Paris before anything with "paris" in its notes)
   if (earthFill(q) && !t.codes.length){ const starts = r => !r.b.hidden && (r.o.name.toLowerCase().replace(/^the /, '').startsWith(q) || (r.o.label || '').toLowerCase().startsWith(q));
     if (!atlasRows.some(starts)){ atlasList.prepend(earthHead, ...earthRows.map(r => r.b)); atlasMoved = true; } }
-  atlasRows.forEach(r => r.b.classList.toggle('child', r.branch && !r.par.b.hidden));
+  atlasRows.forEach(r => { const c = r.branch && !r.par.b.hidden; r.b.classList.toggle('child', c); r.b.classList.toggle('grand', c && !!r.deep); });
   atlasList.querySelectorAll('.agroup').forEach(h => { let x = h.nextElementSibling, any = false; while (x && !x.classList.contains('agroup')){ if (x.classList.contains('arow') && !x.hidden) any = true; x = x.nextElementSibling; } h.hidden = !any; });
   atlasCountNow(q);
   setKb(q ? Math.max(0, visibleRows().findIndex(r => !r.rank)) : -1);
@@ -1783,7 +1809,7 @@ tick(0);
 if (!applyHash()) tourGo(TOUR[0], true);
 tick(0);
 updateModeUI(); syncTimeUI();
-window.__cosmos = { get egl(){ return typeof EGL !== 'undefined' ? EGL : null; }, get etl(){ return ETL; }, get egr(){ return EGR; }, get epl(){ return EPL; }, get ect(){ return ECT; }, get plc(){ return PLC; }, get etr(){ return ETR; }, get eas(){ return EAS; }, get ecld(){ return ECLD; }, get qk(){ return QK; }, startTour, playFlyby, setMove(o, v, f){ flight = null; tween = null; tourGo(o.index, true); tour.on = false; flyMove = { o, v, t:f*v.hold, frozen:true }; },  get flyMove(){ return flyMove; }, startCompare, endCompare, setDeep, viewHash, applyHash, get cmp(){ return cmp; }, get ssRate(){ return ssRate; }, set ssRate(v){ ssRate = v; }, dbg:{ imp, impSpec, atlas, sphereRect, get tan(){ return [tanX, tanY]; }, get cols(){ return cols; }, get sceneH(){ return sceneH; }, get LODK(){ return LODK; }, PROGS }, OBJ, BYKEY, tourGo, lockOn, setTour, cam, orbit, tour, TOUR, SET, setOpt, music, LADDER, goLadder,
+window.__cosmos = { get egl(){ return typeof EGL !== 'undefined' ? EGL : null; }, get etl(){ return ETL; }, get egr(){ return EGR; }, get epl(){ return EPL; }, get ect(){ return ECT; }, get plc(){ return PLC; }, get mpl(){ return MPL; }, get mgl(){ return MGL; }, get mdt(){ return MDT; }, get etr(){ return ETR; }, get eas(){ return EAS; }, get ecld(){ return ECLD; }, get qk(){ return QK; }, startTour, playFlyby, setMove(o, v, f){ flight = null; tween = null; tourGo(o.index, true); tour.on = false; flyMove = { o, v, t:f*v.hold, frozen:true }; },  get flyMove(){ return flyMove; }, startCompare, endCompare, setDeep, viewHash, applyHash, get cmp(){ return cmp; }, get ssRate(){ return ssRate; }, set ssRate(v){ ssRate = v; }, dbg:{ imp, impSpec, atlas, sphereRect, get tan(){ return [tanX, tanY]; }, get cols(){ return cols; }, get sceneH(){ return sceneH; }, get LODK(){ return LODK; }, PROGS }, OBJ, BYKEY, tourGo, lockOn, setTour, cam, orbit, tour, TOUR, SET, setOpt, music, LADDER, goLadder,
   land:(extra = 0.2) => { let n = 0; while (flight && n < 60*180){ tick(1/60); n++; } for (let i=0;i<extra*60;i++) tick(1/60); return n/60; },
   setDays:d => { ssDays = d; }, get days(){ return ssDays; }, stepObject, stepAngle, get tourId(){ return TOUR_ID; }, get tourGen(){ return TOUR_GEN; }, randomSeed:n => { RSEED = n >>> 0; }, samePlace, tourable, tourPool, tripClear, dealRandom, RANDOM_W, tripW:(a, b) => tripWeight(tripEnd(a), tripEnd(b)), get nextDeal(){ return nextDeal; }, get stepTarget(){ return flight ? (flight.dest || flight.obj).key : null; }, get via(){ return flight && flight.via ? flight.via.key : null; }, PASS,
   startShipCam, stopShipCam, setShipCamMode, get shipCam(){ return shipCam; }, SHIP_POSE, get show(){ return show; }, togglePlay, get flight(){ return flight; },

@@ -5,6 +5,13 @@
      numbers with units. The newest version comes first and opens by itself; its number must match package.json (tests/smoke.mjs checks it).
      Every detail stays in docs/CHANGELOG.md, which the panel links to. -->
 
+## 0.27.0 · 9 Nov 2026 · The Moon up close
+- Fly down to Tranquility Base and the other five Apollo landing sites, Hadley Rille, Tycho and Copernicus, drawn in 3D from NASA's Lunar Reconnaissance Orbiter photos and heights.
+- Each lunar module's descent stage stands where its crew left it, as a small labelled model.
+- You arrive in the morning, the Sun as low as when the crews landed, so every crater and hill casts a long shadow.
+- Up close, the Moon's globe now shows NASA's real map of the whole Moon.
+- New tour, Footsteps on the Moon: the six landings in order, then Tycho and Copernicus.
+
 ## 0.26.0 · 9 Nov 2026 · Earthquakes and fires, live
 - This week's earthquakes on the real Earth, from the USGS: a dot where each one struck and a ring for the last two days, red, violet or blue by how deep it was.
 - The last day's fires glow like embers on Earth's night side, from NASA's fire satellites.
