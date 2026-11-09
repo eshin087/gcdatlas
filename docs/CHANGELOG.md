@@ -4,6 +4,15 @@ All notable changes, newest first. Dates are UTC.
 
 ## Unreleased
 
+## 0.27.1 · 2026-11-09
+
+**The Moon's places, from an independent review** (Codex could not review #63: its account had reached its usage limit. The owner merged 0.27.0 before these fixes were pushed, so they ship on their own)
+- Flights to a place on the Moon land on the turning Moon's frame (`camFrame` on the place objects, which 08-camera.js follows to the end): the clock eases to the place's morning while the flight comes in, and the camera's end angle was fixed in space when the flight began, so it swung round at the landing (13 degrees for each day the clock moved) and could come in through the ground.
+- The ground under the horizon no longer shows black sky: a ray grazing a plain closes on it a fraction of its height a step, so near-horizontal rays ran out of their 190 steps (from a camera 4 m up, rays 0.1 to 1.5 degrees below the horizon). Now past 170 of 236 steps a ray within two pixels of the ground lands there, and one still on its way down when the steps run out meets level ground at the height under the camera, not far past where it stopped; the walk toward the Sun keeps its steps.
+- Apollo 15 and Hadley Rille have six layers for four slots: from low down the widest goes first, then the one whose loss costs least (sharpness against the next wider one times how much of the ground round the camera it holds). The 25 km layer was the one dropped before, so the rille and the Apennine front came from 400 m pixels.
+- A flight round the Moon to above a place that was cut short (another flight, a paused tour) no longer keeps the maps loaded and later flights in real time; the place locked on draws its ground only while the camera is over its side of the Moon; offline the painted globe stays and no ground is credited.
+- The camera keeps 12 m from a lander's middle and 1.5 m clear of its top (tests/moon.mjs checks); Tycho and Copernicus have their real sizes in the atlas (85 and 96 km; Hadley Rille keeps 1.2 km, its width); a place opened straight from a link in the lunar night eases to its morning.
+
 ## 0.27.0 · 2026-11-09
 
 **The real Moon** (the "surfaces" pack of docs/CONTENT.md, begun on the Moon; owner's picks of 2026-11-08: nine places, NASA's map of the whole Moon on its globe, the landers as small labelled models, a tour)
@@ -18,7 +27,6 @@ All notable changes, newest first. Dates are UTC.
 - Texts checked by a separate agent against NASA's mission reports and curation catalogues, the IAU's gazetteer, LROC and JPL Horizons. It corrected Apollo 14's and 16's sample masses (42.3 and 95.7 kg), the landers' positions at Apollo 12, 16 and 17 (the older Davies and Colvin values, 10 to 30 m off), Hadley Rille's length (116 km), Copernicus's diameter (96 km), where Surveyor 7 landed (on Tycho's ejecta, about 28 km north of its rim) and Apollo 16's Sun angle at landing (14.8 degrees).
 - Tests: tests/moon.mjs (in npm test; over http, as tests/earth.mjs): the globe's map and its credit, a flight from Earth to Tranquility Base landing on its first angle in the morning light, the ground from its layers with the globe under it off, the ground's credit, the camera above the ground, the lander's label, the atlas row, the tour, every place's first angle, and a phone's smaller maps.
 - Flag `realMoon` (on).
-- From an independent review (Codex could not review this PR: its account had reached its usage limit): flights to a place land on the turning Moon's frame (`camFrame`), so the clock easing to the morning during the flight no longer swings the camera, or takes it through the ground, at the landing; the ground below the horizon no longer shows black sky where a grazing ray ran out of steps (past 170 steps one within two pixels of the ground lands, and one still on its way down meets the level ground beyond, so the walk toward the Sun keeps its steps); at Apollo 15 and Hadley Rille, which have six layers for four slots, the one dropped is the one whose loss costs least (it was the 25 km layer); a flight round the Moon that was cut short no longer keeps the maps and the real-time clock; the place locked on draws its ground only while the camera is over its side of the Moon; offline the painted globe stays and no ground is credited; the camera keeps 12 m from a lander's middle and clear of its top; Tycho and Copernicus have their real sizes in the atlas (85 and 96 km; Hadley Rille keeps 1.2 km, its width); a place opened straight from a link in the lunar night eases to its morning.
 
 ## 0.26.0 · 2026-11-09
 
