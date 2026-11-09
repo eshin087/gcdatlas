@@ -12,6 +12,30 @@
 - Up close, the Moon's globe now shows NASA's real map of the whole Moon.
 - New tour, Footsteps on the Moon: the six landings in order, then Tycho and Copernicus.
 
+## 0.26.0 · 9 Nov 2026 · Earthquakes and fires, live
+- This week's earthquakes on the real Earth, from the USGS: a dot where each one struck and a ring for the last two days, red, violet or blue by how deep it was.
+- The last day's fires glow like embers on Earth's night side, from NASA's fire satellites.
+- From Earth's card, fly to the week's biggest quake or replay the whole week in 40 seconds.
+- A big one (magnitude 7 or more) in the last day gets a note when you look at Earth.
+- Turn them off in settings, under show: quakes & fires.
+
+## 0.25.1 · 9 Nov 2026 · Every place's page, from the atlas
+- The last line of the atlas list now links to every place as a page to read (gcdatlas.com/places). It opens in a new tab, so the atlas stays where you left it.
+- The browser tab now says what this is: gcdatlas · the real universe, drawn in ASCII.
+
+## 0.25.0 · 9 Nov 2026 · Every Messier object
+- The last 28 Messier objects, so all 110 are here: 20 galaxies, 6 star clusters, and M40 and M73.
+- The Virgo Cluster is a place of its own: its 16 Messier galaxies at their measured distances, and about 1,000 more galaxies around them.
+- M40 and M73 look like little groups from Earth, but their stars lie hundreds of light-years apart. Fly round them to see it.
+- M32 and M110, Andromeda's two bright companions, have their own places in the atlas now.
+- A new badge for seeing all 110, and the Messier marathon tour now visits every one.
+
+## 0.24.1 · 8 Nov 2026 · A page for every place
+- Every place in the atlas has a page of its own to read: its picture, what it is, how far away and how big, and more places like it. See them all at gcdatlas.com/places.
+- Search engines can find these pages now, so looking up a place can lead you here.
+- A button on each page opens the place in the atlas. Shared links still open the atlas straight away.
+- Visits to these pages are counted the way the atlas counts them: the page's address only, no cookies, nothing kept on your device.
+
 ## 0.24.0 · 25 Oct 2026 · Links that show the place
 - Share a place and the link now unfurls as that place on Discord, Slack, X, WhatsApp and the rest: its name, a line about it and its own picture.
 - The copied link still opens exactly the view you were on, and every old link keeps working.

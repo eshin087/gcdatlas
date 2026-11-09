@@ -1,8 +1,9 @@
 # Live data for the living planet (phase 5, 0.15)
 
 The back end for today's real clouds, earthquakes and wildfires (`docs/EARTH_PLAN.md`, phase 5). Three functions in `api/`, each a plain
-`GET` of its bare path, cached at the edge, no keys, nothing about the visitor sent anywhere. The page does not use them yet: this file says
-what they return and how to draw it. Check them against the real upstreams with `node tools/check-live-api.mjs` (it also saves the clouds
+`GET` of its bare path, cached at the edge, no keys, nothing about the visitor sent anywhere. The page uses all three: the clouds since 0.13.0
+(`src/objects/e5c-earth-clouds.js`), the earthquakes and fires since 0.26.0 (`src/objects/e1q-earth-quakes.js`). This file says what they
+return and how they were meant to be drawn; `docs/CHANGELOG.md` says how they are. Check them against the real upstreams with `node tools/check-live-api.mjs` (it also saves the clouds
 picture and the answers to `tools/cache/live/`, which is not committed).
 
 | Endpoint | Source | Size | Run time | Edge cache | Warm copy |
@@ -36,7 +37,8 @@ What to draw: a ring on the surface at each quake, its radius growing with magni
 - Brightness by age: full for the first hour, fading to about 20% over a day, a faint small mark for the rest of the week. A ring that
   expands once in its first minutes (a ping) is the nicest touch. With the atlas clock set away from today, use the quake times against the
   clock (a time-lapse of the week) or hide them: they only mean something near now.
-- Colour by depth: shallow (under 70 km, about 77% of them) warm, 70 to 300 km yellow-white, deeper than 300 km cool (rare, about 3%).
+- Colour by depth: shallow (under 70 km, about 77% of them) warm, 70 to 300 km yellow-white, deeper than 300 km cool (rare, about 3%). (0.26.0 draws
+  them red, violet and blue: warm and yellow-white marks were lost among the orange fires and city lights.)
 - Readout when picked: `M 5.9, South Sandwich Islands region, 10 km deep, 3 h ago`.
 
 ## `/api/fires`
@@ -51,7 +53,8 @@ What to draw: a ring on the surface at each quake, its radius growing with magni
   fire radiative power in megawatts (one decimal under 10, whole numbers above). Sorted by `frp`, the strongest first (so a slow device can
   draw the first 3000 and stop). At most 20 000 cells; a typical day gives 10 000 to 15 000.
 - `from` and `to` (seconds) are the 24 hours before the newest detection in the file. `source` names the satellite whose file was used
-  (`VIIRS S-NPP`, else `VIIRS NOAA-20`, else `VIIRS NOAA-21` if the first fails or is more than 30 hours old). `raw` is the number of
+  (`VIIRS NOAA-20`, else `VIIRS NOAA-21`, else `VIIRS S-NPP` if the first fails or is more than 30 hours old; until 0.26.0 S-NPP came first,
+  but its file has been empty since early November 2026). `raw` is the number of
   detections added up (those FIRMS rates low in confidence are left out). `updated` is when we fetched it.
 - One satellite sees most places twice a day (about 1:30 pm and 1:30 am local time), so this is "what one satellite saw burning in the last
   day", not every fire and not a total over time. Do not add up `frp` over cells and call it the world's fire power.
@@ -165,7 +168,7 @@ short upstream outage is invisible. Past that:
 - **Time**: all times are UTC. The warm copy and the edge's copy are not synchronised, so two visitors in the same minute can see answers a
   few minutes apart; it does not matter here.
 
-## Changes wanted in shared files (not made here)
+## Changes wanted in shared files (made in 0.13.0 and 0.26.0)
 
 - `docs/SECURITY.md`: "three read-only serverless functions" becomes six, naming `/api/quakes`, `/api/fires`, `/api/clouds`; the cache
   table row adds quakes 5 min, fires 2 h, clouds 6 h and the warm times (4 min, 1 h, 3 h); "No API keys are needed (CelesTrak, Launch

@@ -3,13 +3,14 @@
 // 0.1 degree grid (about 11 km): each cell gives its number of detections and their total fire power in megawatts (FRP). Detections
 // FIRMS rates low in confidence are left out. The page draws them as glowing points on the night side and in smoke-grey haze by day (0.15).
 // The cells are sorted by power, the strongest first. Cached at the edge for 2 hours (FIRMS adds data within 3 hours of a pass).
-// If the first satellite's file fails or is stale the next one is used. Query strings are refused (see _lib/guard.js).
+// If the first satellite's file fails or is stale the next one is used: NOAA-20, then NOAA-21, then Suomi NPP (whose file has been empty since
+// early November 2026). Query strings are refused (see _lib/guard.js).
 import { cachedHandler } from './_lib/guard.js';
 const BASE = 'https://firms.modaps.eosdis.nasa.gov/data/active_fire/';
 const SOURCES = [
-  ['VIIRS S-NPP', BASE + 'suomi-npp-viirs-c2/csv/SUOMI_VIIRS_C2_Global_24h.csv'],
   ['VIIRS NOAA-20', BASE + 'noaa-20-viirs-c2/csv/J1_VIIRS_C2_Global_24h.csv'],
   ['VIIRS NOAA-21', BASE + 'noaa-21-viirs-c2/csv/J2_VIIRS_C2_Global_24h.csv'],
+  ['VIIRS S-NPP', BASE + 'suomi-npp-viirs-c2/csv/SUOMI_VIIRS_C2_Global_24h.csv'],
 ];
 const CELL = 0.1, NLAT = 1800, NLON = 3600, MAX = 20000, STALE = 30*3600;   // (the newest detection must be under 30 h old)
 const num = (v, k) => v >= 10 ? Math.round(v) : Math.round(v*10)/10;

@@ -2,11 +2,14 @@
 //   dist/index.html     the website (Vercel serves this)
 //   dist/artifact.html  the same page without the document wrapper (for a claude.ai artifact)
 //   dist/preview.html   only the head's tags, for link-preview bots (vercel.json)
+//   dist/p/<key>.html   every place's share page; dist/places/<key>.html and dist/places.html its page to read, and the list of them
+//   dist/sitemap.xml, dist/robots.txt   for search engines
 // Usage: node build.mjs            (no dependencies; Node 18+)
 import fs from 'node:fs';
 import path from 'node:path';
 import vm from 'node:vm';
 import { fileURLToPath } from 'node:url';
+import { writePlacePages, short } from './tools/place-pages.mjs';
 
 const ROOT = path.dirname(fileURLToPath(import.meta.url));
 const SRC = path.join(ROOT, 'src'), DIST = path.join(ROOT, 'dist');
@@ -92,13 +95,13 @@ const meta = `<meta charset="utf-8">
 // picture when assets/og/<key>.jpg exists, else the site's og.jpg. On a Vercel preview the tags carry the deployment's own address
 // rather than production's (not that bots can read a preview: previews sit behind Vercel authentication).
 const HOST = process.env.VERCEL_ENV && process.env.VERCEL_ENV !== 'production' && process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'https://gcdatlas.com';
-let shareKeys = [];
+let shareKeys = [], placePaths = [], placesMade = '';
 const metaFile = path.join(ROOT, 'tools', 'data', 'share-meta.json');
 if (fs.existsSync(metaFile)){
-  const places = JSON.parse(fs.readFileSync(metaFile, 'utf8'));
+  // (0.24.1: { made, groups, kinds, places }, each place with the text of its own page; before, the bare list of places)
+  const SM0 = JSON.parse(fs.readFileSync(metaFile, 'utf8')), SM = Array.isArray(SM0) ? { places:SM0 } : SM0, places = SM.places;
   const escA = s => esc(s).replace(/"/g, '&quot;');
-  // a card shows about two sentences: cut a long fact at a sentence end (the Halo's runs to 640 characters)
-  const short = s => { if (s.length <= 240) return s; const c = s.slice(0, 240), i = Math.max(c.lastIndexOf('. '), c.lastIndexOf('! ')); return i > 80 ? c.slice(0, i + 1) : c.slice(0, c.lastIndexOf(' ')); };
+  // (a card shows about two sentences: `short` cuts a long fact at a sentence end; the Halo's runs to 640 characters)
   const icon = meta.match(/<link rel="icon"[^>]*>/)[0];
   const pDir = path.join(DIST, 'p'); fs.mkdirSync(pDir, { recursive:true });
   for (const f of fs.readdirSync(pDir)) if (!places.some(e => e.key + '.html' === f)) fs.rmSync(path.join(pDir, f));
@@ -142,13 +145,25 @@ ${icon}
   }
   shareKeys = places.map(e => e.key);
   console.log(`share pages: ${places.length} under dist/p/`);
-} else console.warn('tools/data/share-meta.json is missing: no /p share pages (npm run og -- --all writes it)');
+  // every place's page to read, /places/<key>, and the list of them, /places (0.24.1, owner: findable in search; tools/place-pages.mjs)
+  placePaths = writePlacePages({ SM, DIST, ROOT, HOST, icon }); placesMade = SM.made || '';
+  console.log(`place pages: ${placePaths.length - 1} under dist/places/, and the list at /places`);
+} else console.warn('tools/data/share-meta.json is missing: no /p share pages or /places pages (npm run og -- --all writes it)');
+// for search engines (0.24.1): the sitemap lists the home page and every place page (the share pages /p/ go on into the atlas, so they are
+// not listed); robots.txt lets everything be read but the owner's two review pages and the data functions. The home page's date is the
+// build's, the place pages' the day their text was read from the page (npm run og -- --meta)
+{ const day = new Date().toISOString().slice(0, 10), url = (p, d) => `<url><loc>${HOST}${p}</loc>${d ? `<lastmod>${d}</lastmod>` : ''}</url>`;
+  fs.writeFileSync(path.join(DIST, 'sitemap.xml'), `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${[url('/', day), ...placePaths.map(p => url(p, placesMade))].join('\n')}\n</urlset>\n`);
+  fs.writeFileSync(path.join(DIST, 'robots.txt'), `# gcdatlas: everything may be read, except the owner's two review pages and the data functions\nUser-agent: *\nDisallow: /lab\nDisallow: /songs\nDisallow: /api/\n\nSitemap: ${HOST}/sitemap.xml\n`); }
 // the page learns which share pages exist (share() falls back to a #-link for the rest); the artifact build gets none, since it is
 // served alone, away from dist/
 const shareScript = `<script>window.__SHARE_PAGES=${JSON.stringify(shareKeys)};</script>\n`;
 
+// (the home page tells search engines what the site is, schema.org's WebSite: Google reads the site's name from it; on the home page only)
+const siteLd = `<script type="application/ld+json">${JSON.stringify({ '@context':'https://schema.org', '@type':'WebSite', name:'gcdatlas', url:'https://gcdatlas.com/',
+  description:meta.match(/<meta name="description" content="([^"]*)"/)[1] }).replace(/</g, '\\u003c')}</script>\n`;
 fs.mkdirSync(DIST, { recursive: true });
-fs.writeFileSync(path.join(DIST, 'index.html'), `<!doctype html>\n<html lang="en">\n<head>\n${meta}${head}\n</head>\n<body>\n${body}\n${shareScript}${script}</body>\n</html>\n`);
+fs.writeFileSync(path.join(DIST, 'index.html'), `<!doctype html>\n<html lang="en">\n<head>\n${meta}${siteLd}${head}\n</head>\n<body>\n${body}\n${shareScript}${script}</body>\n</html>\n`);
 fs.writeFileSync(path.join(DIST, 'artifact.html'), `${head}\n${body}\n${script}`);
 // the lab (/lab): the same page, told before its script runs to open as a small stage for trying the Halo's looks (src/09l-lab.js); kept out of search
 const labHead = head.replace(/<title>[^<]*<\/title>/, '<title>gcdatlas lab</title>');
