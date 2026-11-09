@@ -44,9 +44,9 @@ async function asu(params){
   return out;
 }
 let viaTap = true;
-try { await tap('SELECT TOP 1 EVCC FROM "J/ApJS/215/22/table4"'); } catch (e){ viaTap = false; console.log(`CDS's TAP service did not answer (${e.message}): using the VizieR mirror at Harvard`); }
+try { await tap('SELECT TOP 1 EVCC FROM "J/ApJS/215/22/table2"'); } catch (e){ viaTap = false; console.log(`CDS's TAP service did not answer (${e.message}): using the VizieR mirror at Harvard`); }
 const COLS = 'EVCC,VCC,NGC,RAJ2000,DEJ2000,cz,MmI,MTyp1,rmag,R50';
-const evcc = viaTap ? await tap(`SELECT ${COLS} FROM "J/ApJS/215/22/table4"`) : await asu({ '-source':'J/ApJS/215/22', '-out':COLS, '-out.max':'5000' });
+const evcc = viaTap ? await tap(`SELECT ${COLS} FROM "J/ApJS/215/22/table2"`) : await asu({ '-source':'J/ApJS/215/22', '-out':COLS, '-out.max':'5000' });
 const mei = viaTap ? await tap('SELECT VCC, "m-M", "e_m-M" FROM "J/ApJ/655/144/table1"') : await asu({ '-source':'J/ApJ/655/144/table1', '-out':'VCC,m-M,e_m-M', '-out.max':'500' });
 if (evcc.length < 1500 || evcc.length > 1700) throw new Error(`the EVCC came back with ${evcc.length} rows, not about 1,589`);
 const sbf = new Map(mei.filter(r => r['m-M'] !== '').map(r => [+r.VCC, 10**(+r['m-M']/5 + 1)/1e6]));   // VCC number -> distance, Mpc

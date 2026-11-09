@@ -118,7 +118,7 @@ for (const c of GAL4){
 {
   const o = BYKEY.m94, u = keyRnd('m94-arms'), n = Math.round(1800*QUALITY), ps = makePS(n), tp = Math.tan(6*DEG);
   for (let i=0;i<n;i++){
-    const arm = i & 1, th = 6.2832*u(), r = 0.8*Math.exp(th*tp/6.2832*2.4)*(1 + 0.03*(u() - 0.5)), a = th + arm*Math.PI + 0.06*(u() - 0.5);
+    const arm = i & 1, th = 6.2832*u(), r = 0.82*Math.exp(th*tp/6.2832*1.2)*(1 + 0.03*(u() - 0.5)), a = th + arm*Math.PI + 0.06*(u() - 0.5);
     const c = u() < 0.12 ? [1, 0.45, 0.68] : [0.6 + 0.15*u(), 0.72 + 0.1*u(), 1];
     ps.a.set([r*Math.cos(a), (u() - 0.5)*0.01, r*Math.sin(a), 0.6 + 0.6*u()], i*4); ps.c.set([c[0], c[1], c[2], 0], i*4);
   }
@@ -173,7 +173,7 @@ gaiaOpenCluster('m93', { name:'M93', label:'M93', type:'open star cluster · in 
 // geometric distance), its colour from BP-RP (the formula gaiaCluster uses; both lie well out of the Milky Way's dust) and its brightness
 // from its absolute G magnitude. A faint dashed line is our line of sight through them, and each star's label gives its distance. From
 // Earth M40's two stars are 53 arcseconds apart and M73's four lie within 1.5 arcminutes: far smaller than anything the atlas's view can
-// show, so the first angle looks from close to our own direction and the second from the side.
+// show, so the angles show their real arrangement instead.
 function lineOfSight(def, stars){
   const W = stars.map(s => radec(s.ra/15, s.dec, s.ly)), lys = stars.map(s => s.ly);
   const near = Math.min(...lys), far = Math.max(...lys), mid = (near + far)/2;
@@ -193,14 +193,19 @@ function lineOfSight(def, stars){
   ln.upload('ac');
   addMarker(def.key + '-earthward', 'toward Earth', V.add(pos, M3.apply(R0, [0, 0, z0*RAD])), RAD*0.04, RAD*14);
   const zN = (mid - near)/RAD;   // (the nearest star's place along the line, local units)
-  return addObj(Object.assign({ group:'stars', pos, rad:RAD, R0, sizeR:Math.round((far - near)/2), sortKey:Math.round(near), minZoom:0.03, pxMin:3, noImpostor:true,
+  // (the stars, their glints and the line show only while you look at this place or are close to it: the line's brightness does not fall
+  // with distance, and these faint stars would otherwise turn up in every view of Ursa Major or Aquarius)
+  let o = null;
+  const near3 = () => o && (orbit.lock === o.index ? 1 : 1 - smooth(RAD*1.5, RAD*3, o.dist));
+  o = addObj(Object.assign({ group:'stars', pos, rad:RAD, R0, sizeR:Math.round((far - near)/2), sortKey:Math.round(near), minZoom:0.03, pxMin:3, noImpostor:true,
     labelDisc:0.01, labelRange:RAD*60,
     // (from the side, where the stars stand far apart along our line of sight; from three-quarters on our side, where they draw together;
     // close by the nearest star, looking along the line the way we do from Earth, the others behind it)
     views:[{ d:[1, 0.22, 0.08], k:1.8, hold:9, drift:0.02 }, { d:[0.45, 0.25, 1], k:1.6, hold:9, drift:0.02 }, { d:[0.22, 0.12, 1], k:0.3, off:[0, 0, zN], hold:8, drift:0.02 }],
     particleVis:() => 1,
-    particles:[{ ps, prog:'ptBasic', mode:1, sb:1.5, size:2 }, { ps:makeSpikes(sp), prog:'spike', lines:true, mode:1, sb:2.2, size:1, len:0.035, q0:() => [1, 0, 0, 0] },
-      { ps:ln, prog:'lnBasic', lines:true, mode:3, sb:0.35, size:1 }] }, def));
+    particles:[{ ps, prog:'ptBasic', mode:1, sb:1.5, size:2, vis:near3 }, { ps:makeSpikes(sp), prog:'spike', lines:true, mode:1, sb:2.2, size:1, len:0.035, q0:() => [1, 0, 0, 0], vis:near3 },
+      { ps:ln, prog:'lnBasic', lines:true, mode:3, sb:0.35, size:1, vis:near3 }] }, def));
+  return o;
 }
 // (Gaia DR3 source ids: M40 A 1575047353068482688, B 1575047731026006528; M73 6888761925104124544, 6888763058975491840,
 // 6888762676722911104, 6888762676722910720. Distances: Bailer-Jones et al. 2021, geometric, light-years)
@@ -250,7 +255,7 @@ const virgoCluster = (() => {
   for (let i=0;i<n;i++){
     const ra = C.ra0 + dv.getInt16(i*8, true)/1000, dec = C.dec0 + dv.getInt16(i*8 + 2, true)/1000, rb = dv.getUint8(i*8 + 4), t = dv.getUint8(i*8 + 5), dm = dv.getUint16(i*8 + 6, true)/100;
     const dir = radecDir(ra/15, dec), rp = Math.acos(clamp(V.dot(dir, dirC), -1, 1))*Dc;
-    const D = dm > 0 ? dm*MPC : Dc + gauss()*Math.max(sig0, 0.6*rp);
+    const D = dm > 0 ? dm*MPC : Dc + clamp(gauss(), -2.5, 2.5)*Math.max(sig0, 0.6*rp);
     const r = rb === 255 ? 18 : (rb + 50)/10, Mr = r - 5*Math.log10(D/32.616);
     W.push({ w:V.mul(dir, D), c:TYPE_C[t] || TYPE_C[5], b:clamp(0.3 + (-14 - Mr)*0.24, 0.25, 2.2) });
   }
