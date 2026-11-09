@@ -57,7 +57,7 @@ void main(){
     br *= ph < 1. ? 1.7*(1. - ph)*(1. - ph)*smoothstep(0., 0.06, ph) : 0.;
     al *= 0.2 + 1.2*min(ph, 1.);
   } else br *= max(1. - smoothstep(18., 48., h), foc);
-  vec3 e = normalize(abs(c.y) < 0.99 ? cross(vec3(0., 1., 0.), c) : vec3(1., 0., 0.)), n = cross(c, e);
+  vec3 e = normalize(cross(abs(c.y) < 0.99 ? vec3(0., 1., 0.) : vec3(1., 0., 0.), c)), n = cross(c, e);
   p = (c*cos(al) + (e*cos(aP.w) + n*sin(aP.w))*sin(al))*${UNIT};
 #else
   br *= max(ageK(h), 0.9*foc);
@@ -98,6 +98,7 @@ void main(){
   P.qkDot = program(VS_QK, FS_POINT); P.qkRing = program(VS_QK.replace('#version 300 es', '#version 300 es\n#define RING'), FS_LINE); P.qkFire = program(VS_FIRE, FS_POINT);
   // ---------------------------------------------------------------- state
   const F = { q:{ url:'/api/quakes', every:300, state:0, at:-1e9, tried:-1e9, busy:false }, f:{ url:'/api/fires', every:7200, state:0, at:-1e9, tried:-1e9, busy:false } };
+  let epoch = 0;   // (counts the frees: an answer to a request made before the last one is dropped)
   const Q = { rows:null, ref:0, gen:0, from:0, big:null, newest:null, n5:0, dots:null, ring:null, byM:null };
   const FI = { n:0, raw:0, src:'', from:0, to:0, lv:[] };
   const REP = { on:false, t:0, T:40 };
@@ -108,10 +109,10 @@ void main(){
   // ---------------------------------------------------------------- fetching
   const get = (url, ms) => Promise.race([fetch(url).then(r => r.ok ? r.json() : Promise.reject(r.status)), new Promise((_, no) => setTimeout(() => no('timeout'), ms))]);
   function load(k){
-    const f = F[k]; f.busy = true; f.tried = GT; if (f.state !== 2) f.state = 1;
-    get(f.url, 15000).then(j => { (k === 'q' ? applyQ : applyF)(j); f.at = GT; f.state = 2; })
-      .catch(e => { if (f.state !== 2) f.state = 3; console.info((k === 'q' ? 'earthquakes' : 'fires') + ' unavailable (' + e + ')'); })
-      .finally(() => { f.busy = false; });
+    const f = F[k], e0 = epoch; f.busy = true; f.tried = GT; if (f.state !== 2) f.state = 1;
+    get(f.url, 15000).then(j => { if (e0 !== epoch) return; (k === 'q' ? applyQ : applyF)(j); f.at = GT; f.state = 2; })
+      .catch(e => { if (e0 !== epoch) return; if (f.state !== 2) f.state = 3; console.info((k === 'q' ? 'earthquakes' : 'fires') + ' unavailable (' + e + ')'); })
+      .finally(() => { if (e0 === epoch) f.busy = false; });
   }
   function freePS(ps){ if (!ps || glLost) return; gl.deleteBuffer(ps.b0); gl.deleteBuffer(ps.b1); gl.deleteVertexArray(ps.vao); }
   // ---- quakes: rows (oldest first, the replay's order), their dots and rings
@@ -142,9 +143,8 @@ void main(){
     const byM = rows.slice().sort((a, b) => b.m - a.m || b.t - a.t);
     Object.assign(Q, { rows, ref, gen, from, newest, dots, ring, byM, big:byM[0], n5:rows.filter(q => q.m >= 5).length });
     dotSpec.ps = dots; ringSpec.ps = ring;
-    hook();
     // (a place object already set to a quake, from a link opened before the list was in: dressed now)
-    for (const o of EPL.spots) if (o.place.row && o.place.row[6] === 'earthquake'){ dress(o, o.place.row); if (infoObj === o.index) setInfo(o.index); }
+    for (const o of EPL.spots) if (isQuakeSpot(o)){ dress(o, o.place.row); if (uiReady && infoObj === o.index) setInfo(o.index); }
   }
   // ---- fires: three levels, each sorted by power, the strongest first
   const FB = 1/Math.log2(1 + 2135/5), strength = frp => Math.min(Math.log2(1 + Math.max(frp, 0)/5)*FB, 1.3);
@@ -182,7 +182,7 @@ void main(){
   function free(){
     freePS(Q.dots); freePS(Q.ring); FI.lv.forEach(L => freePS(L.ps));
     Object.assign(Q, { rows:null, big:null, newest:null, byM:null, dots:null, ring:null }); FI.lv = []; FI.n = 0;
-    F.q.state = F.f.state = 0; REP.on = false;
+    F.q.state = F.f.state = 0; F.q.busy = F.f.busy = false; epoch++; REP.on = false;
   }
   // ---------------------------------------------------------------- drawing: Earth's particle systems
   function prep(){
@@ -240,26 +240,36 @@ void main(){
   // ---------------------------------------------------------------- a quake as a place on Earth (EPL's place objects, e7s-earth-search.js)
   // a row for EPL: [name, kind, latitude, longitude, size km, country, what]; the quake rides along on it
   function rowOf(q){ const r = [`${magTxt(q.m)} earthquake, ${where(q)}`, 'r', q.la, q.lo, Math.round(2*ringKm(q.m)), '', 'earthquake']; r.quake = q; return r; }
+  // a place object set to a quake: by its row (setSpot gives every place a row of its own, and moving it far by hand clears it)
+  const isQuakeSpot = o => !!(o && o.earthSpot && o.place && o.place.row && o.place.row[6] === 'earthquake');
   function dress(o, r){
     if (!r || r[6] !== 'earthquake') return;
-    const q = r.quake || (Q.rows && Q.rows.find(x => Math.abs(x.la - r[2]) < 0.006 && Math.abs(x.lo - r[3]) < 0.006)) || null;
+    // (the quake itself: on the row from rowOf, else found in this week's list by its place and the magnitude in its name, as a link gives
+    // them: an aftershock can sit within a kilometre of its mainshock)
+    const m0 = +((/^M (\d+(?:\.\d)?)/.exec(r[0]) || [])[1]);
+    const q = r.quake || (Q.rows && Q.rows.find(x => Math.abs(x.la - r[2]) < 0.006 && Math.abs(x.lo - r[3]) < 0.006 && !(Math.abs(x.m - m0) > 0.05))) || null;
     if (q) r.quake = q;
-    o.quake = true;
-    const km = q ? ringKm(q.m) : Math.max(r[4]/2, 50);
-    o.rad = km*KM; o.minZoom = 0.2;
+    // (its size: a quarter of the ring's radius, so the place lets the quake go once it is moved by hand past the ring; a link carries the
+    // ring's width, so a quake opened from one before the list is in keeps the same framings)
+    const km = q ? ringKm(q.m) : clamp(r[4]/2, 25, 1800), rad = clamp(km/4, 15, 150);
+    o.rad = rad*KM; o.minZoom = 0.2;
     // (its marks go by their real age: the flight keeps the clock)
     o.dayAt = () => ssDays;
     // (from high enough that the ring and the ground round it show: from the south-east, lower from the north-west, then straight down)
-    const A = clamp(km*9, 1200, 9000);
-    o.views = [{ d:[0.3, 0.86, 0.42], k:A/km, hold:12, drift:0.01 }, { d:[-0.6, 0.55, -0.58], k:0.7*A/km, hold:10, drift:0.012 }, { d:[0.04, 1, 0.06], k:1.6*A/km, hold:10, drift:0.008 }];
-    if (!q){ o.name = r[0].replace(/,.*$/, ''); o.type = 'an earthquake'; o.fact = "An earthquake from the USGS's list of the past week. Its details show once this week's list is in."; o.dressRO = () => 'earthquakes: USGS, past 7 days'; return; }
+    const A = clamp(km*9, 1200, 9000)/rad;
+    o.views = [{ d:[0.3, 0.86, 0.42], k:A, hold:12, drift:0.01 }, { d:[-0.6, 0.55, -0.58], k:0.7*A, hold:10, drift:0.012 }, { d:[0.04, 1, 0.06], k:1.6*A, hold:10, drift:0.008 }];
+    // (and the ground's credit under it, as every place on Earth has)
+    const ground = () => typeof EDT !== 'undefined' ? EDT.creditNow() : '';
+    if (!q){ o.name = r[0].replace(/,.*$/, ''); o.type = 'an earthquake';
+      o.fact = "An earthquake from the USGS's list of the past week. Its details show once this week's list is in.";
+      o.dressRO = () => ['earthquakes: USGS, past 7 days', ground()].filter(Boolean).join('\n'); return; }
     o.name = magTxt(q.m) + ' earthquake'; o.type = 'earthquake · ' + where(q);
     o.fact = `A magnitude ${q.m.toFixed(1)} earthquake, ${q.pl ? q.pl + ', ' : ''}on ${longDate(q.t)}. It started ${Math.round(q.d)} km down.` +
       (q.d > 300 ? ' Quakes this deep happen only inside old sea floor sinking into the mantle.' : '') +
       " Its place, depth and size are the USGS's measurements; some are revised in the days after.";
     o.dressRO = () => [`${magTxt(q.m)} · ${Math.round(q.d)} km deep · ${dateTxt(q.t)}, ${ago(now() - q.t)}`,
       `the ring is magnified: drawn ${fmtN(Math.round(2*km))} km across, far wider than the break in the rock`,
-      'earthquakes: USGS, past 7 days (from M 2.5 in the United States, mostly M 4 and over elsewhere)'].join('\n');
+      'earthquakes: USGS, past 7 days (from M 2.5 in the United States, mostly M 4 and over elsewhere)', ground()].filter(Boolean).join('\n');
   }
   // the search: "earthquake" (or quake, quakes, seismic...) lists the week's largest, those whose place has the other words typed first
   const fold = s => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
@@ -268,10 +278,10 @@ void main(){
     const rest = words.filter(w => !/^(earthq|quake|seism)/.test(w));
     return Q.byM.filter(q => rest.every(w => fold(q.pl).includes(w))).slice(0, 5).map((q, i) => [96 - i, rowOf(q)]);
   }
-  let hooked = false, uiReady = false;
-  function hook(){ if (hooked) return; hooked = true; EPL.spotHooks.push(dress); EPL.findHooks.push(findQ); }
-  // (after every file has run: EPL is made later, in e7s-earth-search.js, and the info panel's state in 09-render.js)
-  setTimeout(() => { uiReady = true; hook(); }, 0);
+  // (EPL is made later, in e7s-earth-search.js: e7t-earth-quakes-places.js adds dress and findQ to its hooks. The info panel's state comes
+  // with 09-render.js: the row waits for every file to have run)
+  let uiReady = false;
+  setTimeout(() => { uiReady = true; }, 0);
   function goBig(){ if (Q.big) EPL.go(rowOf(Q.big)); }
   // ---------------------------------------------------------------- Earth's angle over the week's largest quake (owner, 2026-11-08): played when Earth is picked, not on tours
   // (the camera looks at a point under the quake, so the quake sits in the middle of the view, from a little to the side of straight above
@@ -279,23 +289,23 @@ void main(){
   // with the Earth while it holds: track)
   const bigU = () => M3.apply(earth.rot, unit(Q.big.la, Q.big.lo));
   function bigDir(){
-    if (!Q.big) return M3.apply(earth.R0, [0, 0.3, 1]);
+    if (!Q.big) return sunSide(earth, 0.95, 0.32);
     const u = bigU(), L = sunDirFrom(earth);
     let s = V.sub(L, V.mul(u, V.dot(L, u))); if (V.len(s) < 1e-3) s = V.cross(u, [0, 0, 1]);
     return V.norm(V.add(u, V.mul(V.norm(s), 0.35)));
   }
   const bigOff = () => Q.big ? V.mul(M3.applyT(earth.R0, bigU()), 0.75) : [0, 0, 0];
   const VIEW = { track:bigDir, off:bigOff, k:1.15, hold:11, drift:0, ready:() => on() && !!Q.big, state:() => Q.big ? Q.big.t + ',' + Q.big.la : '' };
-  earth.views.push(VIEW);
+  if (can) earth.views.push(VIEW);
   // the quake in view, whose ring and ping show whatever its age: the place object locked on, or the largest while Earth's angle over it plays
   function focusQ(){
     const o = OBJ[orbit.lock];
-    if (o && o.quake && o.place && o.place.row && o.place.row.quake) return o.place.row.quake;
+    if (isQuakeSpot(o) && o.place.row.quake) return o.place.row.quake;
     if (o === earth && Q.big && show.obj === earth.index && (show.on || show.pending) && earth.views[show.to ?? show.view] === VIEW) return Q.big;
     return null;
   }
   // ---------------------------------------------------------------- the replay of the week
-  function startReplay(){ if (!Q.rows) return; REP.on = true; REP.t = 0; toast(`replay of the week · ${fmtN(Q.rows.length)} earthquakes in the order they came, in ${REP.T} seconds`); }
+  function startReplay(){ if (!Q.rows) return; REP.on = true; REP.t = 0; lastG = GT; toast(`replay of the week · ${fmtN(Q.rows.length)} earthquakes in the order they came, in ${REP.T} seconds`); }
   function stopReplay(){ REP.on = false; }
   // ---------------------------------------------------------------- the info panel's row: a flight to the largest, the replay
   const rowEl = $('#qkRow'), goEl = $('#qkGo'), repEl = $('#qkReplay');
@@ -303,7 +313,7 @@ void main(){
   if (repEl) repEl.addEventListener('click', () => { if (REP.on) stopReplay(); else startReplay(); syncRow(); });
   function syncRow(){
     if (!rowEl || !uiReady) return;
-    const o = OBJ[infoObj], show = !!(on() && Q.rows && o && (o === earth || o.quake) && !cmp && !htShowsPlace());
+    const o = OBJ[infoObj], show = !!(on() && Q.rows && o && (o === earth || isQuakeSpot(o)) && !cmp && !htShowsPlace());
     if (rowEl.hidden === show) rowEl.hidden = !show;
     if (!show) return;
     const gt = `fly to the ${magTxt(Q.big.m)} quake`; if (goEl.textContent !== gt) goEl.textContent = gt;
@@ -313,15 +323,17 @@ void main(){
   // (no switch where it cannot work: the artifact page, file://, or with its flag off)
   if (!can){ const b = document.querySelector('#settings .tog button[data-key="quakes"]'); if (b) b.hidden = true; }
   // ---------------------------------------------------------------- each step
-  let lastNet = -1e9, away = 0, toasted = '';
+  let lastNet = -1e9, away = 0, toasted = '', lastG = 0;
   function tick(dt){
-    if (REP.on){ REP.t += Math.min(Math.max(dt, 0), 0.25); if (REP.t >= REP.T || !Q.rows) stopReplay(); }
+    // (the replay runs on real time, whatever the time setting)
+    const dg = clamp(GT - lastG, 0, 0.25); lastG = GT;
+    if (REP.on){ REP.t += dg; if (REP.t >= REP.T || !Q.rows) stopReplay(); }
     if (!can || !uiReady) return;
     const t = GT; if (t - lastNet < 1) return; lastNet = t;
     syncRow();
     const near = earth.rpx > 40 && !earth.hidden;
     if (on() && near) for (const k of ['q', 'f']){ const f = F[k];
-      if (!f.busy && (f.state === 0 || (f.state === 2 && t - f.at > f.every) || (f.state === 3 && t - f.tried > 300))) load(k); }
+      if (!f.busy && (f.state === 0 || (f.state === 2 && t - f.at > f.every && t - f.tried > 300) || (f.state === 3 && t - f.tried > 300))) load(k); }
     // (let go of it all a minute after Earth has shrunk away)
     away = earth.rpx < 4 || earth.hidden ? away + 1 : 0;
     if (away > 60 && (Q.rows || FI.n)) free();
@@ -332,8 +344,8 @@ void main(){
   { const prev = earth.update; earth.update = function(dt){ if (prev) prev.call(this, dt); tick(dt); }; }
   if (can) setInterval(syncRow, 250);
   // (tests: the state of both answers, the levels' counts and shares, the replay)
-  const dbg = () => ({ can, on:on(), q:{ state:F.q.state, n:Q.rows ? Q.rows.length : 0, n5:Q.n5, big:Q.big ? [Q.big.m, Q.big.pl] : null, newest:Q.newest ? Q.newest.t : null },
+  const dbg = () => (syncRow(), { can, on:on(), q:{ state:F.q.state, n:Q.rows ? Q.rows.length : 0, n5:Q.n5, big:Q.big ? [Q.big.m, Q.big.pl] : null, newest:Q.newest ? Q.newest.t : null },
     f:{ state:F.f.state, n:FI.n, src:FI.src, levels:FI.lv.map(L => [L.n, L.all, L.top, L.sum]), w:W.slice() }, replay:{ on:REP.on, t:REP.t, T:REP.T }, row:rowEl ? !rowEl.hidden : false, fade:U.q1[3], toast:toasted });
-  return { get can(){ return can; }, on, lines, rowOf, goBig, startReplay, stopReplay, dress, dbg, REP, K, CUT, get big(){ return Q.big; }, get rows(){ return Q.rows; },
+  return { get can(){ return can; }, on, lines, rowOf, goBig, startReplay, stopReplay, dress, findQ, isQuakeSpot, dbg, REP, K, CUT, get big(){ return Q.big; }, get rows(){ return Q.rows; },
     load:() => { for (const k of ['q', 'f']) if (!F[k].busy) load(k); } };
 })();

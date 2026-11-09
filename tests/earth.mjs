@@ -65,7 +65,8 @@ try {
     if (e.angle < 0) errors.push("Earth has no angle over the week's largest quake");
     if (!e.drawn.includes('qkDot true') || !e.drawn.includes('qkRing true') || !e.drawn.includes('qkFire true')) errors.push("the quakes and fires are not drawn at Earth's first angle: " + JSON.stringify(e.drawn));
     // (the replay of the week: halfway through, its readout; then over by itself)
-    const r = await page.evaluate(() => { const c = window.__cosmos; c.qk.startReplay(); c.simulate(20); const mid = c.BYKEY.earth.readout(); c.simulate(21); return { mid, on:c.qk.dbg().replay.on }; });
+    // (with the time setting paused: the replay runs on real time all the same)
+    const r = await page.evaluate(() => { const c = window.__cosmos; c.setOpt('time', '0', true); c.qk.startReplay(); c.simulate(20); const mid = c.BYKEY.earth.readout(); c.simulate(21); c.setOpt('time', '1', true); return { mid, on:c.qk.dbg().replay.on }; });
     if (!/replay of the week: \w{3} \d+ Nov, \d\d:\d\d UTC · \d+ of 43 earthquakes so far/.test(r.mid) || r.on) errors.push('the replay: ' + JSON.stringify(r));
     // (the flight to the largest: a place object dressed as the quake; the clock is not moved)
     const g = await page.evaluate(() => { const c = window.__cosmos, d0 = c.days; c.qk.goBig(); c.land(); const o = c.OBJ[c.orbit.lock];
@@ -74,6 +75,10 @@ try {
     if (!/M 7\.2 · 20 km deep · Sun 8 Nov, 09:00 UTC, 3 hours ago/.test(g.ro) || !/magnified/.test(g.ro) || !/USGS/.test(g.ro)) errors.push("the quake's readout: " + g.ro);
     if (!/8 November 2026 at 09:00 UTC/.test(g.fact)) errors.push("the quake's fact: " + g.fact);
     if (Math.abs(g.dd) > 0.01) errors.push('the flight to the quake moved the clock by ' + g.dd + ' days');
+    // (both place objects set to somewhere else in turn, the one that was the quake included: the quake's row goes)
+    const p = await page.evaluate(() => { const c = window.__cosmos; for (let i = 0; i < 2; i++){ c.epl.go(['Test Basin', 'r', 10, 10, 500, '', 'basin']); c.land(); }
+      const o = c.OBJ[c.orbit.lock]; return { name:o.name, row:c.qk.dbg().row, quake:c.qk.isQuakeSpot(o) }; });
+    if (p.name !== 'Test Basin' || p.row || p.quake) errors.push('a place object reused after the quake still shows it: ' + JSON.stringify(p));
     // (the search lists the week's largest; the place's other words narrow it down)
     const f = await page.evaluate(() => { const c = window.__cosmos; return [c.epl.find('earthquake').map(r => r[0]), c.epl.find('quakes argentina').map(r => r[0])]; });
     if (!f[0].length || !/^M 7\.2 earthquake, 90 km E of Ishinomaki/.test(f[0][0]) || f[1][0] !== 'M 5.4 earthquake, Jujuy, Argentina') errors.push('the search for earthquakes: ' + JSON.stringify(f));
@@ -83,12 +88,14 @@ try {
     if (o.on || o.drawn || o.ro) errors.push('with the switch off: ' + JSON.stringify(o));
     notes.push('the living planet: 43 quakes and 1,200 fire cells in after ' + t + ' s (' + L.map(x => x[1]).join(' / ') + " points by level), the M 7.2's toast, flight and readout, the replay and the search");
     errors.push(...pe); await browser.close(); }
-  // ---- without /api (as on the artifact page, or when an upstream is down): quiet
+  // ---- without /api (as on the artifact page, or when an upstream is down): quiet; a shared link to a quake still opens as an earthquake
   { API = null;
-    const { browser, page, errors:pe } = await openPage({ url:URL0, now:NOW });
+    const { browser, page, errors:pe } = await openPage({ url:URL0 + '#o=earth-place-0&g=' + encodeURIComponent('38.1,142.9,r,1300,,earthquake,M 7.2 earthquake'), now:NOW });
     await until(page, () => { const d = window.__cosmos.qk.dbg(); return d.q.state === 3 && d.f.state === 3; }, null, 60, 'the earthquakes and fires answers refused');
-    const q = await page.evaluate(() => { const c = window.__cosmos; c.view('earth', 0); return { ro:c.BYKEY.earth.readout(), row:c.qk.dbg().row }; });
+    const q = await page.evaluate(() => { const c = window.__cosmos, s = c.BYKEY['earth-place-0'], link = { name:s.name, type:s.type, fact:s.fact, ro:s.readout() };
+      c.view('earth', 0); return { ro:c.BYKEY.earth.readout(), row:c.qk.dbg().row, link }; });
     if (/earthquakes|fires and heat/.test(q.ro) || q.row) errors.push('without /api something is still said: ' + JSON.stringify(q));
+    if (q.link.name !== 'M 7.2 earthquake' || q.link.type !== 'an earthquake' || /Natural Earth/.test(q.link.fact) || !/USGS/.test(q.link.ro)) errors.push('a link to a quake without its list: ' + JSON.stringify(q.link));
     errors.push(...pe); await browser.close(); }
   // ---- a phone, near the pole, then away
   { const { browser, page, errors:pe } = await openPage({ phone:true, url:URL0 });
