@@ -10,7 +10,7 @@ const COMPACT_MQ = matchMedia('(max-width:680px), (max-height:520px) and (max-wi
 const isCompact = () => COMPACT_MQ.matches;
 // user settings, remembered between visits when the browser allows it
 const SET = (() => {
-  const d = { launchReal:false, detail:1, detailAuto:true, travel:reduceMotion ? 'quick' : 'cinematic', glow:true, labels:true, twinkle:true, haloMark:false, menuSize:1.15, sound:true, volume:0.55, dwell:'normal', textSize:1, musicStyle:'mix', saverIdle:0, fadeUI:'quick', infoD:'full', infoM:'compact', rideCam:reduceMotion ? 'still' : 'moving' };
+  const d = { launchReal:false, detail:1, detailAuto:true, travel:reduceMotion ? 'quick' : 'cinematic', glow:true, labels:true, twinkle:true, haloMark:false, menuSize:1.15, sound:true, volume:0.55, dwell:'normal', textSize:1, musicStyle:'mix', saverIdle:0, fadeUI:'quick', infoD:'full', infoM:'compact', rideCam:reduceMotion ? 'still' : 'moving', quakes:true };
   try { const s = JSON.parse(localStorage.getItem('gcdatlas.settings') || '{}'); for (const k in d) if (k in s && typeof s[k] === typeof d[k]) d[k] = s[k];
     // (auto detail since 0.9.4: someone who picked a detail other than the old default fine keeps it)
     if (!('detailAuto' in s) && 'detail' in s && s.detail !== 1) d.detailAuto = false; } catch (e) {}
@@ -22,7 +22,7 @@ const SET = (() => {
 // Override per visitor with ?flags=name,-other in the URL (for that visit only) or localStorage 'gcdatlas.flags'. See docs/FEATURE_FLAGS.md.
 // (a link someone else shares must not change your settings for good, so URL flags are not saved; only known flag names count)
 const FLAGS = (() => {
-  const f = { live:true, launches:true, planes:true, backyard:true, earthStory:true, social:false, spacex:true, realEarth:true, analytics:true };
+  const f = { live:true, launches:true, planes:true, backyard:true, earthStory:true, social:false, spacex:true, realEarth:true, analytics:true, livePlanet:true };
   try { const saved = JSON.parse(localStorage.getItem('gcdatlas.flags') || '{}'); for (const k of Object.keys(f)) if (typeof saved[k] === 'boolean') f[k] = saved[k]; } catch (e) {}
   const q = new URLSearchParams(location.search).get('flags');
   if (q){ for (const s of q.split(',')){ const k = s.replace(/^[-+]/, ''); if (Object.hasOwn(f, k)) f[k] = !s.startsWith('-'); } }

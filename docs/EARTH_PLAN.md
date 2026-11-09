@@ -61,6 +61,7 @@ release and one pull request each. This file is the plan; `docs/CHANGELOG.md` sa
 - 0.22.0: Las Vegas as it is in October 2026, with the Sphere, the High Roller, the Luxor and its beam, the STRAT, the Fremont Street canopy, the Fountains of Bellagio, and Hard Rock's guitar tower and the Athletics' ballpark under construction.
 - 0.19.0: six more cities (Hong Kong, San Francisco, Sydney, Rome, Los Angeles, Rio de Janeiro) with six landmark models.
 - 0.17.0: the cities in an architectural-model style, their traffic and planes visible from afar (owner's review of 0.14.0 and 0.15.0).
+- Phase 5: 0.26.0. This week's earthquakes (USGS) and the last day's fires (NASA FIRMS) on the real Earth (`e1q-earth-quakes.js`), with a flight to the largest quake, a replay of the week and an angle of Earth's own over it; the real clouds came with 0.13.0. Every phase of the plan is done.
 - Phase 3: 0.15.0. 30 famous places in 3D (`e9p-earth-places.js`): their layers drawn near the ground like the cities', an object each with its framings, fact and credits, reached from the atlas's "on Earth" list (19 rows added, 7 of them in a new kind, "built by people"), the marks on the globe and the search, and a tour, wonders of Earth.
 - Phases 3 to 5: their data was prepared in parallel on local branches. Each phase's release takes its branch in:
   - `data/earth-places`: the iconic places' layers (`tools/earth-places.mjs`);

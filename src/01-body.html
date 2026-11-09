@@ -34,6 +34,8 @@
   <div id="objDist" class="where"></div>
   <p id="objFact" class="fact"></p>
   <div id="readout" class="readout"></div>
+  <!-- the living planet (src/objects/e1q-earth-quakes.js): on Earth, once this week's earthquakes are in, a flight to the largest and a replay of the week -->
+  <div id="qkRow" class="acts qrow" hidden><button class="act" id="qkGo"></button><button class="act" id="qkReplay" aria-pressed="false">replay the week</button></div>
   <div class="scale" title="A ruler for what you are looking at: at the distance of this object, the bar's length on screen equals the distance written next to it.">
     <span class="rlab">ruler</span><span id="scaleBar" class="bar"></span><span id="scaleTxt"></span>
   </div>
@@ -212,7 +214,7 @@
   <div class="opt">
     <div class="opt-l">show</div>
     <div class="tog">
-      <button data-key="glow" aria-pressed="true">glow</button><button data-key="labels" aria-pressed="true">labels</button><button data-key="twinkle" aria-pressed="true">twinkle</button><button data-key="haloMark" aria-pressed="false">Halo indicator</button>
+      <button data-key="glow" aria-pressed="true">glow</button><button data-key="labels" aria-pressed="true">labels</button><button data-key="twinkle" aria-pressed="true">twinkle</button><button data-key="haloMark" aria-pressed="false">Halo indicator</button><button data-key="quakes" aria-pressed="true" title="This week's earthquakes and the last day's fires on the real Earth">quakes &amp; fires</button>
     </div>
   </div>
   <div class="opt">

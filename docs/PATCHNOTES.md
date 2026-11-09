@@ -5,6 +5,13 @@
      numbers with units. The newest version comes first and opens by itself; its number must match package.json (tests/smoke.mjs checks it).
      Every detail stays in docs/CHANGELOG.md, which the panel links to. -->
 
+## 0.26.0 · 9 Nov 2026 · Earthquakes and fires, live
+- This week's earthquakes on the real Earth, from the USGS: a dot where each one struck and a ring for the last two days, red, violet or blue by how deep it was.
+- The last day's fires glow like embers on Earth's night side, from NASA's fire satellites.
+- From Earth's card, fly to the week's biggest quake or replay the whole week in 40 seconds.
+- A big one (magnitude 7 or more) in the last day gets a note when you look at Earth.
+- Turn them off in settings, under show: quakes & fires.
+
 ## 0.25.1 · 9 Nov 2026 · Every place's page, from the atlas
 - The last line of the atlas list now links to every place as a page to read (gcdatlas.com/places). It opens in a new tab, so the atlas stays where you left it.
 - The browser tab now says what this is: gcdatlas · the real universe, drawn in ASCII.
