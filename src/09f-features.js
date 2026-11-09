@@ -14,6 +14,8 @@ const BADGES = [
   { id:'bh', name:'black hole hunter', test:o => o.prog === P.blackhole || o.isBH },
   { id:'nebulae', name:'nebula chaser', test:o => o.group === 'nebulae' },
   { id:'galaxies', name:'galaxy collector', test:o => catOf(o) === 'galaxies', need:12 },
+  // (0.25.0, with the list complete: every place holding a Messier number, the same ones the Messier marathon visits, counted by number)
+  { id:'messier', name:'Messier marathoner', test:o => messierOf(o).size > 0, count:o => messierOf(o).size },
   { id:'grand', name:'grand tourist', grand:true },
   { id:'edge', name:'edge of everything', keys:['universe'] },
   { id:'halo', name:'ship spotter', keys:['halo'] },
@@ -28,7 +30,9 @@ function badgeProgress(b){
   else if (b.grand) pool = GRAND_KEYS;
   else if (b.test) pool = ATLAS_KEYS.filter(k => b.test(BYKEY[k]));
   else pool = ATLAS_KEYS;
-  const have = pool.filter(k => SEEN.has(k)).length, need = b.frac ? Math.ceil(pool.length*b.frac) : Math.min(b.need || pool.length, pool.length);
+  // (a badge with count weighs each place by it: the Messier badge counts numbers, so the Orion Nebula, M42 and M43, counts as two)
+  const sum = ks => b.count ? ks.reduce((a, k) => a + b.count(BYKEY[k]), 0) : ks.length, tot = sum(pool);
+  const have = sum(pool.filter(k => SEEN.has(k))), need = b.frac ? Math.ceil(tot*b.frac) : Math.min(b.need || tot, tot);
   return { have:Math.min(have, need), need, done:need > 0 && have >= need };
 }
 // the badge tray (opened from the atlas footer): one row per badge, "✓ planet hopper 8 of 8" once earned, "black hole hunter 3 of 8 ›" on the way.

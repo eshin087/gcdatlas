@@ -5,9 +5,16 @@
      numbers with units. The newest version comes first and opens by itself; its number must match package.json (tests/smoke.mjs checks it).
      Every detail stays in docs/CHANGELOG.md, which the panel links to. -->
 
-## 0.24.2 · 9 Nov 2026 · Every place's page, from the atlas
+## 0.25.1 · 9 Nov 2026 · Every place's page, from the atlas
 - The last line of the atlas list now links to every place as a page to read (gcdatlas.com/places). It opens in a new tab, so the atlas stays where you left it.
 - The browser tab now says what this is: gcdatlas · the real universe, drawn in ASCII.
+
+## 0.25.0 · 9 Nov 2026 · Every Messier object
+- The last 28 Messier objects, so all 110 are here: 20 galaxies, 6 star clusters, and M40 and M73.
+- The Virgo Cluster is a place of its own: its 16 Messier galaxies at their measured distances, and about 1,000 more galaxies around them.
+- M40 and M73 look like little groups from Earth, but their stars lie hundreds of light-years apart. Fly round them to see it.
+- M32 and M110, Andromeda's two bright companions, have their own places in the atlas now.
+- A new badge for seeing all 110, and the Messier marathon tour now visits every one.
 
 ## 0.24.1 · 8 Nov 2026 · A page for every place
 - Every place in the atlas has a page of its own to read: its picture, what it is, how far away and how big, and more places like it. See them all at gcdatlas.com/places.
