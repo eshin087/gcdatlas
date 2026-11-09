@@ -48,6 +48,13 @@ try {
     await page.waitForTimeout(800);
     const lab = await page.evaluate(() => { const L = [...document.querySelectorAll('.lab')].find(e => /Eagle/.test(e.textContent)); return L ? { t:L.textContent, on:L.classList.contains('on') } : null; });
     if (!lab || !/model/.test(lab.t) || !lab.on) errors.push("Eagle's label is not shown, or does not say it is a model: " + JSON.stringify(lab));
+    // (zoomed all the way in on the lander, low down: the camera stays 12 m from what it looks at, and outside the lander)
+    const lz = await page.evaluate(() => { const c = window.__cosmos, o = c.BYKEY.apollo11, KM = 1/9.4607e12;
+      c.orbit.dist = c.orbit.distT = o.rad*o.minZoom; c.orbit.pitch = 0.02; for (let i=0;i<20;i++) c.tick(1/30);
+      const cm = c.mdt.camM(), h = c.mdt.heightAt(cm), u = o.u, R = c.mdt.R, along = cm[0]*u[0] + cm[1]*u[1] + cm[2]*u[2];
+      const side = Math.sqrt(Math.max(0, cm[0]*cm[0] + cm[1]*cm[1] + cm[2]*cm[2] - along*along))*1000;
+      return { dist:o.rad*o.minZoom/KM*1000, up:h == null ? null : (Math.hypot(...cm) - R)*1000 - h, side }; });
+    if (!(lz.dist >= 11.9) || !(lz.up > 2.4) || (lz.side < 6 && lz.up < 4.8)) errors.push('zoomed in on Eagle, the camera is too close: ' + JSON.stringify(lz));
     // (the atlas: every place right under the Moon, which sits under Earth, a level further in, "on the Moon")
     const atl = await page.evaluate(() => { document.querySelector('#btnAtlas').click();
       const bs = [...document.querySelectorAll('#atlasList .arow')], rows = bs.map(b => b.textContent);
