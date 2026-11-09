@@ -123,7 +123,7 @@ void main(){
   int ph = t0 >= 0. && t1 > t0 ? 0 : 9, nb = 0, k = 0;
   float t = max(t0, 0.), tp = t, lo = 0., hi = 0., hit = -1., fp = 1., sStep = 1., h0 = 0., hx = 0., sh = 1., ts = 0.;
   vec2 P = vec2(0.); vec3 Q0 = vec3(0.), n = vec3(0., 1., 0.);
-  for(int i=ZI;i<190;i++){
+  for(int i=ZI;i<236;i++){
     if(ph > 3) break;
     vec2 xz; float ref;
     if(ph == 0){ vec3 p = o + d*t; xz = p.xz; ref = p.y; }
@@ -133,7 +133,11 @@ void main(){
     float gy = sphY(xz) + groundH(xz), dh = ref - gy;
     if(ph == 0){
       if(dh < 0.){ ph = 1; lo = tp; hi = t; nb = 0; continue; }
-      tp = t; t += clamp(dh*0.6, 0.15 + t*0.0015, 1500. + t*0.06);
+      // (a ray grazing a plain closes on it slowly, a step a fraction of its height above the ground: past 170 steps, one within two
+      // pixels of the ground takes the ground where it is, so the far plain under the horizon is not left as sky, and the walk toward
+      // the Sun keeps the steps it needs; a ray passing over the horizon higher than that goes on to the sky)
+      if(i >= 170 && dh < t*uPix*2.){ hit = t; P = (o + d*hit).xz; fp = max(hit*uPix, 0.02); sStep = max(fp*1.2, 0.6); ph = 2; k = 0; continue; }
+      tp = t; t += clamp(dh*0.6, 0.15 + t*0.002, 1500. + t*0.06);
       if(t > t1) ph = 9;
     } else if(ph == 1){
       if(dh < 0.) hi = 0.5*(lo + hi); else lo = 0.5*(lo + hi);
@@ -156,6 +160,13 @@ void main(){
     vec3 base = qL.y > 1.55 && qL.y < 3.2 && abs(nL.y) < 0.6 ? vec3(0.95, 0.72, 0.32) : qL.y < 1.6 && length(qL.xz) < 0.8 ? vec3(0.32, 0.31, 0.3) : vec3(0.78, 0.76, 0.72);
     vec3 col = base*here*1.1 + vec3(1., 0.95, 0.85)*pow(max(dot(reflect(d, nL), L), 0.), 24.)*0.6*here + base*uP2.w*0.6;
     outCol(unTone(col*uP3.w)*fade, fade); return;
+  }
+  // (a grazing ray still on its way down when the steps ran out meets the plain beyond, not far past where it stopped: the sphere at the
+  // height of the ground under the camera (uP1.w, one plane for every pixel, so no stripes), lit, its normal straight up; one passing
+  // over that plain's horizon, or meeting it far off, is sky. Worked out without subtracting big numbers)
+  if(hit < 0. && ph == 0){
+    float gC = uP1.w, b2 = dot(o, d) + RM*d.y, c2 = dot(o, o) + 2.*RM*o.y - 2.*RM*gC - gC*gC, q = b2*b2 - c2, tq = c2/(sqrt(max(q, 0.)) - b2);
+    if(q > 0. && b2 < 0. && c2 > 0. && tq < t*4.){ hit = tq; vec3 p = o + d*hit; P = p.xz; h0 = p.y; n = normalize(p + vec3(0., RM, 0.)); sh = 1.; fp = max(hit*uPix, 0.02); }
   }
   if(hit < 0.){ outCol(vec3(0.), 0.); return; }
   vec3 S = sphPt(P), up = normalize(S + vec3(0., RM, 0.));
