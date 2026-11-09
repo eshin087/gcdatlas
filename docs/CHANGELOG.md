@@ -4,6 +4,15 @@ All notable changes, newest first. Dates are UTC.
 
 ## Unreleased
 
+## 0.25.1 · 2026-11-09
+
+(built as 0.24.2 and renumbered after 0.25.0, the Messier pack, merged first) **The home page links to the place pages, and its title says what the site is** (the follow-up to 0.24.1: search engines could reach the place pages only through `sitemap.xml`, and the home page, which holds the site's links from elsewhere, passed nothing on to them)
+- The atlas list's last line now reads "real positions and sizes · every place as a page ›", a plain link to `/places`, opened in a new tab so the atlas stays where it was. The owner picked this spot from three (2026-11-08), over the help's last line and its "more" column; the help is unchanged.
+- The line is now in the page's own HTML (`#atlasEnd` in src/01-body.html), not made by the script: without WebGL 2 the script stops at its first line (02-core.js), so a crawler that cannot draw would never have seen a link the script made. `renderAtlas` keeps it last, as before. Served alone (the artifact build, or dist/index.html opened as a file) there is no `/places` beside the page, and the link goes to https://gcdatlas.com/places.
+- The link is an inline block: at 160% menu text on a phone it moves to the next line whole instead of breaking after "every", and its tap area is about 30 px tall.
+- The home page's `<title>` is "gcdatlas · the real universe, drawn in ASCII" (it was "gcdatlas"). The owner picked it from three (2026-11-08), with the name first so a narrow tab still reads gcdatlas. It is the tab's text and the headline of the home page in search results; the preview bots' page (dist/preview.html) takes it from the page, as before. Link-preview cards keep `og:title` "gcdatlas", schema.org's WebSite name stays "gcdatlas", and /lab and /songs keep their own titles.
+- Tests: tests/smoke.mjs checks that the link is in dist/index.html's own HTML inside the atlas list, and that it stays the list's last line, opening in a new tab, with all kinds, one kind, a search and one list by distance.
+
 ## 0.25.0 · 2026-11-09
 
 **All 110 Messier objects, the Virgo Cluster as a place, and a Messier badge** (owner, 2026-11-08: the Messier pack, one of four pieces of work started side by side that day; asked with options, the owner picked both extras: the Virgo Cluster as a place of its own, and a badge for seeing all 110)

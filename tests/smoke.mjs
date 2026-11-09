@@ -164,6 +164,19 @@ const atl = await page.evaluate(() => {
   r.out = out; return r;
 });
 errors.push(...atl.out);
+// the home page's link to /places, every place as a page (0.25.1): in the page's own HTML inside the atlas list, so a crawler that cannot run
+// the script (it stops at once without WebGL 2) finds it, and the list's last line in every view. Opened as a file, as here, it goes to the site's
+{ const html = (await import('node:fs')).readFileSync(new URL('../dist/index.html', import.meta.url), 'utf8'), i = html.indexOf('id="atlasList"');
+  if (i < 0 || !/<div class="aend" id="atlasEnd">[^<]*<a href="\/places"[^>]*>every place as a page/.test(html.slice(i, html.indexOf('</aside>', i))))
+    errors.push('the page itself has no link to /places at the end of the atlas list (src/01-body.html)');
+  const end = await page.evaluate(() => { const $ = s => document.querySelector(s), out = [], last = w => { const l = $('#atlasList').lastElementChild, a = $('#atlasEnd a');
+      if (!l || l.id !== 'atlasEnd' || l.hidden || !a || a.getAttribute('href') !== 'https://gcdatlas.com/places' || a.target !== '_blank') out.push(`${w}: the last line of the atlas is ${l && (l.id || l.className)}, its link ${a && a.href}`); };
+    if ($('#atlas').hidden) $('#btnAtlas').click();
+    last('all kinds'); $('#atlasCats [data-cat="bh"]').click(); last('black holes');
+    const s = $('#atlasSearch'); s.value = 'm87'; s.dispatchEvent(new Event('input', { bubbles:true })); last('a search');
+    $('#atlasReset').click(); $('#atlasSort [data-sort="distance"]').click(); last('by distance');
+    $('#atlasReset').click(); $('#atlasClose').click(); return out; });
+  errors.push(...end); }
 // (how many places the atlas lists, counted from the page, so a content pack does not have to change these checks)
 const NPL = await page.evaluate(() => { const C = window.__cosmos; return C.OBJ.filter(o => o.atlas !== false && !o.marker && C.dbg.GROUPS.some(([g]) => g === o.group)).length; });
 if (atl.cells !== 14) errors.push('the atlas has ' + atl.cells + ' cells ("all", 12 kinds and "on Earth" expected)');
