@@ -16,7 +16,7 @@ addGalaxy({ key:'m32', name:'M32', label:'M32', type:'compact elliptical galaxy 
   aka:'m32 messier 32 ngc 221 le gentil arp 168 compact elliptical satellite of andromeda',
   readout:() => '2.52 million light-years · about 6,400 light-years across\nits black hole weighs about 2.5 million Suns' });
 addGalaxy({ key:'m110', name:'M110', label:'M110', type:'dwarf elliptical galaxy · satellite of Andromeda', sortKey:2.73e6,
-  fact:'A dwarf elliptical galaxy that orbits Andromeda. Messier saw it in 1773 and drew it on his chart of Andromeda but never listed it; Caroline Herschel found it again in 1783, and it was given the number 110 only in 1967. Unlike most of its kind it holds dust and young stars near its centre.',
+  fact:'A dwarf elliptical galaxy that orbits Andromeda. Messier saw it in 1773 and included it in his drawing of Andromeda but never listed it; Caroline Herschel found it on her own in 1783, and it was given the number 110 only in 1967. Unlike most of its kind it holds dust and young stars near its centre.',
   sizeR:8700, aka:'m110 messier 110 ngc 205 dwarf elliptical satellite of andromeda caroline herschel',
   pos:radec(hms(0,40,22.1), dms(41,41,7), 2.73e6), rad:9000, incl:60, g:{ ell:0.45, Rd:0.35 }, farLum:0.5, labelRange:3e6,
   readout:() => '2.73 million light-years · about 17,000 light-years across\nabout 130,000 to 190,000 light-years behind Andromeda' });

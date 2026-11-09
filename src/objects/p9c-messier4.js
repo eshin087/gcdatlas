@@ -71,7 +71,7 @@ const GAL4 = [
   // Its tilt is THINGS's (de Blok et al. 2008), from the motion of its gas: M94 is not in PHANGS)
   { m:94, ngc:4736, ra:192.72114, dec:41.12025, ly:14e6, incl:41, pa:116, across:31700, rad:26000, g:{ arms:2, pitch:9, bulge:1.6, dust:0.9, H:0.011, sf:0.5, Rd:0.15, ringR:0.12, ringW:0.02, ringGain:2.4, seed:117 },
     type:'spiral galaxy with a bright ring · in Canes Venatici',
-    fact:'A very bright centre ringed by young star clusters, inside a smooth, bright oval disc. Far out, a faint ring about 45,000 light-years across circles it: long thought a closed ring of stars, it is really spiral arms in an outer disc that holds about a quarter of the galaxy\'s stars.',
+    fact:'A very bright centre ringed by young star clusters, inside a smooth, bright oval disc. Far out, a faint ring about 45,000 light-years across circles it. It was long thought to be a closed ring of stars, but a 2009 study found it is more likely spiral arms, in an outer disc that holds almost a quarter of the galaxy\'s mass in stars.',
     r1:'14 million light-years · its bright disc about 32,000 light-years across', r2:'its black hole weighs about 16 million Suns (JWST, 2025)', aka:'ugc 7996 croc\'s eye crocs eye galaxy canes venatici' },
   { m:95, ngc:3351, ra:160.99055, dec:11.70369, ly:31.8e6, incl:45, pa:13, across:67000, g:{ arms:2, pitch:12, bulge:0.5, dust:1, bar:0.22, H:0.011, sf:0.6, Rd:0.3, armRef:0.36, barAng:20, ringR:0.03, ringW:0.01, ringGain:3, seed:119 },
     type:'barred spiral galaxy · the Leo I group · in Leo',
@@ -79,29 +79,29 @@ const GAL4 = [
     r1:'31.8 million light-years · about 67,000 light-years across', r2:'its Cepheid stars helped measure how fast the universe expands', aka:'ugc 5850 leo i group sn 2012aw' },
   { m:96, ngc:3368, ra:161.69060, dec:11.81994, ly:34.1e6, incl:50, pa:172, across:82500, g:{ arms:2, pitch:12, bulge:1, dust:1.4, bar:0.1, H:0.011, sf:0.6, irr:0.35, Rd:0.26, seed:121 },
     type:'spiral galaxy · the Leo I group · in Leo',
-    fact:'The brightest galaxy of the Leo I group, with weak, lopsided, dusty arms and a bar inside a bar at its centre. In 1998 a supernova flared in it, one of the nearest of its kind in modern times, and it helped measure how fast the universe expands.',
+    fact:'With M105, one of the two brightest galaxies of the Leo I group. Its arms are weak, lopsided and dusty, and a bar sits inside a bar at its centre. In 1998 a supernova flared in it, one of the nearest of its kind in modern times, and it helped measure how fast the universe expands.',
     r1:'34.1 million light-years · about 82,000 light-years across', r2:'its black hole weighs about 7.5 million Suns', aka:'ugc 5882 leo i group sn 1998bu' },
   { m:105, ngc:3379, ra:161.95667, dec:12.58163, ly:36e6, incl:90, pa:71, across:51300, ell:true, g:{ ell:0.11, Rd:0.4, sf:0.04, gain:1.4 }, stars:4500,
     type:'elliptical galaxy · the Leo I group · in Leo',
-    fact:'A smooth, almost round elliptical galaxy. Méchain found it in 1781, but it joined Messier\'s list only in 1947, when Helen Sawyer Hogg found his letter about it. With its neighbour NGC 3384 it sits inside the Leo Ring, a ring of hydrogen about 650,000 light-years across that only radio telescopes see.',
+    fact:'A smooth, almost round elliptical galaxy. Méchain found it in 1781 and described it in a letter in 1783, but it joined Messier\'s list only in 1947, when Helen Sawyer Hogg brought that letter back to light. With its neighbour NGC 3384 it sits inside the Leo Ring, a ring of hydrogen about 650,000 light-years across: radio telescopes see its gas, and it holds only a few faint knots of new stars.',
     r1:'36 million light-years · about 51,000 light-years across', r2:'its black hole weighs 200 to 400 million Suns', aka:'ugc 5902 leo ring leo i group' },
   { m:102, ngc:5866, ra:226.62317, dec:55.76331, ly:48.8e6, incl:89, pa:127, across:89600, g:{ arms:0, bulge:2.6, dust:3, H:0.016, sf:0.05, Rd:0.22, ring:0.3, gain:0.35, seed:123 },
     // (the dust lane is thinner than a row of characters from afar: the second angle comes close along the disc)
     views:[{ dir:true, k:2 }, { d:[0.96, 0.1, 0.25], k:0.8 }, { d:[0.3, 0.8, 0.5], k:1.5 }],
     type:'lenticular galaxy seen edge-on · in Draco',
-    fact:'Seen exactly edge-on, with a sharp, thin lane of dust along its disc. Whether it is really M102 is debated: Méchain later wrote that M102 was M101 counted twice, but his description and a position Messier pencilled into his own copy point here, and most modern lists agree.',
-    r1:'48.8 million light-years · about 90,000 light-years across', r2:'wisps of dust rise up to 1,000 light-years out of its disc', aka:'ugc 9723 spindle galaxy fool\'s gold galaxy draco' },
+    fact:'Seen almost exactly edge-on, with a sharp, thin lane of dust along its disc. Whether it is really M102 is debated: Méchain later wrote that M102 was M101 counted twice, but his description fits this galaxy, and most modern lists accept it.',
+    r1:'48.8 million light-years · about 90,000 light-years across', r2:'wisps of dust rise about 1,300 light-years out of its disc', aka:'ugc 9723 spindle galaxy fool\'s gold galaxy draco' },
   // (M108: its size is RC3's D25; HyperLeda's mean, 4 arcminutes, is pulled down by two stray measurements. Its only distance is from its
   // rotation, Tully-Fisher)
   { m:108, ngc:3556, ra:167.87903, dec:55.67412, ly:29.9e6, incl:80, pa:79, across:75800, g:{ arms:2, pitch:22, bulge:0.15, dust:1.8, bar:0.06, H:0.014, sf:1.1, irr:0.6, Rd:0.3, seed:125 },
     type:'barred spiral galaxy seen nearly edge-on · in Ursa Major',
     fact:'A spiral seen almost edge-on, with no bulge to speak of, mottled with dust and bright star-forming clouds. On our sky it lies less than a degree from the Owl Nebula, but it is about 11,000 times farther away. Three supernovae have been seen in it, two of them since 2023.',
-    r1:'about 30 million light-years, uncertain by a fifth · about 76,000 light-years across', r2:'hot gas boils 13,000 light-years out of its disc', aka:'ugc 6225 surfboard galaxy ursa major' },
+    r1:'about 30 million light-years, uncertain by a fifth · about 76,000 light-years across', r2:'hot gas rises about 8,500 light-years out of its disc', aka:'ugc 6225 surfboard galaxy ursa major' },
   // (M109: its group's distance, from nine galaxies' rotation (Cosmicflows-4); its own gives 82 million light-years. Tilt from the motion of
   // its gas: Bottema & Verheijen 2002)
   { m:109, ngc:3992, ra:179.39985, dec:53.37472, ly:68e6, incl:57, pa:68, across:140000, g:{ arms:2, pitch:15, bulge:0.6, dust:1, bar:0.28, H:0.011, sf:0.7, Rd:0.3, armRef:0.42, barAng:30, ringR:0.3, ringW:0.03, ringGain:0.7, seed:127 },
     type:'barred spiral galaxy · in Ursa Major',
-    fact:'Probably the farthest of all the Messier objects. A strong bar runs across its middle and ends in a ring, and its hydrogen has a hole exactly where the bar is, swept inward by it. Three small spiral galaxies keep it company.',
+    fact:'One of the farthest of all the Messier objects. A strong bar runs across its middle and ends in a ring, and its hydrogen has a hole exactly where the bar is, probably swept inward by it. Three small spiral galaxies keep it company.',
     r1:'about 68 million light-years · about 140,000 light-years across', r2:'its distance is uncertain: 68 to 82 million light-years by different counts', aka:'ugc 6937 vacuum cleaner galaxy ursa major' },
 ];
 for (const c of GAL4){
@@ -132,7 +132,7 @@ addGalaxy({ key:'ngc4647', name:'NGC 4647', label:'NGC 4647', type:'spiral galax
   rad:23000, sizeR:21500, g:{ arms:2, pitch:20, bulge:0.3, dust:1, bar:0.08, H:0.011, sf:1.2, irr:0.4, Rd:0.3, seed:129 }, farLum:0.5,
   aka:'ngc 4647 arp 116 ugc 7896 vcc 1972', readout:() => 'about 54 million light-years, taken to be M60\'s · about 43,000 light-years across\ntwo supernovae seen in it, in 1979 and 2022' });
 addGalaxy({ key:'ngc3384', name:'NGC 3384', label:'NGC 3384', type:'lenticular galaxy · beside M105 · the Leo I group', ...galAt(162.07036, 12.62927, 36e6, 90, 53), atlas:false,
-  fact:'A lenticular galaxy beside M105, seen at a slant. Shells of stars round it tell of a small galaxy it swallowed not long ago, and with M105 it sits inside the Leo Ring of hydrogen.',
+  fact:'A lenticular galaxy beside M105, seen at a slant. Shells of stars round it are probably the remains of a small galaxy it swallowed not long ago, and with M105 it sits inside the Leo Ring of hydrogen.',
   rad:30000, sizeR:27500, g:{ ell:0.54, Rd:0.35, sf:0.05, gain:1.3 }, stars:3500, farLum:0.6, views:ellViews(90),
   aka:'ngc 3384 ngc 3371 ugc 5911', readout:() => 'about 36 million light-years, taken to be M105\'s · about 55,000 light-years across\nits black hole weighs about 16 million Suns' });
 // M32 and M110 (o17-andromeda.js), listed since 0.25.0: each turned to its real position angle, seen edge-on so that what we see of its
@@ -147,7 +147,7 @@ gaiaOpenCluster('m18', { name:'M18', label:'M18', type:'open star cluster · in 
   aka:'m18 messier 18 ngc 6613 black swan cluster sagittarius',
   readout:() => '4,900 light-years (Gaia) · its stars spread over about 80 light-years\nabout 20 to 50 million years old · 173 of its stars as Gaia measured them' });
 gaiaOpenCluster('m21', { name:'M21', label:'M21', type:'open star cluster · in Sagittarius', labelRange:8e4,
-  fact:'One of the youngest clusters in Messier\'s list: its stars formed only 5 to 13 million years ago. On our sky it lies just beside the Trifid Nebula, but it is not part of it.',
+  fact:'One of the youngest clusters in Messier\'s list: its stars formed only 5 to 13 million years ago. On our sky it lies just beside the Trifid Nebula, and at about the same distance, but it sits outside the nebula\'s glowing gas.',
   aka:'m21 messier 21 ngc 6531 webb\'s cross sagittarius',
   readout:() => '3,920 light-years (Gaia) · its stars spread over about 24 light-years\nabout 5 to 13 million years old · 212 of its stars as Gaia measured them' });
 gaiaOpenCluster('m26', { name:'M26', label:'M26', type:'open star cluster · in Scutum', labelRange:1e5,
@@ -155,11 +155,11 @@ gaiaOpenCluster('m26', { name:'M26', label:'M26', type:'open star cluster · in 
   aka:'m26 messier 26 ngc 6694 scutum',
   readout:() => '5,990 light-years (Gaia) · its stars spread over about 53 light-years\nabout 100 to 140 million years old · 470 of its stars as Gaia measured them' });
 gaiaOpenCluster('m48', { name:'M48', label:'M48', type:'open star cluster · in Hydra', labelRange:6e4,
-  fact:'A big, bright cluster that Messier recorded in 1771 with a wrong position, about four degrees too far north, so for a century and a half it was counted as lost. It was matched to NGC 2548 in 1934 and again in 1959.',
+  fact:'A big, bright cluster that Messier recorded in 1771 with a wrong position, about four degrees too far north, so for more than 160 years it was counted as lost. It was matched to NGC 2548 in 1934 and again in 1959.',
   aka:'m48 messier 48 ngc 2548 hydra',
   readout:() => '2,440 light-years (Gaia) · its stars spread over about 60 light-years\nabout 400 to 450 million years old · 489 of its stars as Gaia measured them' });
 gaiaOpenCluster('m50', { name:'M50', label:'M50', type:'open star cluster · in Monoceros', labelRange:7e4,
-  fact:'A rich cluster whose brightest star, an orange giant, shines just south of its middle. In 2025 Gaia\'s measurements showed it is really two clusters about 40 light-years apart, born together and probably slowly drifting apart.',
+  fact:'A rich cluster whose brightest star, an orange giant, shines just south of its middle. In 2025 a study of Gaia data found it may really be two clusters about 40 light-years apart, probably born together, that orbit each other and should one day drift apart.',
   aka:'m50 messier 50 ngc 2323 heart-shaped cluster monoceros',
   readout:() => '3,120 light-years (Gaia) · its stars spread over about 43 light-years\nabout 130 to 160 million years old · 600 of its stars as Gaia measured them' });
 gaiaOpenCluster('m93', { name:'M93', label:'M93', type:'open star cluster · in Puppis', labelRange:7e4,
@@ -205,14 +205,14 @@ function lineOfSight(def, stars){
 // (Gaia DR3 source ids: M40 A 1575047353068482688, B 1575047731026006528; M73 6888761925104124544, 6888763058975491840,
 // 6888762676722911104, 6888762676722910720. Distances: Bailer-Jones et al. 2021, geometric, light-years)
 lineOfSight({ key:'m40', name:'M40', label:'M40', type:'a chance pair of stars · Winnecke 4 · in Ursa Major', atlasDist:'470 and 1,010 ly', distEarth:'470 and 1,010 light-years',
-  fact:'Messier went looking here in 1764 for a nebula that Johannes Hevelius had listed nearby, and found only two faint stars, which he listed anyway. They are not a pair: Gaia shows the brighter one is twice as far away, and since 1863 they have drifted from 49 to 53 arcseconds apart on our sky.',
+  fact:'Messier went looking here in 1764 for a nebula that Johannes Hevelius had listed nearby, and found only two faint stars, which he listed anyway. They are not a real pair: Gaia shows the brighter one is twice as far away, and since 1863 they have drifted from 49 to 53 arcseconds apart on our sky.',
   aka:'m40 messier 40 winnecke 4 wnc 4 double star ursa major big dipper hd 238107 hd 238108',
-  readout:() => 'its two stars: about 470 and 1,010 light-years away (Gaia)\nthe nearer one has a white dwarf of its own, 720 AU from it' },
+  readout:() => 'its two stars: about 470 and 1,010 light-years away (Gaia)\nthe nearer one has a white dwarf of its own, at least 720 AU from it' },
   [{ ra:185.55180, dec:58.08290, ly:1006, g:9.47, bprp:1.03, label:'1,010 ly' }, { ra:185.57893, dec:58.08651, ly:469, g:10.02, bprp:0.68, label:'470 ly' }]);
 lineOfSight({ key:'m73', name:'M73', label:'M73', type:'four stars by chance · in Aquarius', atlasDist:'1,020 to 2,240 ly', distEarth:'1,020 to 2,240 light-years',
   fact:'Four stars that look like a tiny cluster: Messier listed them in 1780 as three or four small stars that at first look like a nebula. In 2000 astronomers argued over whether they were the remains of an old cluster; spectra in 2002 showed they are not, and Gaia now puts them at very different distances.',
   aka:'m73 messier 73 ngc 6994 asterism aquarius',
-  readout:() => 'its four stars: about 1,020, 1,230, 2,140 and 2,240 light-years away (Gaia)\nthey move in different directions: not a cluster' },
+  readout:() => 'its four stars: about 1,020, 1,230, 2,140 and 2,240 light-years away (Gaia)\nthey move at different speeds and in different directions: not a cluster' },
   [{ ra:314.73658, dec:-12.64182, ly:2237, g:10.00, bprp:1.25, label:'2,240 ly' }, { ra:314.74009, dec:-12.62940, ly:1231, g:11.13, bprp:0.72, label:'1,230 ly' },
    { ra:314.72833, dec:-12.63447, ly:1019, g:11.48, bprp:0.86, label:'1,020 ly' }, { ra:314.72221, dec:-12.63181, ly:2137, g:12.05, bprp:1.15, label:'2,140 ly' }]);
 
