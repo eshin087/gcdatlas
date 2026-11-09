@@ -12,9 +12,9 @@ More light means a denser character. Colour comes from the physics: the temperat
 
 No sign-up, nothing to install. It runs in any modern browser, on a desk or a phone.
 
-**What's new?** See the [patch notes](docs/PATCHNOTES.md) (short, for visitors) or the [changelog](docs/CHANGELOG.md) (every detail). The latest: launches you can hear, under the real weather of the pads; Pip takes the stage.
+**What's new?** See the [patch notes](docs/PATCHNOTES.md) (short, for visitors) or the [changelog](docs/CHANGELOG.md) (every detail). The latest: this week's earthquakes and today's fires on the real Earth, all 110 Messier objects, and the Virgo Cluster as a place of its own.
 
-## 140 places to visit (more to come...)
+## Over 250 places to visit, and famous places on Earth in 3D (more to come...)
 
 <table>
 <tr>

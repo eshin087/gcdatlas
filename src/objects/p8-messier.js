@@ -370,10 +370,12 @@ addGalaxy({ key:'m84', name:'M84', label:'M84', type:'elliptical galaxy · Marka
   rad:66000, sizeR:63000, g:{ ell:0.12, Rd:0.42, sf:0.05, gain:1.5 }, stars:5000, farLum:0.8, views:ellViews(30),
   aka:'m84 messier 84 ngc 4374 3c 272.1 markarian\'s chain markarian chain virgo cluster',
   readout:() => '60 million light-years · about 125,000 light-years across\nits black hole weighs about 850 million Suns' });
-addGalaxy({ key:'m86', name:'M86', label:'M86', type:'lenticular galaxy · Markarian\'s Chain · Virgo Cluster', ...galAt(186.5492, 12.946, 54.9e6, 50, 129),
+// (M86's distance, 58.3 million light-years, is Blakeslee et al. 2009's: until 0.25.0 it was 54.9, from a typo in Mei et al. 2007 that
+// Blakeslee et al. corrected, found while researching the last Messier pack; its size, about 150,000 light-years, is RC3's D25 at it)
+addGalaxy({ key:'m86', name:'M86', label:'M86', type:'lenticular galaxy · Markarian\'s Chain · Virgo Cluster', ...galAt(186.5492, 12.946, 58.3e6, 50, 129),
   fact:'One of the few galaxies coming toward us. It falls through the Virgo Cluster toward us at about 1,300 km/s, faster than the cluster itself moves away from us, so its light is shifted to the blue. Its hot gas streams off behind it in a long plume.',
   rad:80000, sizeR:75000, g:{ ell:0.32, Rd:0.42, sf:0.04, gain:1.5 }, stars:5000, farLum:0.85, views:ellViews(50),
   aka:'m86 messier 86 ngc 4406 markarian\'s chain markarian chain virgo cluster blueshift',
-  readout:() => '55 million light-years · about 150,000 light-years across\ncoming toward us at about 240 km/s' });
+  readout:() => '58.3 million light-years · about 150,000 light-years across\ncoming toward us at about 240 km/s' });
 
 seed = P8_SEED;

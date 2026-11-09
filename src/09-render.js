@@ -625,7 +625,7 @@ const LADDER = [
   ['Sgr A* black hole', 'sgra', 2e-5], ['Betelgeuse', 'betelgeuse', 2e-4], ['Solar System', 'solarsystem', 1.6e-3],
   ['M87* black hole', 'm87bh', 2e-2], ['TON 618 black hole', 'ton618', 0.3], ['Oort cloud', 'oort', 3], ['Pillars of Creation', 'pillars', 12],
   ['Omega Centauri', 'omegacen', 250], ['Galactic Centre', 'galcentre', 1500], ['Magellanic Clouds', 'lmc', 5e4], ['Milky Way', 'milkyway', 2.5e5],
-  ['Andromeda', 'andromeda', 9e5], ['Local Group', 'milkyway', 1.2e7], ['Virgo Cluster', 'm87', 6e7], ['Laniakea', 'cosmicweb', 5e8],
+  ['Andromeda', 'andromeda', 9e5], ['Local Group', 'milkyway', 1.2e7], ['Virgo Cluster', 'virgocluster', 6e7], ['Laniakea', 'cosmicweb', 5e8],
   ['cosmic web', 'cosmicweb', 3e9], ['observable universe', 'universe', 1.3e11],
 ].filter(([, k]) => BYKEY[k]).map(([name, key, d]) => ({ name, key, d }));
 const LAD_LO = -9.6, LAD_HI = 11.4;
@@ -1005,7 +1005,11 @@ function earthFill(q){
 // (the names arrive after the first letters are typed: the search runs again)
 EPL.onLoad.push(() => { if (searchEl.value || atlasSearch.value) filterAtlas(searchEl.value || atlasSearch.value, true); });
 const atlasEmpty = document.createElement('div'); atlasEmpty.className = 'atlas-empty'; atlasEmpty.innerHTML = '<div></div><button type="button"></button>';
-const atlasEnd = Object.assign(document.createElement('div'), { className:'aend', textContent:'real positions and sizes' });
+// the line under the last row, with the link to /places, every place as a page (0.25.1): in the page's own HTML (src/01-body.html), so a
+// crawler that cannot run this script finds it too. Served alone (the artifact build, or dist/index.html opened as a file) there is no
+// /places beside the page: the link goes to the site's
+const atlasEnd = $('#atlasEnd');
+if (!window.__SHARE_PAGES || !/^https?:$/.test(location.protocol)) atlasEnd.querySelector('a').href = 'https://gcdatlas.com/places';
 
 // the controls
 const toolsEl = $('#atlasTools'), sortBtns = [...document.querySelectorAll('#atlasSort [data-sort]')], dirBtn = $('#atlasDir'), allBtn = $('#atlasAll'), unseenBtn = $('#atlasUnseen'), catGrid = $('#atlasCats');
