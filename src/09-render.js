@@ -625,7 +625,7 @@ const LADDER = [
   ['Sgr A* black hole', 'sgra', 2e-5], ['Betelgeuse', 'betelgeuse', 2e-4], ['Solar System', 'solarsystem', 1.6e-3],
   ['M87* black hole', 'm87bh', 2e-2], ['TON 618 black hole', 'ton618', 0.3], ['Oort cloud', 'oort', 3], ['Pillars of Creation', 'pillars', 12],
   ['Omega Centauri', 'omegacen', 250], ['Galactic Centre', 'galcentre', 1500], ['Magellanic Clouds', 'lmc', 5e4], ['Milky Way', 'milkyway', 2.5e5],
-  ['Andromeda', 'andromeda', 9e5], ['Local Group', 'milkyway', 1.2e7], ['Virgo Cluster', 'm87', 6e7], ['Laniakea', 'cosmicweb', 5e8],
+  ['Andromeda', 'andromeda', 9e5], ['Local Group', 'milkyway', 1.2e7], ['Virgo Cluster', 'virgocluster', 6e7], ['Laniakea', 'cosmicweb', 5e8],
   ['cosmic web', 'cosmicweb', 3e9], ['observable universe', 'universe', 1.3e11],
 ].filter(([, k]) => BYKEY[k]).map(([name, key, d]) => ({ name, key, d }));
 const LAD_LO = -9.6, LAD_HI = 11.4;
