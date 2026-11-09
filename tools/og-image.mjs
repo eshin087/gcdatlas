@@ -60,8 +60,13 @@ async function snap(k, v){
   const own = await page.evaluate(([k, v]) => { const c = window.__cosmos, o = c.BYKEY[k];
     c.setTour(false);
     if (o.own){ const d = c.plc.sunFor(o, +v); if (d != null) c.setDays(d); c.tick(0); }
-    c.view(k, +v); return !!o.own; }, [k, v]);
-  if (own){
+    // (a place on the Moon, 0.27.0: in its morning light, as a flight there would show it)
+    if (o.moonSpot){ c.ssRate = 0; c.setDays(c.mpl.dayFor(c.mpl.byKey(k))); c.tick(0); }
+    c.view(k, +v); return o.moonSpot ? 'moon' : !!o.own; }, [k, v]);
+  if (own === 'moon'){
+    await page.waitForFunction(k => { const d = window.__cosmos.mpl.dbg(); return d.env && d.layers >= 3 && d.fade > 0.99; }, k, { timeout:60000 }).catch(() => {});
+    await page.waitForTimeout(Math.max(wait, 4000));
+  } else if (own){
     const pk = k.replace('earth-iconic-', '');
     await page.waitForFunction(pk => { const d = window.__cosmos.plc.dbg(), L = d.layers.find(s => s.startsWith(pk + ' '));
       const [a, b] = (L ? L.split(' ')[1] : '0/1').split('/'); return (d.env || '').includes(pk) || +a >= +b; }, pk, { timeout:25000 }).catch(() => {});

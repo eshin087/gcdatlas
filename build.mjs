@@ -43,6 +43,8 @@ function syncDir(src, dst){
     if (dir) syncDir(a, b); else if (!fs.existsSync(b) || fs.statSync(b).size !== fs.statSync(a).size) fs.copyFileSync(a, b); }
 }
 { const src = path.join(ROOT, 'assets', 'earth'); if (fs.existsSync(src)) syncDir(src, path.join(DIST, 'earth')); }
+// (and the Moon's, 0.27.0: tools/moon-detail.mjs, served under /moon/)
+{ const src = path.join(ROOT, 'assets', 'moon'); if (fs.existsSync(src)) syncDir(src, path.join(DIST, 'moon')); }
 // the link preview (og:image, 1200 x 630, made by tools/og-image.mjs): what a shared link shows in a chat or a post
 fs.mkdirSync(DIST, { recursive: true });
 fs.copyFileSync(path.join(ROOT, 'assets', 'og.jpg'), path.join(DIST, 'og.jpg'));

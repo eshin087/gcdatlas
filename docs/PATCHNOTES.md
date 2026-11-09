@@ -5,6 +5,13 @@
      numbers with units. The newest version comes first and opens by itself; its number must match package.json (tests/smoke.mjs checks it).
      Every detail stays in docs/CHANGELOG.md, which the panel links to. -->
 
+## 0.27.0 · 9 Nov 2026 · The Moon up close
+- Fly down to Tranquility Base and the other five Apollo landing sites, Hadley Rille, Tycho and Copernicus, drawn in 3D from NASA's Lunar Reconnaissance Orbiter photos and heights.
+- Each lunar module's descent stage stands where its crew left it, as a small labelled model.
+- You arrive in the morning, the Sun as low as when the crews landed, so every crater and hill casts a long shadow.
+- Up close, the Moon's globe now shows NASA's real map of the whole Moon.
+- New tour, Footsteps on the Moon: the six landings in order, then Tycho and Copernicus.
+
 ## 0.24.0 · 25 Oct 2026 · Links that show the place
 - Share a place and the link now unfurls as that place on Discord, Slack, X, WhatsApp and the rest: its name, a line about it and its own picture.
 - The copied link still opens exactly the view you were on, and every old link keeps working.

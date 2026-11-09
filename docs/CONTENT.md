@@ -44,6 +44,9 @@ After 0.21.0, 28 Messier objects are left. In the order to take them:
 | Caldwell 3: planetary nebulae | the Saturn Nebula (C55), the Eskimo (C39), the Ghost of Jupiter (C59), the Blue Snowball (C22), the Bug or Butterfly (C69), the Skull (C56), the Bow-Tie (C2), the Blinking Planetary (C15) |
 | Caldwell 4: galaxies | the Needle (C38), NGC 891 (C23), the Whale (C32), the Fireworks (C12), the Hidden Galaxy (C5), NGC 1097 (C67), NGC 4945 (C83), NGC 300 (C70), NGC 55 (C72), the Spindle (C53) |
 
+### Done in 0.27.0 (`src/objects/m1-moon-map.js` to `m4-moon-places.js`, `tools/moon-detail.mjs`)
+The real Moon: NASA's LRO map of the whole Moon on its globe, and nine places on it in 3D from LRO's photos and terrain models: Tranquility Base and the other five Apollo landing sites (each lander drawn as a labelled model), Hadley Rille, Tycho and Copernicus; the tour Footsteps on the Moon.
+
 ### Done in 0.23.0 (surfaces in `src/o00-sun.js`, the moons in `src/o10-planet.js`, the pairs in `src/o12-stars.js`)
 Tethys, Dione and Rhea listed, each with a surface of its own (their features at the IAU gazetteer's positions) and its real place along its orbit; Capella and Spica listed, drawn as the pairs they are on their real orbits (with Capella Ab and Spica B, drawn, not listed).
 
@@ -63,7 +66,7 @@ Vesta, Bennu, Mimas and its crater Herschel, 51 Pegasi b, K2-18 b, HD 189733 b, 
 | Pack | Objects |
 | --- | --- |
 | human reach | Parker Solar Probe, Tiangong (its elements already come from `/api/sats`), our radio bubble (about 212 light-years across, worked out from the date; its star count computed once), the Arecibo message on its way to M13 (illustrative), a "human reach" tour. (The Tesla Roadster with Starman was done in 0.9.5, with SpaceX's rockets.) |
-| surfaces | a terrain shader for patches you can fly low over; Olympus Mons, Tranquility Base and the other landing sites, Perseverance in Jezero, Valles Marineris, Io's and Enceladus's plumes (both readouts already mention them), Didymos and Dimorphos |
+| surfaces (the Moon done in 0.27.0) | Mars next: Olympus Mons, Valles Marineris, Perseverance in Jezero (the Moon's tool and ground shader, `tools/moon-detail.mjs` and FS_MOON_ENV, are the model); then Io's and Enceladus's plumes (both readouts already mention them), Didymos and Dimorphos |
 | the biggest things | Laniakea (real Cosmicflows-4 flows), the Virgo Cluster (its Messier galaxies come in Messier 4), the Hercules-Corona Borealis Great Wall (labelled debated), Porphyrion, GRB 221009A, the heliosphere |
 
 ### Comets and meteors · first pack done in 0.8.1 (`src/objects/p6-comets.js`), more planned
@@ -78,7 +81,6 @@ Vesta, Bennu, Mimas and its crater Herschel, 51 Pegasi b, K2-18 b, HD 189733 b, 
 ### Human spaceflight · planned (see "human reach" and "surfaces" above)
 | Object | Notes |
 | --- | --- |
-| Apollo landing sites | markers on the Moon (11, 12, 14, 15, 16, 17) |
 | Perseverance | Jezero crater, Mars (18.44°N, 77.45°E) |
 | Curiosity | Gale crater, Mars (4.59°S, 137.44°E) |
 | Parker Solar Probe | its closest passes, 6.1 million km from the Sun's surface; the fastest object ever built |
@@ -96,7 +98,6 @@ Vesta, Bennu, Mimas and its crater Herschel, 51 Pegasi b, K2-18 b, HD 189733 b, 
 | Olympus Mons | low flyover view on Mars |
 | Valles Marineris | canyon system |
 | Io's plumes | volcanic plumes rising 300 km |
-| Lunar craters | Tycho and Copernicus close-ups |
 
 ### Earth, closer
 Planned and tracked in `docs/EARTH_PLAN.md` (the real Earth, its cities and famous places, live data).

@@ -1,12 +1,12 @@
 {
   "name": "gcdatlas",
-  "version": "0.24.0",
+  "version": "0.27.0",
   "private": true,
   "description": "The real universe drawn entirely in ASCII: an explorable WebGL2 atlas with seamless zoom from Earth to the edge of the observable universe.",
   "type": "module",
   "scripts": {
     "build": "node build.mjs",
-    "test": "node build.mjs && node tests/preview.mjs && node tests/smoke.mjs && node tests/spacex.mjs && node tests/mobile.mjs && node tests/earth.mjs && node tests/motion.mjs && node tests/pipsmooth.mjs",
+    "test": "node build.mjs && node tests/preview.mjs && node tests/smoke.mjs && node tests/spacex.mjs && node tests/mobile.mjs && node tests/earth.mjs && node tests/moon.mjs && node tests/motion.mjs && node tests/pipsmooth.mjs",
     "test:earth": "node build.mjs && node tests/earth.mjs",
     "test:pip": "node build.mjs && node tests/pipsmooth.mjs",
     "test:tour": "node build.mjs && node tests/tour.mjs",
@@ -21,7 +21,8 @@
     "og": "node build.mjs && node tools/og-image.mjs",
     "showcase:video": "node build.mjs && node tools/showcase-video.mjs",
     "test:preview": "node build.mjs && node tests/preview.mjs",
-    "test:spacex": "node build.mjs && node tests/spacex.mjs"
+    "test:spacex": "node build.mjs && node tests/spacex.mjs",
+    "test:moon": "node build.mjs && node tests/moon.mjs"
   },
   "engines": {
     "node": ">=18"
