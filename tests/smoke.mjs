@@ -153,6 +153,8 @@ const atl = await page.evaluate(() => {
   // the badge tray: every badge is a button; black hole hunter shows the black holes left, planet hopper just the planets left; Esc closes the tray first, then the atlas
   $('#seenBtn').click(); r.tray = [!$('#badgeTray').hidden, $('#seenBtn').getAttribute('aria-expanded'), document.querySelectorAll('#badges .brow').length, document.querySelectorAll('#badges button.brow').length];
   const badge = n => [...document.querySelectorAll('#badges button.brow')].find(b => b.textContent.includes(n));
+  // (the Messier badge counts every place holding a Messier number: all 110 since 0.25.0, so one missing or claimed twice shows here)
+  r.messier = (badge('Messier marathoner') || {}).textContent || '';
   badge('black hole hunter').click();
   r.badgeGo = [C.dbg.ATL.cat, C.dbg.ATL.unseen, !$('#badgeTray').hidden, $('#atlasResultTxt').textContent];
   $('#seenBtn').click(); badge('planet hopper').click();
@@ -175,7 +177,8 @@ if (!atl.search.jupiter || !new RegExp(`^\\d+ found · searching all ${NPL}$`).t
 if (atl.cleared.box || atl.cleared.cat !== 'bh' || atl.cleared.n !== 8 || atl.cleared.kb) errors.push('clearing the search: ' + JSON.stringify(atl.cleared));
 if (atl.kRight !== 'galaxies' || atl.kDown.join() !== 'human,human' || atl.kAll.join() !== 'all,atlasAll,radio,atlasCats') errors.push('arrow keys in the kinds: ' + JSON.stringify([atl.kRight, atl.kDown, atl.kAll]));
 if (!/^8 black holes not seen yet/.test(atl.seenNow[0]) || !/^7 black holes not seen yet/.test(atl.seenNow[1]) || atl.seenNow[2] !== '7' || atl.seenNow[3] !== `7 of ${NPL}` || !atl.seenNow[4]) errors.push('a place seen with "not seen yet" on: ' + JSON.stringify(atl.seenNow));
-if (!atl.tray[0] || atl.tray[1] !== 'true' || atl.tray[2] !== 9 || atl.tray[3] !== 9) errors.push('the badge tray: ' + JSON.stringify(atl.tray));
+if (!atl.tray[0] || atl.tray[1] !== 'true' || atl.tray[2] !== 10 || atl.tray[3] !== 10) errors.push('the badge tray: ' + JSON.stringify(atl.tray));
+if (!/of 110\b/.test(atl.messier)) errors.push('the Messier badge does not count all 110 Messier objects: ' + JSON.stringify(atl.messier));
 if (atl.badgeGo[0] !== 'bh' || !atl.badgeGo[1] || atl.badgeGo[2] || !/^7 black holes not seen yet/.test(atl.badgeGo[3])) errors.push('black hole hunter does not show the black holes left: ' + JSON.stringify(atl.badgeGo));
 const planetsLeft = atl.planets[1] ? atl.planets[1].split(',') : [], PL = ['Mercury', 'Venus', 'Earth', 'Mars', 'Jupiter', 'Saturn', 'Uranus', 'Neptune'];
 if (atl.planets[0] !== planetsLeft.length + ' places not seen yet for planet hopper' || !planetsLeft.length || planetsLeft.some(n => !PL.includes(n)) || atl.planets[2]) errors.push('planet hopper does not show just the planets: ' + JSON.stringify(atl.planets));
@@ -186,7 +189,7 @@ if (atl.reset[0] || atl.reset[1] !== '{"sort":"kind","dir":1,"cat":"all","unseen
 // first, with the keyboard on it, in every order of the list (M87 before its jet and M87*, the Eagle Nebula before the Pillars), and clearing
 // the search puts the list back as it was
 const CATQ = [['M31', 'Andromeda Galaxy'], ['NGC 1976', 'Orion Nebula'], ['NGC1952', 'Crab Nebula'], ['m 42', 'Orion Nebula'], ['Messier 42', 'Orion Nebula'],
-  ['NGC 224', 'Andromeda Galaxy'], ['ngc 5194', 'Whirlpool Galaxy'], ['M110', 'Andromeda Galaxy'], ['IC 434', 'Horsehead Nebula'], ['M16', 'Eagle Nebula'], ['m87', 'M87'], ['M4', 'M4'], ['M44', 'Beehive Cluster'], ['NGC 6853', 'Dumbbell Nebula'], ['m 17', 'Omega Nebula']];
+  ['NGC 224', 'Andromeda Galaxy'], ['ngc 5194', 'Whirlpool Galaxy'], ['M110', 'M110'], ['IC 434', 'Horsehead Nebula'], ['M16', 'Eagle Nebula'], ['m87', 'M87'], ['M4', 'M4'], ['M44', 'Beehive Cluster'], ['NGC 6853', 'Dumbbell Nebula'], ['m 17', 'Omega Nebula']];
 const cat = await page.evaluate(CATQ => {
   const $ = s => document.querySelector(s), out = [], names = () => [...document.querySelectorAll('.arow')].filter(b => !b.hidden).map(b => b.querySelector('.an').textContent);
   const find = (box, q) => { const s = $(box); s.value = q; s.dispatchEvent(new Event('input', { bubbles:true })); const kb = $('.arow.kb'); return { v:names(), kb:kb && kb.querySelector('.an').textContent }; };
@@ -298,7 +301,7 @@ await page.evaluate(() => { localStorage.removeItem('gcdatlas.atlas'); localStor
 { const sp = await page.evaluate(() => { const c = window.__cosmos, d = c.dbg;
     const keys = Array.isArray(window.__SHARE_PAGES) ? window.__SHARE_PAGES : null;
     return { keys:!!keys, dead:(keys || []).filter(k => !c.BYKEY[k] || !d.shareable(c.BYKEY[k])), missing:keys ? d.shareList().filter(e => !keys.includes(e.key)).length : -1,
-      page:d.sharePage(c.BYKEY.m87bh), own:d.sharePage(c.BYKEY['earth-iconic-giza']), not:d.sharePage(c.BYKEY.m32 || c.OBJ.find(o => o.atlas === false && !o.own && !o.marker)) }; });
+      page:d.sharePage(c.BYKEY.m87bh), own:d.sharePage(c.BYKEY['earth-iconic-giza']), not:d.sharePage(c.BYKEY.ngc3628 || c.OBJ.find(o => o.atlas === false && !o.own && !o.marker)) }; });
   if (!sp.keys) errors.push('the page carries no __SHARE_PAGES list (build.mjs)');
   else {
     if (sp.dead.length) errors.push('share pages for places that are gone or not shareable: ' + sp.dead.join(', ') + ' (npm run og -- --all)');

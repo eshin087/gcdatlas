@@ -405,6 +405,16 @@
   "fact": "A trillion stars 2.5 million light-years away, the most distant thing most people can see without a telescope. It is falling toward us at 110 km/s and will merge with the Milky Way in about 4.5 billion years."
  },
  {
+  "key": "m32",
+  "name": "M32",
+  "fact": "M32FACT"
+ },
+ {
+  "key": "m110",
+  "name": "M110",
+  "fact": "M110FACT"
+ },
+ {
   "key": "m87",
   "name": "M87",
   "fact": "One of the most massive galaxies nearby, swarming with some 12,000 globular clusters. From its core a jet of plasma shoots out at nearly the speed of light."
@@ -1238,6 +1248,151 @@
   "key": "pease1",
   "name": "Pease 1",
   "fact": "The first planetary nebula found inside a globular cluster: a shell of gas thrown off by a dying star among M15's ancient stars. Francis Pease found it in 1928, and only three more are known in globulars."
+ },
+ {
+  "key": "m49",
+  "name": "M49",
+  "fact": "The brightest galaxy in the Virgo Cluster, brighter even than M87, and the first of its galaxies ever found: Messier saw it in 1771. In 2007 one of its 7,000 globular clusters gave the first strong sign of a black hole inside a globular cluster."
+ },
+ {
+  "key": "m58",
+  "name": "M58",
+  "fact": "One of the brightest barred spirals in the Virgo Cluster, found by Messier in 1779 while he followed a comet. The cluster's hot gas has stripped most of the hydrogen from its outer disc, so few new stars form there now. Two supernovae have been seen in it, in 1988 and 1989."
+ },
+ {
+  "key": "m59",
+  "name": "M59",
+  "fact": "A flattened elliptical galaxy, found by Johann Gottfried Koehler in April 1779 while he followed a comet, the same night as its neighbour M60. At its very centre a core about 200 light-years across spins the opposite way to the rest of the galaxy."
+ },
+ {
+  "key": "m60",
+  "name": "M60",
+  "fact": "A giant elliptical with a central black hole of about 4.5 billion Suns. The spiral NGC 4647 lies beside it on our sky; whether the two really interact is not settled. Close by, the tiny galaxy M60-UCD1 holds a black hole of 21 million Suns, 15% of its whole mass."
+ },
+ {
+  "key": "m61",
+  "name": "M61",
+  "fact": "Eight supernovae have been seen in it since 1926, more than in any other Messier galaxy. Barnaba Oriani found it in 1779; Messier saw it the same night but took it for the comet he was following. Its arms are busy making new stars."
+ },
+ {
+  "key": "m85",
+  "name": "M85",
+  "fact": "The northernmost of the Virgo Cluster's Messier galaxies. Faint shells and ripples round it, a double nucleus and a young-looking centre show that it merged with another galaxy not long ago. Its central black hole, if it has one, is unusually small for so big a galaxy."
+ },
+ {
+  "key": "m88",
+  "name": "M88",
+  "fact": "A regular spiral with many arms, among the brightest in the Virgo Cluster. It is plowing through the cluster's hot gas toward M87, and the pressure has already stripped the hydrogen from the edge of its leading side."
+ },
+ {
+  "key": "m89",
+  "name": "M89",
+  "fact": "Almost perfectly round. Deep photographs show a faint envelope of stars round it more than 150,000 light-years across, with long plumes. In the early 1990s Hubble saw its core brighten several times over in ultraviolet light, probably gas falling into its black hole."
+ },
+ {
+  "key": "m90",
+  "name": "M90",
+  "fact": "One of the few galaxies coming toward us. The cluster's hot gas has stripped away more than nine tenths of its hydrogen, so its outer arms are smooth and make no new stars, and tails of glowing gas reach up to 260,000 light-years from it."
+ },
+ {
+  "key": "m91",
+  "name": "M91",
+  "fact": "The missing Messier object. Messier wrote down a wrong position for it in 1781, and for almost two centuries no one could say which galaxy he meant. In 1969 William C. Williams, an amateur astronomer in Texas, showed that Messier had measured from M89 instead of M58, and so found it: NGC 4548."
+ },
+ {
+  "key": "m98",
+  "name": "M98",
+  "fact": "A large spiral seen nearly edge-on, laced with dust. It is coming toward us at 142 km/s while the cluster as a whole moves away at about 1,100 km/s, so it is falling through the cluster at more than 1,000 km/s."
+ },
+ {
+  "key": "m99",
+  "name": "M99",
+  "fact": "A lopsided spiral with one arm much stronger than the others, probably stirred by a fast pass of another galaxy that also drew out a tail of hydrogen some 800,000 light-years long. In 1846 Lord Rosse saw its spiral shape: only the Whirlpool's had been seen before."
+ },
+ {
+  "key": "m100",
+  "name": "M100",
+  "fact": "A grand-design spiral, one of the brightest in the Virgo Cluster. In 1994 its Cepheid stars gave the first Hubble distance to a Virgo galaxy, and its core was the showcase picture after Hubble's first repair mission. Seven supernovae have been seen in it since 1901."
+ },
+ {
+  "key": "m94",
+  "name": "M94",
+  "fact": "FACT94"
+ },
+ {
+  "key": "m95",
+  "name": "M95",
+  "fact": "FACT95"
+ },
+ {
+  "key": "m96",
+  "name": "M96",
+  "fact": "FACT96"
+ },
+ {
+  "key": "m105",
+  "name": "M105",
+  "fact": "FACT105"
+ },
+ {
+  "key": "m102",
+  "name": "M102",
+  "fact": "FACT102"
+ },
+ {
+  "key": "m108",
+  "name": "M108",
+  "fact": "FACT108"
+ },
+ {
+  "key": "m109",
+  "name": "M109",
+  "fact": "FACT109"
+ },
+ {
+  "key": "m18",
+  "name": "M18",
+  "fact": "FACTC18"
+ },
+ {
+  "key": "m21",
+  "name": "M21",
+  "fact": "FACTC21"
+ },
+ {
+  "key": "m26",
+  "name": "M26",
+  "fact": "FACTC26"
+ },
+ {
+  "key": "m48",
+  "name": "M48",
+  "fact": "FACTC48"
+ },
+ {
+  "key": "m50",
+  "name": "M50",
+  "fact": "FACTC50"
+ },
+ {
+  "key": "m93",
+  "name": "M93",
+  "fact": "FACTC93"
+ },
+ {
+  "key": "m40",
+  "name": "M40",
+  "fact": "MESSIER40FACT"
+ },
+ {
+  "key": "m73",
+  "name": "M73",
+  "fact": "MESSIER73FACT"
+ },
+ {
+  "key": "virgocluster",
+  "name": "Virgo Cluster",
+  "fact": "The nearest big cluster of galaxies: thousands of them, about 54 million light-years away, held together by some 600 trillion Suns' worth of mass, most of it dark matter. Its pull draws the Milky Way and its neighbours toward it at about 185 km/s, though the expansion of the universe still carries us away from it."
  },
  {
   "key": "roadster",
