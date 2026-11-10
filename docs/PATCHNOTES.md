@@ -5,6 +5,11 @@
      numbers with units. The newest version comes first and opens by itself; its number must match package.json (tests/smoke.mjs checks it).
      Every detail stays in docs/CHANGELOG.md, which the panel links to. -->
 
+## 0.27.2 · 10 Nov 2026 · Smoother on slow devices
+- The atlas takes about half as much of your processor's time for each frame, so motion is smoother on phones and older laptops.
+- Detail is no longer lowered when a slow processor is the cause. Bigger characters would not have made it any faster.
+- The first picture appears a little sooner, and "loading the atlas..." shows while you wait.
+
 ## 0.27.1 · 9 Nov 2026 · Smoother landings on the Moon
 - Flying down to a place on the Moon no longer swings the camera round at the very end.
 - Standing by a lander, the ground now reaches all the way to the horizon.

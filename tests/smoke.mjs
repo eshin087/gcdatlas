@@ -330,5 +330,28 @@ for (const h of ['#o=constructor', '#o=__proto__', '#o=earth&jd=abc&deep=x&c=1,N
   const ok = await page.waitForFunction(() => window.__cosmos && window.__cosmos.OBJ && isFinite(window.__cosmos.cam.rel[0]) && window.__cosmos.BYKEY.earth.pos.every(isFinite), null, { timeout:60000 }).then(() => true, () => false);
   if (!ok) errors.push('share link ' + h + ' broke the page');
 }
+// 0.27.2, the cost of the page's words. Until then `body:has(#view.dragging) *` made every text the page wrote (a readout, the ruler's number)
+// a reason to work out the style of all 1,800 elements again, 4 ms a time on a fast desk, most frames while riding the Halo. So: writing a
+// word may only restyle a handful of elements (a Chrome trace says how many each style pass touched); the loading line is in the page's
+// own HTML before the script and gone once the page is up; the music, wished for at start-up, is made right after the first frame; and
+// the page knows how long the main thread works on a frame (what the detail rule reads).
+{ await page.goto('about:blank'); await page.goto(PAGE);
+  await page.waitForFunction(() => window.__cosmos && window.__cosmos.OBJ, null, { timeout:60000 });
+  const html = (await import('node:fs')).readFileSync(new URL(PAGE), 'utf8'), bootAt = html.indexOf('id="boot"');
+  if (bootAt < 0 || bootAt > html.indexOf("'use strict';")) errors.push('the loading line (#boot) is not in the page\'s HTML before the script');
+  if (await page.evaluate(() => !!document.querySelector('#boot'))) errors.push('the loading line is still there once the page is up');
+  await page.waitForFunction(() => !!window.__cosmos.music._dbg.ctx || !(window.AudioContext || window.webkitAudioContext), null, { timeout:5000 }).catch(() => errors.push('the music was not made after the first frame (music.warm)'));
+  await page.waitForFunction(() => window.__cosmos.dbg.busyMs > 0 && window.__cosmos.dbg.busyMs < 250 && typeof window.__cosmos.dbg.cpuBound === 'boolean', null, { timeout:5000 }).catch(() => errors.push('no measure of the main thread\'s work a frame (dbg.busyMs)'));
+  const cdp = await page.context().newCDPSession(page), ev = [];
+  cdp.on('Tracing.dataCollected', d => { for (const e of d.value) if (e.name === 'UpdateLayoutTree' && e.ph === 'X') ev.push((e.args && e.args.elementCount) || 0); });
+  await cdp.send('Tracing.start', { transferMode:'ReportEvents', traceConfig:{ includedCategories:['devtools.timeline', 'blink'] } });
+  const total = await page.evaluate(() => { const $ = s => document.querySelector(s); let n = 0;
+    for (const [sel, t] of [['#scaleTxt', '= 7 km'], ['#readout', 'a test line'], ['#ladTxt', 'test · 5 km'], ['#objFact', 'A test fact.']]){ const el = $(sel); if (!el) continue; el.textContent = t; getComputedStyle(el).color; n++; }
+    return n ? document.querySelectorAll('*').length : 0; });
+  const done = new Promise(r => cdp.once('Tracing.tracingComplete', r)); await cdp.send('Tracing.end'); await done;
+  const most = Math.max(0, ...ev);
+  if (!total || !ev.length) errors.push('the style test wrote no words or saw no style pass (' + total + ' elements, ' + ev.length + ' passes)');
+  else if (most > 200) errors.push(`writing a word restyles ${most} of the page's ${total} elements (a page-wide rule such as body:has(...)?)`);
+}
 report('smoke', errors, `${keys.length} objects rendered, ${ui.rows} atlas rows · atlas controls fit at 90 to 160% menu text, room for ${atl.rows} rows at 1280 x 800 · ${atl.solar}`);
 await browser.close();

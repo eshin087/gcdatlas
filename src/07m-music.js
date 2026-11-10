@@ -1352,6 +1352,10 @@ const music = (() => {
     // a blocked context stays suspended, so every gesture retries until one is accepted (wheel and touchstart are not)
     gesture(){ if (!wantOn) return; if (!running) start(); else if (ctx.state === 'suspended'){ ctx.resume(); fadeTo(level(), 0.6); } },
     set(on){ wantOn = on; if (on) start(); else stop(); },
+    // at start-up (0.27.2): the wish is known at once, the graph and the first song are made after the first frame is on the screen (warm).
+    // Making them took about 80 ms before anything was drawn, and nothing can sound before the first click or key, which starts it anyway.
+    wish(on){ wantOn = on; },
+    warm(){ if (wantOn && !running) start(); },
     volume(){ if (running) fadeTo(level(), 0.3); },
     // move on to a new song now: the music dips for a moment and the last song's long notes fade out (release)
     skip(){

@@ -37,7 +37,7 @@ The glyph atlas is built from printable ASCII in the page font at the current ce
 
 - **Lazy shader compilation** (`program()`, `progReady()`): programs compile the first time their object is about to be seen, in the background where `KHR_parallel_shader_compile` exists. Until ready, the object shows as its impostor dot.
 - **Visibility-gated simulation**: objects with `sim` only run `update()` while visible, locked or being toured (`simActive`).
-- **Level of detail**: ray-march step counts scale with on-screen size (`uLod`) and with `LODK`, which the main loop lowers automatically on slow devices before it ever raises the character size.
+- **Level of detail**: ray-march step counts scale with on-screen size (`uLod`) and with `LODK`, which the main loop lowers automatically on slow devices before it ever raises the character size. Since 0.27.2 only while the graphics card is what the frames wait for: when the main thread works more than 0.8 of the time between two frames (`busy`, `cpuBound()` in `09-render.js`), less detail would not be faster, so it stays.
 - **Impostors**: anything smaller than a few pixels is one glowing point in one batched draw.
 - Adding objects costs almost nothing while they are off screen: a position update and a distance check.
 
