@@ -5,6 +5,10 @@
      numbers with units. The newest version comes first and opens by itself; its number must match package.json (tests/smoke.mjs checks it).
      Every detail stays in docs/CHANGELOG.md, which the panel links to. -->
 
+## 0.27.5 · 10 Nov 2026 · A steadier clock
+- A Crew Dragon replay you are not watching no longer moves the date on a day when it docks. Before, the Moon hopped 14 degrees in one frame.
+- Watch a Dragon flight and nothing changes: it still skips about a day to the docking, behind a fade.
+
 ## 0.27.4 · 10 Nov 2026 · A steadier test
 - Behind the scenes: the check that flies the Halo on a fixed route now gives the same answer on every run. A launch replay could move the atlas clock on a day in the middle of it.
 - Nothing changes on screen.

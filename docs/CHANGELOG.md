@@ -4,6 +4,14 @@ All notable changes, newest first. Dates are UTC.
 
 ## Unreleased
 
+## 0.27.5 · 2026-11-10
+
+**Launch replays and the clock** (owner's pick, 2026-11-10, from two stills a frame apart: "leave the clock alone"; 0.27.4, PR #67, found the hop as the cause of the motion test's rare failures)
+- A Crew Dragon replay nobody watches leaves the atlas clock alone. Its mission time still skips from orbit insertion (T+760 s) to the approach (T+1000 s), but `dockInDaylight()` (a day on, then up to 100 minutes to sunlight at the station) now runs only on a flight you are on: the launch camera has it, you took the camera from it with a drag, or you are locked on one of its parts. Before, with the camera on Earth, about 143 s into a Dragon replay (18% of replays) the date went on 1 day and 20 s to 1 day 100 minutes in one frame: measured from Earth's first angle, the Moon moved 14.1 degrees round Earth, Earth turned 1.1 degrees (up to 26), the clouds and the weather line changed, every planet moved a day on.
+- Pressing watch on such a replay after its skip (or clicking the Dragon): if the station is in the dark, the clock eases on to its next moment in sunlight during the flight to it (`dockLight`, `stationLit`: 35 minutes at most, never a day; 12 minutes in the test).
+- Watched flights, clicked flights and real launches are as they were (the day on behind the fade; real launches never skip).
+- tests/spacex.mjs: through an unwatched Dragon replay's skip the clock moves only at its own rate, a late watch moves it by under an hour and starts the launch camera, a watched flight still moves it a day.
+
 ## 0.27.4 · 2026-11-10
 
 **The motion test gives the same result on every run** (2026-11-10: `tests/motion.mjs` failed three times running while 0.27.3 was tested, a release that touches nothing it checks, then passed nine times on the same bytes. Tests and notes only: nothing in the atlas changes.)
