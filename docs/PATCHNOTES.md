@@ -5,6 +5,10 @@
      numbers with units. The newest version comes first and opens by itself; its number must match package.json (tests/smoke.mjs checks it).
      Every detail stays in docs/CHANGELOG.md, which the panel links to. -->
 
+## 0.27.5 · 10 Nov 2026 · A steadier clock
+- A Crew Dragon replay you are not watching no longer moves the date on a day when it docks. Before, the Moon hopped 14 degrees in one frame.
+- Watch a Dragon flight and nothing changes: it still skips about a day to the docking, behind a fade.
+
 ## 0.27.3 · 10 Nov 2026 · Easier to read
 - Names stay readable over bright scenes: every label has a dark plate behind it, and the scale on the right a soft shade.
 - New here? A small card at the bottom says how to look round, zoom and fly. It goes away once you have tried.

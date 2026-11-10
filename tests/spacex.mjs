@@ -64,6 +64,25 @@ const r = await page.evaluate(() => {
   if (!/^live · Falcon 9 · Starlink Group 10-12 from Cape Canaveral · T-0[12]:/.test(C.showcap || cap) && !/^live/.test(cap)) out.push('the live caption: ' + cap);
   if (btn.hidden || btn.textContent !== 'watch') out.push('no watch button on the live caption');
   X.SX.fake = []; X.endRun(live);
+  // a Crew Dragon replay nobody watches leaves the atlas clock alone (0.27.5): through its skip to the docking the clock moves only at its
+  // own rate; watched late, the clock eases on to sunlight at the station (under an hour, never a day); watched through, a day as before
+  { X.SX.nextReplay = Infinity; C.view('earth', 0); C.tick(1/30);
+    const rep = X.start('dragon', 'replay', 700); let d0 = C.days, worst = 0, k = 0;
+    for (; k < 30*60 && rep.mt < 1010; k++){ C.tick(1/30); worst = Math.max(worst, Math.abs(C.days - d0 - C.ssRate/30)); d0 = C.days; }
+    info.unwatched = { mt:Math.round(rep.mt), worstS:+(worst*86400).toFixed(3), dock:!!rep.dock };
+    if (rep.mt < 1000) out.push('the unwatched Dragon replay did not reach its docking');
+    if (worst*86400 > 0.01) out.push(`an unwatched Dragon replay moved the atlas clock by ${(worst*86400).toFixed(1)} s in one step`);
+    if (!rep.dock) out.push('the unwatched Dragon replay did not note its docking for a later watch');
+    d0 = C.days; X.watch(rep); C.land(); for (let i=0;i<30*4;i++) C.tick(1/30);
+    const late = C.days - d0; info.lateWatch = { on:X.LCAM.on, min:+(late*1440).toFixed(1) };
+    if (!X.LCAM.on || X.LCAM.run !== rep) out.push('watching the Dragon replay after its docking began did not start the launch camera');
+    if (rep.dock || late < 0 || late*1440 > 60) out.push(`watching the Dragon replay late moved the clock by ${(late*1440).toFixed(1)} minutes`);
+    X.endRun(rep); C.view('earth', 0);
+    const run2 = X.start('dragon', 'click', 700); X.camNow('dragon'); d0 = C.days;
+    for (k = 0; k < 30*60 && run2.mt < 1010; k++) C.tick(1/30);
+    info.watched = { days:+(C.days - d0).toFixed(3) };
+    if (!(C.days - d0 >= 1 && C.days - d0 < 1.08)) out.push(`a watched Dragon flight moved the clock by ${(C.days - d0).toFixed(3)} days at the docking, not a day`);
+    X.endRun(run2); C.view('earth', 0); }
   // Starman's Roadster against JPL Horizons (2026-09-29 00:00 TDB, heliocentric ICRF, AU)
   const p = X.rd(2461312.5).p, ref = [1.535555063434398, -0.1552658121746102, -0.04826330765441568];
   const dkm = Math.hypot(...p.map((x, i) => x - ref[i]))*149597870.7;

@@ -95,6 +95,7 @@ Until 0.7.5 the code was pushed through the GitHub website from a cloud session,
 - Pass-bys (`scenicWaypoint` / `passBy` in `src/08-camera.js`) only happen when an object is in view at the camera's natural height, which no grand tour trip has today. Making more trips pass something would need a different kind of route (lower cruising height), not a dive toward the object.
 - ASCII Earth phase 2 (landmarks, city scale), live sky events phase 2 (a toast when an ISS pass or launch is minutes away), Content Security Policy (`docs/ROADMAP.md`).
 - The live API functions work in production (checked 2026-09-25: 16,619 satellites, 15 launches).
+- Launch replays and the clock: decided and done in 0.27.5 (owner, 2026-11-10: "leave the clock alone"). A Crew Dragon replay nobody watches no longer moves the atlas clock on a day at its docking; a watch after that eases the clock to sunlight at the station; watched flights are unchanged. Do not make an unwatched replay move the clock again.
 
 ## Setting up Claude Code on the owner's Windows machine
 
