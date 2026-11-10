@@ -4,6 +4,13 @@ All notable changes, newest first. Dates are UTC.
 
 ## Unreleased
 
+## 0.27.8 · 2026-11-10
+
+**The Orion Nebula, sharper** (the looks, from the review of 2026-11-09; the owner picked option D, dust lanes, from stills over B, the same shape with a solid core)
+- Its first angle was a smooth white blob, the flattest place measured in the review (54% of the frame lit, all of it one smooth glow), and its closest angle a screen of heavy glyphs (99% of the frame). FS_ORION gave about twice the light the glyphs can show, from smooth noise.
+- Now: half the light (`dt*2.6`, was 5); the bowl's wall and the heart carry filaments (ridge noise, `fl` and `fl2`, in place of a smooth glow); the outer glow is two wings sweeping west and a fainter one east (`lobe`), where it was a ring; the Fish's Mouth, the dark bay between M42 and M43, is wider; dust veils cross the core (`veil`, finer and stronger). Measured on the three angles: heavy glyphs 9%, 54% and 99% of the frame before, 1%, 2% and 19% now.
+- Its link-preview picture is drawn again.
+
 ## 0.27.7 · 2026-11-10
 
 **Open clusters that read as clusters** (the looks, third part of the review of 2026-11-09; owner: "start, and any visual change give me a preview")

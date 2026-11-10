@@ -16,6 +16,10 @@ function clusterPS(n, c, s, hot = 22000, extra){
 const nebView = (pos, extra = []) => [{ dirFn:() => V.norm(V.mul(pos, -1)), k:1.6, hold:9, drift:0.02 }, ...extra];
 
 // ---------------------------------------------------------------- the Orion Nebula (M42): a bowl blown into a molecular cloud by the Trapezium stars
+// (0.27.8, owner's pick from stills: dust lanes. Its first angle was a smooth white blob and its closest a screen of white: the glow was
+// about twice what the glyphs can show, and smooth. Now it is half as bright, the bowl's wall and the heart carry filaments (`fl`, `fl2`,
+// ridge noise), the outer glow is two wings sweeping west (`lobe`) instead of a ring, the Fish's Mouth is wider, and dust veils cross
+// the core (`veil`).)
 const FS_ORION = COMMON + `
 void main(){
   vec3 o, d; localRay(o, d);
@@ -31,23 +35,23 @@ void main(){
     float bowl = length((q - vec3(0.03, 0.02, 0.28))*vec3(1., 1.12, 1.25));
     float wall = exp(-pow((bowl - 0.58)/0.15, 2.))*smoothstep(0.3, -0.35, q.z);
     float g = fbmW(p*3.3 + vec3(0., 0., tm*0.004));
-    float em = wall*(0.3 + 2.2*g*g) + exp(-bowl*bowl*5.)*0.9*(0.35 + g);
+    float fl = pow(ridge(q*4.2 + 1.7), 4.), fl2 = pow(ridge(q*9. + 5.), 6.); float em = wall*(0.04 + 2.6*g*g*g + 2.2*fl + 1.2*fl2) + exp(-bowl*bowl*5.)*0.55*(0.12 + 1.3*g*g + 1.5*fl);
     // the Orion Bar: an ionisation front seen edge-on, south-east of the Trapezium
     vec2 bq = rot2(0.5)*(p.xy - vec2(0.18, -0.2));
     float bar = exp(-pow(bq.y/0.035, 2.))*smoothstep(0.42, 0.05, abs(bq.x))*smoothstep(0.35, -0.25, p.z);
     em += bar*(0.6 + 1.4*ridge(p*10.))*1.6;
     // outer wings and the M43 bubble to the north
-    em += exp(-pow((length(p.xy*vec2(0.85, 1.15)) - 0.74)/0.13, 2.))*smoothstep(0.45, -0.5, p.z)*(0.2 + ridge(p*4. + 2.))*0.55;
+    { vec2 wq = p.xy - vec2(0.05, 0.0); float ang = atan(wq.y, wq.x), rr = length(wq); float lobe = exp(-pow((ang - 0.55)/0.42, 2.)) + exp(-pow((ang + 0.75)/0.5, 2.)) + 0.35*exp(-pow((abs(ang) - 2.4)/0.5, 2.)); em += lobe*exp(-pow((rr - 0.55)/0.25, 2.))*smoothstep(0.45, -0.5, p.z)*(0.1 + 1.6*pow(ridge(p*5. + 2.), 3.))*0.75; }
     em += exp(-pow((length(p - vec3(0.02, 0.62, -0.1)) - 0.12)/0.05, 2.))*0.9;
-    em += exp(-dot(p.xy - vec2(0.02, 0.0), p.xy - vec2(0.02, 0.0))*22.)*smoothstep(-0.2, 0.25, p.z)*smoothstep(0.5, 0.2, p.z)*1.6*(0.6 + g);   // the bright heart around the Trapezium
+    em += exp(-dot(p.xy - vec2(0.02, 0.0), p.xy - vec2(0.02, 0.0))*22.)*smoothstep(-0.2, 0.25, p.z)*smoothstep(0.5, 0.2, p.z)*1.5*(0.25 + 0.8*g + 1.4*fl);   // the bright heart around the Trapezium
     float hot = exp(-dot(p.xy, p.xy)*7.)*smoothstep(-0.6, 0.2, p.z);
     vec3 c = mix(vec3(1., 0.32, 0.3), vec3(0.42, 1., 0.78), hot*0.85);
     c = mix(c, vec3(1., 0.62, 0.45), bar*0.5);
     // dust: the Fish's Mouth lane, foreground veils, and the dark cloud the bowl is carved into
-    float lane = smoothstep(0.08, 0., abs(p.y - 0.3 - 0.12*sin(p.x*5.)) - 0.05*fbm3(p*6.))*smoothstep(0.42, 0.12, abs(p.x + 0.1))*smoothstep(-0.1, 0.35, p.z);
-    float veil = smoothstep(0.56, 0.8, fbm3(p*2.4 + 20.))*smoothstep(0.1, 0.6, p.z)*0.8;
+    float lane = smoothstep(0.1, 0., abs(p.y - 0.3 - 0.12*sin(p.x*5.)) - 0.07*fbm3(p*6.))*smoothstep(0.42, 0.12, abs(p.x + 0.1))*smoothstep(-0.1, 0.35, p.z);
+    float veil = (smoothstep(0.5, 0.72, fbm3(p*3.1 + 20.))*1.6 + smoothstep(0.62, 0.9, ridge(p*6. + 9.))*1.2)*smoothstep(0.05, 0.55, p.z);
     float back = smoothstep(-0.25, -0.75, p.z)*smoothstep(0.5, 1., r);
-    col += T*c*em*dt*5.;
+    col += T*c*em*dt*2.6;   // (was 5: the core burned to one block of heavy glyphs)
     T *= exp(-(lane*16. + veil*1.4 + back*3.)*dt);
     if(T < 0.01) break;
   }

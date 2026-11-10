@@ -5,6 +5,10 @@
      numbers with units. The newest version comes first and opens by itself; its number must match package.json (tests/smoke.mjs checks it).
      Every detail stays in docs/CHANGELOG.md, which the panel links to. -->
 
+## 0.27.8 · 10 Nov 2026 · The Orion Nebula, sharper
+- The Orion Nebula has its shape back: a bright core round the Trapezium, two wings of glowing gas, the dark bay to the north, and dust lanes across the middle.
+- Up close it reads as clouds instead of a screen full of white.
+
 ## 0.27.7 · 10 Nov 2026 · Star clusters that look like clusters
 - The 26 open clusters, the Beehive and the Wild Duck among them, now open as a swarm of stars that thickens toward the middle. Before, most showed a few bright crosses on black.
 - Their first two angles stand outside the cluster, the third inside it.
