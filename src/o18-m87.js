@@ -3,7 +3,7 @@
 const M87_POS = radec(hms(12,30,49.4), dms(12,23,28), 53.5e6);
 const m87 = (() => {
   const o = addGalaxy({ key:'m87', name:'M87', label:'M87', type:'giant elliptical galaxy at the heart of the Virgo Cluster', sortKey:53.5e6,
-    fact:'One of the most massive galaxies nearby, swarming with some 12,000 globular clusters. From its core a jet of plasma shoots out at nearly the speed of light.',
+    fact:'One of the most massive galaxies nearby, swarming with some 13,000 globular clusters. From its core a jet of plasma shoots out at nearly the speed of light.',
     pos:M87_POS, rad:120000, incl:0, stars:9000, g:{ ell:0.12, Rd:0.3, starGain:1.2 }, farLum:1, labelRange:4e8, aka:'virgo a m87 ngc 4486 elliptical',
     visFn(rpx){ return smooth(7, 18, rpx)*(0.1 + 0.9*smooth(200, 20000, viewDist())); },
     readout:() => '53.5 million light-years · about 2.4 trillion solar masses\nits black hole weighs 6.5 billion Suns' });
