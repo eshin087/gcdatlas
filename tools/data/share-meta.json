@@ -1,5 +1,5 @@
 {
- "made": "2026-11-08",
+ "made": "2026-11-10",
  "groups": [
   [
    "solar",
@@ -122,8 +122,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 26670.00001040263,
-   "distLy": 26670.00001040263
+   "rank": 26670.00001065762,
+   "distLy": 26670.00001065762
   },
   {
    "key": "lmc",
@@ -145,8 +145,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 163000.00000231309,
-   "distLy": 163000.00000231309
+   "rank": 163000.00000234603,
+   "distLy": 163000.00000234603
   },
   {
    "key": "smc",
@@ -169,8 +169,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 199999.99999951335,
-   "distLy": 199999.99999951335
+   "rank": 199999.99999968742,
+   "distLy": 199999.99999968742
   },
   {
    "key": "m33",
@@ -195,8 +195,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 2729999.999863155,
-   "distLy": 2729999.999863155
+   "rank": 2729999.9998632534,
+   "distLy": 2729999.9998632534
   },
   {
    "key": "sgrdsph",
@@ -218,8 +218,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 86000.00000561457,
-   "distLy": 86000.00000561457
+   "rank": 86000.0000059419,
+   "distLy": 86000.0000059419
   },
   {
    "key": "fornaxd",
@@ -241,8 +241,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 464999.9999851564,
-   "distLy": 464999.9999851564
+   "rank": 464999.9999852765,
+   "distLy": 464999.9999852765
   },
   {
    "key": "sculptord",
@@ -264,8 +264,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 273999.9999890053,
-   "distLy": 273999.9999890053
+   "rank": 273999.999989255,
+   "distLy": 273999.999989255
   },
   {
    "key": "leoi",
@@ -287,8 +287,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 830000.0000160807,
-   "distLy": 830000.0000160807
+   "rank": 830000.0000156811,
+   "distLy": 830000.0000156811
   },
   {
    "key": "dracod",
@@ -310,8 +310,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 266000.0000079644,
-   "distLy": 266000.0000079644
+   "rank": 266000.0000079757,
+   "distLy": 266000.0000079757
   },
   {
    "key": "ngc6822",
@@ -337,8 +337,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 1499999.999998591,
-   "distLy": 1499999.999998591
+   "rank": 1499999.9999989655,
+   "distLy": 1499999.9999989655
   },
   {
    "key": "ic1613",
@@ -363,8 +363,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 2399999.999919138,
-   "distLy": 2399999.999919138
+   "rank": 2399999.9999193554,
+   "distLy": 2399999.9999193554
   },
   {
    "key": "wlm",
@@ -386,8 +386,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 3199999.99997439,
-   "distLy": 3199999.99997439
+   "rank": 3199999.9999747085,
+   "distLy": 3199999.9999747085
   },
   {
    "key": "m81",
@@ -411,8 +411,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 11799999.99977893,
-   "distLy": 11799999.99977893
+   "rank": 11799999.999778688,
+   "distLy": 11799999.999778688
   },
   {
    "key": "m82",
@@ -436,8 +436,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 11399999.999787295,
-   "distLy": 11399999.999787295
+   "rank": 11399999.999787059,
+   "distLy": 11399999.999787059
   },
   {
    "key": "m101",
@@ -461,8 +461,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 20900000.00000482,
-   "distLy": 20900000.00000482
+   "rank": 20900000.000004653,
+   "distLy": 20900000.000004653
   },
   {
    "key": "m104",
@@ -486,8 +486,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 31099999.99932404,
-   "distLy": 31099999.99932404
+   "rank": 31099999.999323804,
+   "distLy": 31099999.999323804
   },
   {
    "key": "cena",
@@ -510,8 +510,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 11999999.99954354,
-   "distLy": 11999999.99954354
+   "rank": 11999999.999543475,
+   "distLy": 11999999.999543475
   },
   {
    "key": "cosmicweb",
@@ -533,8 +533,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 0.000015664190094437178,
-   "distLy": 0.000015664190094437178
+   "rank": 0.000015658603238340365,
+   "distLy": 0.000015658603238340365
   },
   {
    "key": "universe",
@@ -556,8 +556,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 0.000015664190094437178,
-   "distLy": 0.000015664190094437178
+   "rank": 0.000015658603238340365,
+   "distLy": 0.000015658603238340365
   },
   {
    "key": "sun",
@@ -581,7 +581,7 @@
    "parent": null,
    "moving": true,
    "rank": 0,
-   "distLy": 0.000015664190094437178
+   "distLy": 0.000015658603238340365
   },
   {
    "key": "solarsystem",
@@ -604,7 +604,7 @@
    "parent": null,
    "moving": true,
    "rank": 0,
-   "distLy": 0.000015664190094437178
+   "distLy": 0.000015658603238340365
   },
   {
    "key": "oort",
@@ -627,7 +627,7 @@
    "parent": null,
    "moving": true,
    "rank": 0,
-   "distLy": 0.000015664190094437178
+   "distLy": 0.000015658603238340365
   },
   {
    "key": "mercury",
@@ -640,7 +640,7 @@
    ],
    "codes": [],
    "drawnWith": [],
-   "where": "0.72 AU from Earth",
+   "where": "0.75 AU from Earth",
    "fromSun": "0.31 AU from the Sun",
    "size": "4,880 km across",
    "readout": [
@@ -649,8 +649,8 @@
    ],
    "parent": "sun",
    "moving": true,
-   "rank": 0.000004868951864972237,
-   "distLy": 0.000011380083308901154
+   "rank": 0.000004862890183440917,
+   "distLy": 0.000011803547869718714
   },
   {
    "key": "venus",
@@ -663,7 +663,7 @@
    ],
    "codes": [],
    "drawnWith": [],
-   "where": "0.30 AU from Earth",
+   "where": "0.31 AU from Earth",
    "fromSun": "0.72 AU from the Sun",
    "size": "12,100 km across",
    "readout": [
@@ -673,8 +673,8 @@
    ],
    "parent": "sun",
    "moving": true,
-   "rank": 0.000011417992734705256,
-   "distLy": 0.000004814763640516269
+   "rank": 0.000011414896422982882,
+   "distLy": 0.000004911218809076663
   },
   {
    "key": "mars",
@@ -687,7 +687,7 @@
    ],
    "codes": [],
    "drawnWith": [],
-   "where": "1.36 AU from Earth",
+   "where": "1.35 AU from Earth",
    "fromSun": "1.60 AU from the Sun",
    "size": "6,780 km across",
    "readout": [
@@ -696,8 +696,8 @@
    ],
    "parent": "sun",
    "moving": true,
-   "rank": 0.000025346094205091584,
-   "distLy": 0.000021580243775320215
+   "rank": 0.000025370141411449573,
+   "distLy": 0.000021383104180177697
   },
   {
    "key": "uranus",
@@ -719,8 +719,8 @@
    ],
    "parent": "sun",
    "moving": true,
-   "rank": 0.00030722063401728716,
-   "distLy": 0.000292249313761654
+   "rank": 0.00030721648234857327,
+   "distLy": 0.0002921340790861375
   },
   {
    "key": "neptune",
@@ -742,8 +742,8 @@
    ],
    "parent": "sun",
    "moving": true,
-   "rank": 0.0004724270647403644,
-   "distLy": 0.0004612047670509015
+   "rank": 0.0004724266389829386,
+   "distLy": 0.00046149823646921657
   },
   {
    "key": "pluto",
@@ -766,8 +766,8 @@
    ],
    "parent": "sun",
    "moving": true,
-   "rank": 0.0005635837145237953,
-   "distLy": 0.0005670530003803549
+   "rank": 0.0005636000527758133,
+   "distLy": 0.0005674604190854802
   },
   {
    "key": "earth",
@@ -789,7 +789,7 @@
    ],
    "parent": "sun",
    "moving": true,
-   "rank": 0.000015664190094437178,
+   "rank": 0.000015658603238340365,
    "distLy": 0
   },
   {
@@ -804,7 +804,7 @@
    ],
    "codes": [],
    "drawnWith": [],
-   "where": "397,199 km from Earth",
+   "where": "402,149 km from Earth",
    "fromSun": null,
    "size": "3,470 km across",
    "readout": [
@@ -813,8 +813,8 @@
    ],
    "parent": "earth",
    "moving": true,
-   "rank": 0.00001566419013642127,
-   "distLy": 4.1984092009860446e-8
+   "rank": 0.000015658603280847676,
+   "distLy": 4.250731131929414e-8
   },
   {
    "key": "jupiter",
@@ -827,7 +827,7 @@
    ],
    "codes": [],
    "drawnWith": [],
-   "where": "5.37 AU from Earth",
+   "where": "5.35 AU from Earth",
    "fromSun": "5.32 AU from the Sun",
    "size": "143,000 km across",
    "readout": [
@@ -836,8 +836,8 @@
    ],
    "parent": "sun",
    "moving": true,
-   "rank": 0.00008407963065556078,
-   "distLy": 0.00008494406976956926
+   "rank": 0.00008408709581726487,
+   "distLy": 0.00008457833794632097
   },
   {
    "key": "io",
@@ -851,7 +851,7 @@
    ],
    "codes": [],
    "drawnWith": [],
-   "where": "5.37 AU from Earth",
+   "where": "5.35 AU from Earth",
    "fromSun": "421,700 km from Jupiter",
    "size": "3,640 km across",
    "readout": [
@@ -860,8 +860,8 @@
    ],
    "parent": "jupiter",
    "moving": true,
-   "rank": 0.00008407963070013465,
-   "distLy": 0.00008494898581820878
+   "rank": 0.00008408709586183874,
+   "distLy": 0.00008461842153526018
   },
   {
    "key": "europa",
@@ -875,7 +875,7 @@
    ],
    "codes": [],
    "drawnWith": [],
-   "where": "5.37 AU from Earth",
+   "where": "5.35 AU from Earth",
    "fromSun": "671,034 km from Jupiter",
    "size": "3,120 km across",
    "readout": [
@@ -884,8 +884,8 @@
    ],
    "parent": "jupiter",
    "moving": true,
-   "rank": 0.00008407963072648935,
-   "distLy": 0.00008497472877013655
+   "rank": 0.00008408709588819345,
+   "distLy": 0.00008452018896192992
   },
   {
    "key": "ganymede",
@@ -899,7 +899,7 @@
    ],
    "codes": [],
    "drawnWith": [],
-   "where": "5.38 AU from Earth",
+   "where": "5.35 AU from Earth",
    "fromSun": "1,070,412 km from Jupiter",
    "size": "5,260 km across",
    "readout": [
@@ -908,8 +908,8 @@
    ],
    "parent": "jupiter",
    "moving": true,
-   "rank": 0.00008407963076870378,
-   "distLy": 0.00008503651965613295
+   "rank": 0.00008408709593040787,
+   "distLy": 0.0000846657904270929
   },
   {
    "key": "callisto",
@@ -923,7 +923,7 @@
    ],
    "codes": [],
    "drawnWith": [],
-   "where": "5.36 AU from Earth",
+   "where": "5.34 AU from Earth",
    "fromSun": "0.01 AU from Jupiter",
    "size": "4,820 km across",
    "readout": [
@@ -932,8 +932,8 @@
    ],
    "parent": "jupiter",
    "moving": true,
-   "rank": 0.00008407963085456392,
-   "distLy": 0.00008475984314169528
+   "rank": 0.00008408709601626801,
+   "distLy": 0.00008446180828114552
   },
   {
    "key": "sgra",
@@ -955,8 +955,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 26670.00001040263,
-   "distLy": 26670.00001040263
+   "rank": 26670.00001065762,
+   "distLy": 26670.00001065762
   },
   {
    "key": "sstars",
@@ -978,8 +978,8 @@
    ],
    "parent": "sgra",
    "moving": false,
-   "rank": 26670.00001040263,
-   "distLy": 26670.00001040263
+   "rank": 26670.00001065762,
+   "distLy": 26670.00001065762
   },
   {
    "key": "galcentre",
@@ -1001,8 +1001,8 @@
    ],
    "parent": "sgra",
    "moving": false,
-   "rank": 26670.00001040263,
-   "distLy": 26670.00001040263
+   "rank": 26670.00001065762,
+   "distLy": 26670.00001065762
   },
   {
    "key": "3c273",
@@ -1024,8 +1024,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 2439999999.96399,
-   "distLy": 2439999999.96399
+   "rank": 2439999999.9639897,
+   "distLy": 2439999999.9639897
   },
   {
    "key": "sn1987a",
@@ -1048,8 +1048,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 168000.00000260965,
-   "distLy": 168000.00000260965
+   "rank": 168000.00000263454,
+   "distLy": 168000.00000263454
   },
   {
    "key": "crab",
@@ -1075,8 +1075,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 6499.999987258644,
-   "distLy": 6499.999987258644
+   "rank": 6499.999987018048,
+   "distLy": 6499.999987018048
   },
   {
    "key": "crabpulsar",
@@ -1098,8 +1098,8 @@
    ],
    "parent": "crab",
    "moving": false,
-   "rank": 6499.999987258644,
-   "distLy": 6499.999987258644
+   "rank": 6499.999987018048,
+   "distLy": 6499.999987018048
   },
   {
    "key": "m51",
@@ -1125,8 +1125,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 30999999.999876115,
-   "distLy": 30999999.999876115
+   "rank": 30999999.999875914,
+   "distLy": 30999999.999875914
   },
   {
    "key": "antennae",
@@ -1152,8 +1152,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 61999999.99952945,
-   "distLy": 61999999.99952945
+   "rank": 61999999.999529205,
+   "distLy": 61999999.999529205
   },
   {
    "key": "pillars",
@@ -1175,8 +1175,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 6500.000010095526,
-   "distLy": 6500.000010095526
+   "rank": 6500.000010388259,
+   "distLy": 6500.000010388259
   },
   {
    "key": "catseye",
@@ -1200,8 +1200,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 3300.0000000726923,
-   "distLy": 3300.0000000726923
+   "rank": 3300.0000000716054,
+   "distLy": 3300.0000000716054
   },
   {
    "key": "rsoph",
@@ -1223,8 +1223,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 5000.000011160306,
-   "distLy": 5000.000011160306
+   "rank": 5000.000011408948,
+   "distLy": 5000.000011408948
   },
   {
    "key": "saturn",
@@ -1237,7 +1237,7 @@
    ],
    "codes": [],
    "drawnWith": [],
-   "where": "8.62 AU from Earth",
+   "where": "8.64 AU from Earth",
    "fromSun": "9.42 AU from the Sun",
    "size": "116,000 km across",
    "readout": [
@@ -1246,8 +1246,8 @@
    ],
    "parent": "sun",
    "moving": true,
-   "rank": 0.00014900410875533568,
-   "distLy": 0.00013634834475995843
+   "rank": 0.0001489971649412189,
+   "distLy": 0.0001365919917018765
   },
   {
    "key": "titan",
@@ -1261,7 +1261,7 @@
    ],
    "codes": [],
    "drawnWith": [],
-   "where": "8.62 AU from Earth",
+   "where": "8.64 AU from Earth",
    "fromSun": "1,221,870 km from Saturn",
    "size": "5,150 km across",
    "readout": [
@@ -1270,8 +1270,8 @@
    ],
    "parent": "saturn",
    "moving": true,
-   "rank": 0.00014900410888448785,
-   "distLy": 0.00013624889125031064
+   "rank": 0.00014899716507037108,
+   "distLy": 0.0001365541150935433
   },
   {
    "key": "enceladus",
@@ -1285,7 +1285,7 @@
    ],
    "codes": [],
    "drawnWith": [],
-   "where": "8.62 AU from Earth",
+   "where": "8.64 AU from Earth",
    "fromSun": "237,948 km from Saturn",
    "size": "504 km across",
    "readout": [
@@ -1294,8 +1294,8 @@
    ],
    "parent": "saturn",
    "moving": true,
-   "rank": 0.0001490041087804869,
-   "distLy": 0.00013632832440730672
+   "rank": 0.00014899716496637012,
+   "distLy": 0.00013656714511357985
   },
   {
    "key": "mimas",
@@ -1309,17 +1309,17 @@
    ],
    "codes": [],
    "drawnWith": [],
-   "where": "8.62 AU from Earth",
+   "where": "8.64 AU from Earth",
    "fromSun": "185,539 km from Saturn",
    "size": "396 km across",
    "readout": [
     "396 km across · Herschel is 130 km wide",
-    "Herschel is turned away from the Sun; it is lit for half of each orbit"
+    "its walls rise about 5 km; its central peak stands 6 km tall"
    ],
    "parent": "saturn",
    "moving": true,
-   "rank": 0.00014900410877494725,
-   "distLy": 0.00013633721618555827
+   "rank": 0.00014899716496083047,
+   "distLy": 0.00013659439007422964
   },
   {
    "key": "tethys",
@@ -1333,7 +1333,7 @@
    ],
    "codes": [],
    "drawnWith": [],
-   "where": "8.62 AU from Earth",
+   "where": "8.64 AU from Earth",
    "fromSun": "294,619 km from Saturn",
    "size": "1,060 km across",
    "readout": [
@@ -1342,8 +1342,8 @@
    ],
    "parent": "saturn",
    "moving": true,
-   "rank": 0.00014900410878647703,
-   "distLy": 0.00013633930533830295
+   "rank": 0.00014899716497236026,
+   "distLy": 0.00013656110210829545
   },
   {
    "key": "dione",
@@ -1357,7 +1357,7 @@
    ],
    "codes": [],
    "drawnWith": [],
-   "where": "8.62 AU from Earth",
+   "where": "8.64 AU from Earth",
    "fromSun": "377,396 km from Saturn",
    "size": "1,120 km across",
    "readout": [
@@ -1366,8 +1366,8 @@
    ],
    "parent": "saturn",
    "moving": true,
-   "rank": 0.0001490041087952266,
-   "distLy": 0.00013633280038730046
+   "rank": 0.00014899716498110982,
+   "distLy": 0.00013659720407402625
   },
   {
    "key": "rhea",
@@ -1381,7 +1381,7 @@
    ],
    "codes": [],
    "drawnWith": [],
-   "where": "8.62 AU from Earth",
+   "where": "8.64 AU from Earth",
    "fromSun": "527,108 km from Saturn",
    "size": "1,530 km across",
    "readout": [
@@ -1390,8 +1390,8 @@
    ],
    "parent": "saturn",
    "moving": true,
-   "rank": 0.00014900410881105123,
-   "distLy": 0.0001363490365629368
+   "rank": 0.00014899716499693446,
+   "distLy": 0.0001366403257908353
   },
   {
    "key": "gw170817",
@@ -1416,8 +1416,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 130000000.15783346,
-   "distLy": 130000000.15783346
+   "rank": 130000000.1578333,
+   "distLy": 130000000.1578333
   },
   {
    "key": "alphacen",
@@ -1439,8 +1439,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 4.370011233116506,
-   "distLy": 4.370011233116506
+   "rank": 4.370011293085485,
+   "distLy": 4.370011293085485
   },
   {
    "key": "proxima",
@@ -1462,8 +1462,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 4.246510849945834,
-   "distLy": 4.246510849945834
+   "rank": 4.246510905976708,
+   "distLy": 4.246510905976708
   },
   {
    "key": "proximab",
@@ -1485,8 +1485,8 @@
    ],
    "parent": "proxima",
    "moving": false,
-   "rank": 4.246510670357751,
-   "distLy": 4.246510670357751
+   "rank": 4.246510642027081,
+   "distLy": 4.246510642027081
   },
   {
    "key": "sirius",
@@ -1508,8 +1508,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 8.59999354181035,
-   "distLy": 8.59999354181035
+   "rank": 8.599993280759573,
+   "distLy": 8.599993280759573
   },
   {
    "key": "siriusb",
@@ -1530,8 +1530,8 @@
    ],
    "parent": "sirius",
    "moving": false,
-   "rank": 8.6002057547423,
-   "distLy": 8.6002057547423
+   "rank": 8.60020574496138,
+   "distLy": 8.60020574496138
   },
   {
    "key": "vega",
@@ -1552,8 +1552,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 25.040003835005972,
-   "distLy": 25.040003835005972
+   "rank": 25.040003997761165,
+   "distLy": 25.040003997761165
   },
   {
    "key": "polaris",
@@ -1574,8 +1574,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 432.99999529010887,
-   "distLy": 432.99999529010887
+   "rank": 432.999995182519,
+   "distLy": 432.999995182519
   },
   {
    "key": "rigel",
@@ -1596,8 +1596,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 859.9999884149547,
-   "distLy": 859.9999884149547
+   "rank": 859.9999882462802,
+   "distLy": 859.9999882462802
   },
   {
    "key": "antares",
@@ -1619,8 +1619,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 550.0000143002408,
-   "distLy": 550.0000143002408
+   "rank": 550.0000144513127,
+   "distLy": 550.0000144513127
   },
   {
    "key": "deneb",
@@ -1641,8 +1641,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 2614.999997553654,
-   "distLy": 2614.999997553654
+   "rank": 2614.999997748976,
+   "distLy": 2614.999997748976
   },
   {
    "key": "arcturus",
@@ -1663,8 +1663,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 36.700012465236775,
-   "distLy": 36.700012465236775
+   "rank": 36.700012324082245,
+   "distLy": 36.700012324082245
   },
   {
    "key": "canopus",
@@ -1686,8 +1686,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 309.9999980053593,
-   "distLy": 309.9999980053593
+   "rank": 309.9999979215228,
+   "distLy": 309.9999979215228
   },
   {
    "key": "aldebaran",
@@ -1708,8 +1708,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 65.2999856807506,
-   "distLy": 65.2999856807506
+   "rank": 65.29998552970825,
+   "distLy": 65.29998552970825
   },
   {
    "key": "barnard",
@@ -1730,8 +1730,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 5.960010111492726,
-   "distLy": 5.960010111492726
+   "rank": 5.960010349590943,
+   "distLy": 5.960010349590943
   },
   {
    "key": "tauceti",
@@ -1753,8 +1753,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 11.899987518078307,
-   "distLy": 11.899987518078307
+   "rank": 11.89998770409504,
+   "distLy": 11.89998770409504
   },
   {
    "key": "epseri",
@@ -1775,8 +1775,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 10.499986138661146,
-   "distLy": 10.499986138661146
+   "rank": 10.499986137365044,
+   "distLy": 10.499986137365044
   },
   {
    "key": "capella",
@@ -1798,8 +1798,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 42.89998823630025,
-   "distLy": 42.89998823630025
+   "rank": 42.8999880265961,
+   "distLy": 42.8999880265961
   },
   {
    "key": "altair",
@@ -1820,8 +1820,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 16.700003456919084,
-   "distLy": 16.700003456919084
+   "rank": 16.700003798710725,
+   "distLy": 16.700003798710725
   },
   {
    "key": "spica",
@@ -1843,8 +1843,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 250.00001444327506,
-   "distLy": 250.00001444327506
+   "rank": 250.00001427659467,
+   "distLy": 250.00001427659467
   },
   {
    "key": "trappist1",
@@ -1866,8 +1866,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 40.69999233508187,
-   "distLy": 40.69999233508187
+   "rank": 40.69999269617207,
+   "distLy": 40.69999269617207
   },
   {
    "key": "trappist1e",
@@ -1889,8 +1889,8 @@
    ],
    "parent": "trappist1",
    "moving": false,
-   "rank": 40.699992241032064,
-   "distLy": 40.699992241032064
+   "rank": 40.69999251898361,
+   "distLy": 40.69999251898361
   },
   {
    "key": "betelgeuse",
@@ -1912,8 +1912,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 547.9999888514957,
-   "distLy": 547.9999888514957
+   "rank": 547.9999885952309,
+   "distLy": 547.9999885952309
   },
   {
    "key": "etacar",
@@ -1936,8 +1936,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 7500.00000741806,
-   "distLy": 7500.00000741806
+   "rank": 7500.000007326344,
+   "distLy": 7500.000007326344
   },
   {
    "key": "magnetar",
@@ -1959,8 +1959,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 28000.00000977725,
-   "distLy": 28000.00000977725
+   "rank": 28000.000010060707,
+   "distLy": 28000.000010060707
   },
   {
    "key": "omegacen",
@@ -1985,8 +1985,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 17090.00001206425,
-   "distLy": 17090.00001206425
+   "rank": 17090.000012016662,
+   "distLy": 17090.000012016662
   },
   {
    "key": "andromeda",
@@ -2011,8 +2011,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 2536999.99992416,
-   "distLy": 2536999.99992416
+   "rank": 2536999.9999242774,
+   "distLy": 2536999.9999242774
   },
   {
    "key": "m32",
@@ -2037,8 +2037,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 2519999.999924464,
-   "distLy": 2519999.999924464
+   "rank": 2519999.999924583,
+   "distLy": 2519999.999924583
   },
   {
    "key": "m110",
@@ -2063,8 +2063,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 2729999.999921908,
-   "distLy": 2729999.999921908
+   "rank": 2729999.999922026,
+   "distLy": 2729999.999922026
   },
   {
    "key": "m87",
@@ -2089,8 +2089,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 53499999.9993416,
-   "distLy": 53499999.9993416
+   "rank": 53499999.99934132,
+   "distLy": 53499999.99934132
   },
   {
    "key": "m87jet",
@@ -2112,8 +2112,8 @@
    ],
    "parent": "m87",
    "moving": false,
-   "rank": 53499999.9993416,
-   "distLy": 53499999.9993416
+   "rank": 53499999.99934132,
+   "distLy": 53499999.99934132
   },
   {
    "key": "m87bh",
@@ -2135,8 +2135,8 @@
    ],
    "parent": "m87",
    "moving": false,
-   "rank": 53499999.9993416,
-   "distLy": 53499999.9993416
+   "rank": 53499999.99934132,
+   "distLy": 53499999.99934132
   },
   {
    "key": "hltau",
@@ -2158,8 +2158,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 449.9999855384541,
-   "distLy": 449.9999855384541
+   "rank": 449.99998539205086,
+   "distLy": 449.99998539205086
   },
   {
    "key": "ton618",
@@ -2205,8 +2205,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 3900000000.1145434,
-   "distLy": 3900000000.1145434
+   "rank": 3900000000.114543,
+   "distLy": 3900000000.114543
   },
   {
    "key": "jadesz14",
@@ -2252,8 +2252,8 @@
    ],
    "parent": null,
    "moving": true,
-   "rank": 0.0027355690602095047,
-   "distLy": 0.0027355690602095047
+   "rank": 0.002735958286322569,
+   "distLy": 0.002735958286322569
   },
   {
    "key": "voyager2",
@@ -2274,8 +2274,8 @@
    ],
    "parent": null,
    "moving": true,
-   "rank": 0.002282620253027899,
-   "distLy": 0.002282620253027899
+   "rank": 0.002282901369121532,
+   "distLy": 0.002282901369121532
   },
   {
    "key": "newhorizons",
@@ -2296,8 +2296,8 @@
    ],
    "parent": null,
    "moving": true,
-   "rank": 0.0010334836235027544,
-   "distLy": 0.0010334836235027544
+   "rank": 0.0010338588808680212,
+   "distLy": 0.0010338588808680212
   },
   {
    "key": "jwst",
@@ -2319,8 +2319,8 @@
    ],
    "parent": "earth",
    "moving": true,
-   "rank": 1.5855063578804867e-7,
-   "distLy": 1.5855063578804867e-7
+   "rank": 1.5855063578804875e-7,
+   "distLy": 1.5855063578804875e-7
   },
   {
    "key": "iss",
@@ -2341,8 +2341,8 @@
    ],
    "parent": "earth",
    "moving": true,
-   "rank": 7.17949295146394e-10,
-   "distLy": 7.17949295146394e-10
+   "rank": 7.179733639645982e-10,
+   "distLy": 7.179733639645982e-10
   },
   {
    "key": "hubble",
@@ -2363,8 +2363,8 @@
    ],
    "parent": "earth",
    "moving": true,
-   "rank": 7.292695559437915e-10,
-   "distLy": 7.292695559437915e-10
+   "rank": 7.292108359342605e-10,
+   "distLy": 7.292108359342605e-10
   },
   {
    "key": "earth-iconic-everest",
@@ -2390,7 +2390,7 @@
     86.925
    ],
    "rank": 0,
-   "distLy": 6.734174004061869e-10
+   "distLy": 6.73417400407425e-10
   },
   {
    "key": "earth-iconic-grandcanyon",
@@ -2416,7 +2416,7 @@
     -112.11
    ],
    "rank": 0,
-   "distLy": 6.734174004142476e-10
+   "distLy": 6.734174003976881e-10
   },
   {
    "key": "earth-iconic-alps",
@@ -2442,7 +2442,7 @@
     7.26
    ],
    "rank": 0,
-   "distLy": 6.734174003851521e-10
+   "distLy": 6.734174004286784e-10
   },
   {
    "key": "earth-iconic-kilimanjaro",
@@ -2468,7 +2468,7 @@
     37.3533
    ],
    "rank": 0,
-   "distLy": 6.734174004178934e-10
+   "distLy": 6.734174004122844e-10
   },
   {
    "key": "earth-iconic-fuji",
@@ -2494,7 +2494,7 @@
     138.7274
    ],
    "rank": 0,
-   "distLy": 6.734174004243212e-10
+   "distLy": 6.734174003915583e-10
   },
   {
    "key": "earth-iconic-yosemite",
@@ -2520,7 +2520,7 @@
     -119.585
    ],
    "rank": 0,
-   "distLy": 6.734174004177671e-10
+   "distLy": 6.734174003953106e-10
   },
   {
    "key": "earth-iconic-torresdelpaine",
@@ -2546,7 +2546,7 @@
     -73
    ],
    "rank": 0,
-   "distLy": 6.734174004088445e-10
+   "distLy": 6.734174003951689e-10
   },
   {
    "key": "earth-iconic-denali",
@@ -2572,7 +2572,7 @@
     -151.0063
    ],
    "rank": 0,
-   "distLy": 6.734174004165371e-10
+   "distLy": 6.734174003842232e-10
   },
   {
    "key": "earth-iconic-richat",
@@ -2598,7 +2598,7 @@
     -11.4009
    ],
    "rank": 0,
-   "distLy": 6.734174003999555e-10
+   "distLy": 6.734174004280988e-10
   },
   {
    "key": "earth-iconic-amazon",
@@ -2624,7 +2624,7 @@
     -59.92
    ],
    "rank": 0,
-   "distLy": 6.734174004142782e-10
+   "distLy": 6.734174004093357e-10
   },
   {
    "key": "earth-iconic-nile",
@@ -2650,7 +2650,7 @@
     31.15
    ],
    "rank": 0,
-   "distLy": 6.734174003941468e-10
+   "distLy": 6.73417400427524e-10
   },
   {
    "key": "earth-iconic-uluru",
@@ -2676,7 +2676,7 @@
     131.0369
    ],
    "rank": 0,
-   "distLy": 6.734174004002929e-10
+   "distLy": 6.734174004206127e-10
   },
   {
    "key": "earth-iconic-okavango",
@@ -2702,7 +2702,7 @@
     22.8
    ],
    "rank": 0,
-   "distLy": 6.734174004271597e-10
+   "distLy": 6.734174003999419e-10
   },
   {
    "key": "earth-iconic-sossusvlei",
@@ -2728,7 +2728,7 @@
     15.3
    ],
    "rank": 0,
-   "distLy": 6.734174004299397e-10
+   "distLy": 6.734174003952451e-10
   },
   {
    "key": "earth-iconic-gbr",
@@ -2754,7 +2754,7 @@
     149.2
    ],
    "rank": 0,
-   "distLy": 6.734174004009075e-10
+   "distLy": 6.734174004242569e-10
   },
   {
    "key": "earth-iconic-hawaii",
@@ -2780,7 +2780,7 @@
     -155.2834
    ],
    "rank": 0,
-   "distLy": 6.734174004271878e-10
+   "distLy": 6.734174003994324e-10
   },
   {
    "key": "earth-iconic-iceland",
@@ -2806,7 +2806,7 @@
     -16.55
    ],
    "rank": 0,
-   "distLy": 6.734174003832115e-10
+   "distLy": 6.734174004178681e-10
   },
   {
    "key": "earth-iconic-antarctic",
@@ -2832,7 +2832,7 @@
     167.17
    ],
    "rank": 0,
-   "distLy": 6.734174003892472e-10
+   "distLy": 6.734174004073657e-10
   },
   {
    "key": "earth-iconic-greenland",
@@ -2858,7 +2858,7 @@
     -50.55
    ],
    "rank": 0,
-   "distLy": 6.734174003894597e-10
+   "distLy": 6.734174004083117e-10
   },
   {
    "key": "earth-iconic-maldives",
@@ -2884,7 +2884,7 @@
     73.5
    ],
    "rank": 0,
-   "distLy": 6.734174004101382e-10
+   "distLy": 6.734174004102778e-10
   },
   {
    "key": "earth-iconic-borabora",
@@ -2910,7 +2910,7 @@
     -151.74
    ],
    "rank": 0,
-   "distLy": 6.734174004039121e-10
+   "distLy": 6.734174004234307e-10
   },
   {
    "key": "earth-iconic-halong",
@@ -2936,7 +2936,7 @@
     107.1
    ],
    "rank": 0,
-   "distLy": 6.734174004139335e-10
+   "distLy": 6.734174004035456e-10
   },
   {
    "key": "earth-iconic-geiranger",
@@ -2962,7 +2962,7 @@
     7.15
    ],
    "rank": 0,
-   "distLy": 6.734174003838746e-10
+   "distLy": 6.734174004201599e-10
   },
   {
    "key": "earth-iconic-palm",
@@ -2988,7 +2988,7 @@
     55.139
    ],
    "rank": 0,
-   "distLy": 6.734174004005581e-10
+   "distLy": 6.734174004190616e-10
   },
   {
    "key": "earth-iconic-panama",
@@ -3014,7 +3014,7 @@
     -79.7
    ],
    "rank": 0,
-   "distLy": 6.73417400410164e-10
+   "distLy": 6.734174004103155e-10
   },
   {
    "key": "earth-iconic-greatwall",
@@ -3040,7 +3040,7 @@
     116.57
    ],
    "rank": 0,
-   "distLy": 6.734174004156258e-10
+   "distLy": 6.734174003942869e-10
   },
   {
    "key": "earth-iconic-giza",
@@ -3066,7 +3066,7 @@
     31.1308
    ],
    "rank": 0,
-   "distLy": 6.734174003941429e-10
+   "distLy": 6.734174004272955e-10
   },
   {
    "key": "earth-iconic-suez",
@@ -3092,7 +3092,7 @@
     32.3
    ],
    "rank": 0,
-   "distLy": 6.734174003950698e-10
+   "distLy": 6.734174004269909e-10
   },
   {
    "key": "earth-iconic-threegorges",
@@ -3118,7 +3118,7 @@
     111.0033
    ],
    "rank": 0,
-   "distLy": 6.734174004147433e-10
+   "distLy": 6.734174004001154e-10
   },
   {
    "key": "earth-iconic-hoover",
@@ -3144,7 +3144,7 @@
     -114.7378
    ],
    "rank": 0,
-   "distLy": 6.734174004153028e-10
+   "distLy": 6.734174003968033e-10
   },
   {
    "key": "apollo11",
@@ -3166,8 +3166,8 @@
    ],
    "parent": "moon",
    "moving": true,
-   "rank": 0.00001566519123642127,
-   "distLy": 4.181095443249678e-8
+   "rank": 0.000015659604380847676,
+   "distLy": 4.23356507916207e-8
   },
   {
    "key": "apollo12",
@@ -3189,8 +3189,8 @@
    ],
    "parent": "moon",
    "moving": true,
-   "rank": 0.00001566519124642127,
-   "distLy": 4.182357537132815e-8
+   "rank": 0.000015659604390847676,
+   "distLy": 4.23448729360104e-8
   },
   {
    "key": "apollo14",
@@ -3212,8 +3212,8 @@
    ],
    "parent": "moon",
    "moving": true,
-   "rank": 0.00001566519125642127,
-   "distLy": 4.181583282257361e-8
+   "rank": 0.000015659604400847676,
+   "distLy": 4.233754456119974e-8
   },
   {
    "key": "apollo15",
@@ -3235,8 +3235,8 @@
    ],
    "parent": "moon",
    "moving": true,
-   "rank": 0.00001566519126642127,
-   "distLy": 4.181291351321615e-8
+   "rank": 0.000015659604410847675,
+   "distLy": 4.233598075665579e-8
   },
   {
    "key": "hadley",
@@ -3257,8 +3257,8 @@
    ],
    "parent": "moon",
    "moving": true,
-   "rank": 0.00001566519127642127,
-   "distLy": 4.181288870297615e-8
+   "rank": 0.000015659604420847675,
+   "distLy": 4.233595032804099e-8
   },
   {
    "key": "apollo16",
@@ -3280,8 +3280,8 @@
    ],
    "parent": "moon",
    "moving": true,
-   "rank": 0.00001566519128642127,
-   "distLy": 4.1809215898801304e-8
+   "rank": 0.000015659604430847675,
+   "distLy": 4.233338973622333e-8
   },
   {
    "key": "apollo17",
@@ -3303,8 +3303,8 @@
    ],
    "parent": "moon",
    "moving": true,
-   "rank": 0.00001566519129642127,
-   "distLy": 4.182474539361887e-8
+   "rank": 0.000015659604440847675,
+   "distLy": 4.2349693120916074e-8
   },
   {
    "key": "tycho",
@@ -3325,8 +3325,8 @@
    ],
    "parent": "moon",
    "moving": true,
-   "rank": 0.00001566519130642127,
-   "distLy": 4.186716031860964e-8
+   "rank": 0.000015659604450847675,
+   "distLy": 4.238984289315714e-8
   },
   {
    "key": "copernicus",
@@ -3347,8 +3347,8 @@
    ],
    "parent": "moon",
    "moving": true,
-   "rank": 0.00001566519131642127,
-   "distLy": 4.181746082633568e-8
+   "rank": 0.000015659604460847675,
+   "distLy": 4.233892318432042e-8
   },
   {
    "key": "orion",
@@ -3375,8 +3375,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 1343.9999889344197,
-   "distLy": 1343.9999889344197
+   "rank": 1343.9999887289327,
+   "distLy": 1343.9999887289327
   },
   {
    "key": "horsehead",
@@ -3401,8 +3401,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 1374.9999889018595,
-   "distLy": 1374.9999889018595
+   "rank": 1374.9999886819803,
+   "distLy": 1374.9999886819803
   },
   {
    "key": "helix",
@@ -3426,8 +3426,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 654.9999960330715,
-   "distLy": 654.9999960330715
+   "rank": 654.9999964233006,
+   "distLy": 654.9999964233006
   },
   {
    "key": "ringneb",
@@ -3452,8 +3452,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 2570.000004018384,
-   "distLy": 2570.000004018384
+   "rank": 2570.0000042225115,
+   "distLy": 2570.0000042225115
   },
   {
    "key": "carina",
@@ -3477,8 +3477,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 7500.000007407742,
-   "distLy": 7500.000007407742
+   "rank": 7500.0000073172405,
+   "distLy": 7500.0000073172405
   },
   {
    "key": "veil",
@@ -3508,8 +3508,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 2399.9999980715893,
-   "distLy": 2399.9999980715893
+   "rank": 2399.9999983515017,
+   "distLy": 2399.9999983515017
   },
   {
    "key": "eagle",
@@ -3534,8 +3534,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 6501.068556679469,
-   "distLy": 6501.068556679469
+   "rank": 6501.0685569718025,
+   "distLy": 6501.0685569718025
   },
   {
    "key": "sculptor",
@@ -3559,8 +3559,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 11399999.999859208,
-   "distLy": 11399999.999859208
+   "rank": 11399999.999859476,
+   "distLy": 11399999.999859476
   },
   {
    "key": "cartwheel",
@@ -3583,8 +3583,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 499999999.9960895,
-   "distLy": 499999999.9960895
+   "rank": 499999999.9960899,
+   "distLy": 499999999.9960899
   },
   {
    "key": "hoag",
@@ -3638,8 +3638,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 289984985.3829494,
-   "distLy": 289984985.3829494
+   "rank": 289984985.38294965,
+   "distLy": 289984985.38294965
   },
   {
    "key": "ngc1275",
@@ -3663,8 +3663,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 236999999.9844871,
-   "distLy": 236999999.9844871
+   "rank": 236999999.98448706,
+   "distLy": 236999999.98448706
   },
   {
    "key": "uyscuti",
@@ -3686,8 +3686,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 5900.000009646337,
-   "distLy": 5900.000009646337
+   "rank": 5900.000009948413,
+   "distLy": 5900.000009948413
   },
   {
    "key": "stephenson218",
@@ -3709,8 +3709,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 19000.00000859872,
-   "distLy": 19000.00000859872
+   "rank": 19000.000008907045,
+   "distLy": 19000.000008907045
   },
   {
    "key": "tarantula",
@@ -3734,8 +3734,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 163000.00000259533,
-   "distLy": 163000.00000259533
+   "rank": 163000.0000026179,
+   "distLy": 163000.0000026179
   },
   {
    "key": "r136a1",
@@ -3757,8 +3757,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 163000.00000259743,
-   "distLy": 163000.00000259743
+   "rank": 163000.00000261996,
+   "distLy": 163000.00000261996
   },
   {
    "key": "wr140",
@@ -3780,8 +3780,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 5599.999998753519,
-   "distLy": 5599.999998753519
+   "rank": 5599.999998951845,
+   "distLy": 5599.999998951845
   },
   {
    "key": "gaiabh1",
@@ -3803,8 +3803,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 1560.0000117854333,
-   "distLy": 1560.0000117854333
+   "rank": 1560.000011993633,
+   "distLy": 1560.000011993633
   },
   {
    "key": "cygx1",
@@ -3826,8 +3826,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 7300.00000073935,
-   "distLy": 7300.00000073935
+   "rank": 7300.000000977161,
+   "distLy": 7300.000000977161
   },
   {
    "key": "tde",
@@ -3850,8 +3850,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 214999999.99439123,
-   "distLy": 214999999.99439123
+   "rank": 214999999.9943911,
+   "distLy": 214999999.9943911
   },
   {
    "key": "gw150914",
@@ -3897,8 +3897,8 @@
    ],
    "parent": "sun",
    "moving": true,
-   "rank": 0.0008740881927738824,
-   "distLy": 0.0008626795239892549
+   "rank": 0.0008744546794957126,
+   "distLy": 0.0008632858214099509
   },
   {
    "key": "arrokoth",
@@ -3921,8 +3921,8 @@
    ],
    "parent": "sun",
    "moving": true,
-   "rank": 0.0006825626050818088,
-   "distLy": 0.0006880327712946464
+   "rank": 0.0006825609113860165,
+   "distLy": 0.0006884064246457257
   },
   {
    "key": "halley",
@@ -3944,8 +3944,8 @@
    ],
    "parent": "sun",
    "moving": true,
-   "rank": 0.0005523878284611486,
-   "distLy": 0.0005496547109949525
+   "rank": 0.0005523816360656924,
+   "distLy": 0.0005492642101773712
   },
   {
    "key": "ceres",
@@ -3959,7 +3959,7 @@
    ],
    "codes": [],
    "drawnWith": [],
-   "where": "2.09 AU from Earth",
+   "where": "2.07 AU from Earth",
    "fromSun": "2.64 AU from the Sun",
    "size": "939 km across",
    "readout": [
@@ -3968,8 +3968,8 @@
    ],
    "parent": "sun",
    "moving": true,
-   "rank": 0.000041819866264759775,
-   "distLy": 0.000033053454621285486
+   "rank": 0.00004180299308232222,
+   "distLy": 0.0000327537343860629
   },
   {
    "key": "kepler16b",
@@ -3991,8 +3991,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 245.0000084376358,
-   "distLy": 245.0000084376358
+   "rank": 245.00000790026425,
+   "distLy": 245.00000790026425
   },
   {
    "key": "cnc55",
@@ -4013,8 +4013,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 40.9999976691847,
-   "distLy": 40.9999976691847
+   "rank": 40.99999727411885,
+   "distLy": 40.99999727411885
   },
   {
    "key": "cnc55e",
@@ -4036,8 +4036,8 @@
    ],
    "parent": "cnc55",
    "moving": false,
-   "rank": 40.999997655763295,
-   "distLy": 40.999997655763295
+   "rank": 40.999997078677275,
+   "distLy": 40.999997078677275
   },
   {
    "key": "kelt9",
@@ -4058,8 +4058,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 669.9999983525626,
-   "distLy": 669.9999983525626
+   "rank": 669.9999985772029,
+   "distLy": 669.9999985772029
   },
   {
    "key": "kelt9b",
@@ -4081,8 +4081,8 @@
    ],
    "parent": "kelt9",
    "moving": false,
-   "rank": 669.9999982901068,
-   "distLy": 669.9999982901068
+   "rank": 669.9999982019665,
+   "distLy": 669.9999982019665
   },
   {
    "key": "hr8799",
@@ -4104,8 +4104,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 132.99999077422157,
-   "distLy": 132.99999077422157
+   "rank": 132.99999106349426,
+   "distLy": 132.99999106349426
   },
   {
    "key": "hr8799b",
@@ -4126,8 +4126,8 @@
    ],
    "parent": "hr8799",
    "moving": false,
-   "rank": 132.9999907786653,
-   "distLy": 132.9999907786653
+   "rank": 132.9999910679399,
+   "distLy": 132.9999910679399
   },
   {
    "key": "casa",
@@ -4150,8 +4150,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 10999.99999145873,
-   "distLy": 10999.99999145873
+   "rank": 10999.999991541348,
+   "distLy": 10999.999991541348
   },
   {
    "key": "wr124",
@@ -4173,8 +4173,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 15000.000005377186,
-   "distLy": 15000.000005377186
+   "rank": 15000.000005663087,
+   "distLy": 15000.000005663087
   },
   {
    "key": "southernring",
@@ -4198,8 +4198,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 2500.0000064833666,
-   "distLy": 2500.0000064833666
+   "rank": 2500.000006260314,
+   "distLy": 2500.000006260314
   },
   {
    "key": "bubble",
@@ -4223,8 +4223,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 7099.999991760023,
-   "distLy": 7099.999991760023
+   "rank": 7099.999991829221,
+   "distLy": 7099.999991829221
   },
   {
    "key": "pleiades",
@@ -4249,8 +4249,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 443.9999847788124,
-   "distLy": 443.9999847788124
+   "rank": 443.9999846940866,
+   "distLy": 443.9999846940866
   },
   {
    "key": "einsteincross",
@@ -4272,8 +4272,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 550000000.0105605,
-   "distLy": 550000000.0105605
+   "rank": 550000000.0105608,
+   "distLy": 550000000.0105608
   },
   {
    "key": "bootesvoid",
@@ -4295,8 +4295,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 699999999.9996101,
-   "distLy": 699999999.9996101
+   "rank": 699999999.9996097,
+   "distLy": 699999999.9996097
   },
   {
    "key": "elgordo",
@@ -4342,8 +4342,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 1469.9999991946463,
-   "distLy": 1469.9999991946463
+   "rank": 1469.9999993842666,
+   "distLy": 1469.9999993842666
   },
   {
    "key": "halebopp",
@@ -4365,8 +4365,8 @@
    ],
    "parent": "sun",
    "moving": true,
-   "rank": 0.0008118046408303776,
-   "distLy": 0.0008159414437612131
+   "rank": 0.0008118780045372014,
+   "distLy": 0.0008161592885526068
   },
   {
    "key": "neowise",
@@ -4389,8 +4389,8 @@
    ],
    "parent": "sun",
    "moving": true,
-   "rank": 0.00029860071367218184,
-   "distLy": 0.00031355257491591873
+   "rank": 0.0002987294672779892,
+   "distLy": 0.00031366810193689254
   },
   {
    "key": "tsuchinshan",
@@ -4403,17 +4403,17 @@
    ],
    "codes": [],
    "drawnWith": [],
-   "where": "9.45 AU from Earth",
-   "fromSun": "8.89 AU from the Sun",
+   "where": "9.48 AU from Earth",
+   "fromSun": "8.90 AU from the Sun",
    "size": null,
    "readout": [
     "shown as on 14 October 2024, two days after it passed Earth at 70 million km",
-    "now 8.89 AU out, on a path that may leave the Solar System"
+    "now 8.90 AU out, on a path that may leave the Solar System"
    ],
    "parent": "sun",
    "moving": true,
-   "rank": 0.00014054583304755396,
-   "distLy": 0.00014946462156947412
+   "rank": 0.0001407332808174123,
+   "distLy": 0.00014986372536008105
   },
   {
    "key": "3iatlas",
@@ -4436,8 +4436,8 @@
    ],
    "parent": "sun",
    "moving": true,
-   "rank": 0.00020801323834278572,
-   "distLy": 0.00019953925656660253
+   "rank": 0.00020880998800990535,
+   "distLy": 0.00019998474763082693
   },
   {
    "key": "67p",
@@ -4450,7 +4450,7 @@
    ],
    "codes": [],
    "drawnWith": [],
-   "where": "5.09 AU from Earth",
+   "where": "5.10 AU from Earth",
    "fromSun": "4.35 AU from the Sun",
    "size": null,
    "readout": [
@@ -4460,8 +4460,8 @@
    ],
    "parent": "sun",
    "moving": true,
-   "rank": 0.00006880933370790515,
-   "distLy": 0.00008051562509776593
+   "rank": 0.00006870621027263045,
+   "distLy": 0.00008063689836131651
   },
   {
    "key": "sl9",
@@ -4475,7 +4475,7 @@
    ],
    "codes": [],
    "drawnWith": [],
-   "where": "5.37 AU from Earth",
+   "where": "5.35 AU from Earth",
    "fromSun": "5.32 AU from the Sun",
    "size": null,
    "readout": [
@@ -4485,8 +4485,8 @@
    ],
    "parent": "jupiter",
    "moving": true,
-   "rank": 0.00008407963065556078,
-   "distLy": 0.00008494406976956926
+   "rank": 0.00008408709581726487,
+   "distLy": 0.00008457833794632097
   },
   {
    "key": "kreutz",
@@ -4510,7 +4510,7 @@
    "parent": "sun",
    "moving": true,
    "rank": 5.882862790348624e-7,
-   "distLy": 0.000015405546361942883
+   "distLy": 0.000015389491993411114
   },
   {
    "key": "perseids",
@@ -4523,7 +4523,7 @@
    ],
    "codes": [],
    "drawnWith": [],
-   "where": "1.38 AU from Earth",
+   "where": "1.40 AU from Earth",
    "fromSun": "1.01 AU from the Sun",
    "size": null,
    "readout": [
@@ -4534,7 +4534,7 @@
    "parent": "sun",
    "moving": true,
    "rank": 0.000016030780761397806,
-   "distLy": 0.000021829278551479832
+   "distLy": 0.000022122910772728786
   },
   {
    "key": "leonids",
@@ -4547,7 +4547,7 @@
    ],
    "codes": [],
    "drawnWith": [],
-   "where": "0.15 AU from Earth",
+   "where": "0.13 AU from Earth",
    "fromSun": "0.98 AU from the Sun",
    "size": null,
    "readout": [
@@ -4558,7 +4558,7 @@
    "parent": "sun",
    "moving": true,
    "rank": 0.000015502849444327332,
-   "distLy": 0.0000024069371159715966
+   "distLy": 0.00000200219681972191
   },
   {
    "key": "vesta",
@@ -4572,7 +4572,7 @@
    ],
    "codes": [],
    "drawnWith": [],
-   "where": "1.61 AU from Earth",
+   "where": "1.62 AU from Earth",
    "fromSun": "2.49 AU from the Sun",
    "size": "525 km across",
    "readout": [
@@ -4581,8 +4581,8 @@
    ],
    "parent": "sun",
    "moving": true,
-   "rank": 0.000039363319553546875,
-   "distLy": 0.00002541836906334536
+   "rank": 0.00003938125844917994,
+   "distLy": 0.00002560753271560314
   },
   {
    "key": "bennu",
@@ -4605,8 +4605,8 @@
    ],
    "parent": "sun",
    "moving": true,
-   "rank": 0.00002129447927924309,
-   "distLy": 0.00003527789732360579
+   "rank": 0.000021276357753690615,
+   "distLy": 0.000035314918363159635
   },
   {
    "key": "peg51b",
@@ -4628,8 +4628,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 50.59999110798433,
-   "distLy": 50.59999110798433
+   "rank": 50.599991313885354,
+   "distLy": 50.599991313885354
   },
   {
    "key": "k218b",
@@ -4651,8 +4651,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 124.30000800259263,
-   "distLy": 124.30000800259263
+   "rank": 124.30000745268678,
+   "distLy": 124.30000745268678
   },
   {
    "key": "hd189733b",
@@ -4674,8 +4674,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 64.50000143121866,
-   "distLy": 64.50000143121866
+   "rank": 64.50000166362493,
+   "distLy": 64.50000166362493
   },
   {
    "key": "gaiabh3",
@@ -4697,8 +4697,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 1926.0000036454,
-   "distLy": 1926.0000036454
+   "rank": 1926.0000039602473,
+   "distLy": 1926.0000039602473
   },
   {
    "key": "tcrb",
@@ -4721,8 +4721,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 3000.000010961109,
-   "distLy": 3000.000010961109
+   "rank": 3000.00001097183,
+   "distLy": 3000.00001097183
   },
   {
    "key": "lagoon",
@@ -4748,8 +4748,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 4300.000010990193,
-   "distLy": 4300.000010990193
+   "rank": 4300.00001126776,
+   "distLy": 4300.00001126776
   },
   {
    "key": "m13",
@@ -4775,8 +4775,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 25000.00000828259,
-   "distLy": 25000.00000828259
+   "rank": 25000.00000832631,
+   "distLy": 25000.00000832631
   },
   {
    "key": "dumbbell",
@@ -4801,8 +4801,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 1260.0000016670735,
-   "distLy": 1260.0000016670735
+   "rank": 1260.00000196496,
+   "distLy": 1260.00000196496
   },
   {
    "key": "owl",
@@ -4827,8 +4827,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 2660.000001175586,
-   "distLy": 2660.000001175586
+   "rank": 2660.0000008879574,
+   "distLy": 2660.0000008879574
   },
   {
    "key": "trifid",
@@ -4853,8 +4853,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 4120.000011042314,
-   "distLy": 4120.000011042314
+   "rank": 4120.000011318853,
+   "distLy": 4120.000011318853
   },
   {
    "key": "omega",
@@ -4879,8 +4879,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 5480.000010096674,
-   "distLy": 5480.000010096674
+   "rank": 5480.00001039313,
+   "distLy": 5480.00001039313
   },
   {
    "key": "beehive",
@@ -4906,8 +4906,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 598.5035975266586,
-   "distLy": 598.5035975266586
+   "rank": 598.5035971256373,
+   "distLy": 598.5035971256373
   },
   {
    "key": "wildduck",
@@ -4933,8 +4933,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 7283.47896814363,
-   "distLy": 7283.47896814363
+   "rank": 7283.478968465157,
+   "distLy": 7283.478968465157
   },
   {
    "key": "ptolemy",
@@ -4960,8 +4960,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 900.2016113087401,
-   "distLy": 900.2016113087401
+   "rank": 900.201611569942,
+   "distLy": 900.201611569942
   },
   {
    "key": "m3",
@@ -4987,8 +4987,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 33200.00000985818,
-   "distLy": 33200.00000985818
+   "rank": 33200.00000966105,
+   "distLy": 33200.00000966105
   },
   {
    "key": "m4",
@@ -5014,8 +5014,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 6030.000014051218,
-   "distLy": 6030.000014051218
+   "rank": 6030.000014193781,
+   "distLy": 6030.000014193781
   },
   {
    "key": "m22",
@@ -5041,8 +5041,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 10760.00000927561,
-   "distLy": 10760.00000927561
+   "rank": 10760.000009589818,
+   "distLy": 10760.000009589818
   },
   {
    "key": "sunflower",
@@ -5067,8 +5067,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 28799999.99982118,
-   "distLy": 28799999.99982118
+   "rank": 28799999.999820955,
+   "distLy": 28799999.999820955
   },
   {
    "key": "blackeye",
@@ -5093,8 +5093,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 14399999.999802303,
-   "distLy": 14399999.999802303
+   "rank": 14399999.999802044,
+   "distLy": 14399999.999802044
   },
   {
    "key": "m83",
@@ -5119,8 +5119,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 15599999.999296874,
-   "distLy": 15599999.999296874
+   "rank": 15599999.999296777,
+   "distLy": 15599999.999296777
   },
   {
    "key": "m77",
@@ -5145,8 +5145,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 34999999.99825669,
-   "distLy": 34999999.99825669
+   "rank": 34999999.998256765,
+   "distLy": 34999999.998256765
   },
   {
    "key": "m65",
@@ -5171,8 +5171,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 36900000.000176385,
-   "distLy": 36900000.000176385
+   "rank": 36900000.00017603,
+   "distLy": 36900000.00017603
   },
   {
    "key": "m66",
@@ -5197,8 +5197,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 36000000.00016372,
-   "distLy": 36000000.00016372
+   "rank": 36000000.000163354,
+   "distLy": 36000000.000163354
   },
   {
    "key": "m106",
@@ -5223,8 +5223,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 24699999.999865737,
-   "distLy": 24699999.999865737
+   "rank": 24699999.999865465,
+   "distLy": 24699999.999865465
   },
   {
    "key": "phantom",
@@ -5249,8 +5249,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 31999999.998569775,
-   "distLy": 31999999.998569775
+   "rank": 31999999.998569917,
+   "distLy": 31999999.998569917
   },
   {
    "key": "m84",
@@ -5275,8 +5275,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 59499999.99935989,
-   "distLy": 59499999.99935989
+   "rank": 59499999.9993596,
+   "distLy": 59499999.9993596
   },
   {
    "key": "m86",
@@ -5301,8 +5301,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 58299999.99935735,
-   "distLy": 58299999.99935735
+   "rank": 58299999.99935707,
+   "distLy": 58299999.99935707
   },
   {
    "key": "littledumbbell",
@@ -5328,8 +5328,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 3399.999987482407,
-   "distLy": 3399.999987482407
+   "rank": 3399.999987499885,
+   "distLy": 3399.999987499885
   },
   {
    "key": "m78",
@@ -5354,8 +5354,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 1319.9999889436594,
-   "distLy": 1319.9999889436594
+   "rank": 1319.999988710692,
+   "distLy": 1319.999988710692
   },
   {
    "key": "m24",
@@ -5382,8 +5382,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 10000.00001016059,
-   "distLy": 10000.00001016059
+   "rank": 10000.00001045328,
+   "distLy": 10000.00001045328
   },
   {
    "key": "m6",
@@ -5409,8 +5409,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 1473.9170518838853,
-   "distLy": 1473.9170518838853
+   "rank": 1473.9170521311169,
+   "distLy": 1473.9170521311169
   },
   {
    "key": "m23",
@@ -5436,8 +5436,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 2326.8254513495035,
-   "distLy": 2326.8254513495035
+   "rank": 2326.8254516180978,
+   "distLy": 2326.8254516180978
   },
   {
    "key": "m25",
@@ -5463,8 +5463,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 2103.405849744553,
-   "distLy": 2103.405849744553
+   "rank": 2103.405850054357,
+   "distLy": 2103.405850054357
   },
   {
    "key": "m29",
@@ -5490,8 +5490,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 5573.748239054021,
-   "distLy": 5573.748239054021
+   "rank": 5573.748239284491,
+   "distLy": 5573.748239284491
   },
   {
    "key": "m34",
@@ -5517,8 +5517,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 1597.2055058431797,
-   "distLy": 1597.2055058431797
+   "rank": 1597.2055058189014,
+   "distLy": 1597.2055058189014
   },
   {
    "key": "m35",
@@ -5545,8 +5545,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 2734.8515889275923,
-   "distLy": 2734.8515889275923
+   "rank": 2734.8515886435243,
+   "distLy": 2734.8515886435243
   },
   {
    "key": "m36",
@@ -5572,8 +5572,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 3668.647667755551,
-   "distLy": 3668.647667755551
+   "rank": 3668.6476675139834,
+   "distLy": 3668.6476675139834
   },
   {
    "key": "m37",
@@ -5599,8 +5599,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 4571.4585482417,
-   "distLy": 4571.4585482417
+   "rank": 4571.4585479805455,
+   "distLy": 4571.4585479805455
   },
   {
    "key": "m38",
@@ -5626,8 +5626,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 3540.466787584079,
-   "distLy": 3540.466787584079
+   "rank": 3540.4667873525573,
+   "distLy": 3540.4667873525573
   },
   {
    "key": "m39",
@@ -5653,8 +5653,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 965.1074351192103,
-   "distLy": 965.1074351192103
+   "rank": 965.1074352991966,
+   "distLy": 965.1074352991966
   },
   {
    "key": "m41",
@@ -5680,8 +5680,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 2332.370154114138,
-   "distLy": 2332.370154114138
+   "rank": 2332.37015386622,
+   "distLy": 2332.37015386622
   },
   {
    "key": "m46",
@@ -5708,8 +5708,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 5070.157196704765,
-   "distLy": 5070.157196704765
+   "rank": 5070.157196387792,
+   "distLy": 5070.157196387792
   },
   {
    "key": "m47",
@@ -5736,8 +5736,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 1527.4072762545063,
-   "distLy": 1527.4072762545063
+   "rank": 1527.4072759400767,
+   "distLy": 1527.4072759400767
   },
   {
    "key": "m52",
@@ -5763,8 +5763,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 5123.321271698957,
-   "distLy": 5123.321271698957
+   "rank": 5123.321271764086,
+   "distLy": 5123.321271764086
   },
   {
    "key": "m67",
@@ -5790,8 +5790,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 2730.9376788252207,
-   "distLy": 2730.9376788252207
+   "rank": 2730.937678421265,
+   "distLy": 2730.937678421265
   },
   {
    "key": "m103",
@@ -5817,8 +5817,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 8240.758548924925,
-   "distLy": 8240.758548924925
+   "rank": 8240.75854891783,
+   "distLy": 8240.75854891783
   },
   {
    "key": "m2",
@@ -5844,8 +5844,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 37999.99999861684,
-   "distLy": 37999.99999861684
+   "rank": 37999.99999901121,
+   "distLy": 37999.99999901121
   },
   {
    "key": "m5",
@@ -5871,8 +5871,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 24400.000013555713,
-   "distLy": 24400.000013555713
+   "rank": 24400.00001354652,
+   "distLy": 24400.00001354652
   },
   {
    "key": "m9",
@@ -5898,8 +5898,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 27100.00001150041,
-   "distLy": 27100.00001150041
+   "rank": 27100.00001171802,
+   "distLy": 27100.00001171802
   },
   {
    "key": "m10",
@@ -5925,8 +5925,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 16500.00001251828,
-   "distLy": 16500.00001251828
+   "rank": 16500.000012684923,
+   "distLy": 16500.000012684923
   },
   {
    "key": "m12",
@@ -5952,8 +5952,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 16700.000012688215,
-   "distLy": 16700.000012688215
+   "rank": 16700.000012835408,
+   "distLy": 16700.000012835408
   },
   {
    "key": "m14",
@@ -5979,8 +5979,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 29800.000010736447,
-   "distLy": 29800.000010736447
+   "rank": 29800.000010962212,
+   "distLy": 29800.000010962212
   },
   {
    "key": "m15",
@@ -6006,8 +6006,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 34999.99999810025,
-   "distLy": 34999.99999810025
+   "rank": 34999.99999846162,
+   "distLy": 34999.99999846162
   },
   {
    "key": "m19",
@@ -6033,8 +6033,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 27200.00001172763,
-   "distLy": 27200.00001172763
+   "rank": 27200.000011926233,
+   "distLy": 27200.000011926233
   },
   {
    "key": "m28",
@@ -6060,8 +6060,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 17500.000009526142,
-   "distLy": 17500.000009526142
+   "rank": 17500.00000982743,
+   "distLy": 17500.00000982743
   },
   {
    "key": "m30",
@@ -6087,8 +6087,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 27599.999999261498,
-   "distLy": 27599.999999261498
+   "rank": 27599.999999664684,
+   "distLy": 27599.999999664684
   },
   {
    "key": "m53",
@@ -6114,8 +6114,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 60500.00001027156,
-   "distLy": 60500.00001027156
+   "rank": 60500.000010038646,
+   "distLy": 60500.000010038646
   },
   {
    "key": "m54",
@@ -6141,8 +6141,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 85500.00000564379,
-   "distLy": 85500.00000564379
+   "rank": 85500.00000597094,
+   "distLy": 85500.00000597094
   },
   {
    "key": "m55",
@@ -6168,8 +6168,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 17400.000006073416,
-   "distLy": 17400.000006073416
+   "rank": 17400.000006434035,
+   "distLy": 17400.000006434035
   },
   {
    "key": "m56",
@@ -6195,8 +6195,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 34000.000004369474,
-   "distLy": 34000.000004369474
+   "rank": 34000.00000460552,
+   "distLy": 34000.00000460552
   },
   {
    "key": "m62",
@@ -6222,8 +6222,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 19700.000012071203,
-   "distLy": 19700.000012071203
+   "rank": 19700.000012269007,
+   "distLy": 19700.000012269007
   },
   {
    "key": "m68",
@@ -6249,8 +6249,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 34000.00001230137,
-   "distLy": 34000.00001230137
+   "rank": 34000.00001212197,
+   "distLy": 34000.00001212197
   },
   {
    "key": "m69",
@@ -6276,8 +6276,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 29000.000008584884,
-   "distLy": 29000.000008584884
+   "rank": 29000.000008887837,
+   "distLy": 29000.000008887837
   },
   {
    "key": "m70",
@@ -6303,8 +6303,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 30500.00000808082,
-   "distLy": 30500.00000808082
+   "rank": 30500.00000839511,
+   "distLy": 30500.00000839511
   },
   {
    "key": "m71",
@@ -6330,8 +6330,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 13000.000002803965,
-   "distLy": 13000.000002803965
+   "rank": 13000.00000311439,
+   "distLy": 13000.00000311439
   },
   {
    "key": "m72",
@@ -6357,8 +6357,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 54500.00000181831,
-   "distLy": 54500.00000181831
+   "rank": 54500.00000222301,
+   "distLy": 54500.00000222301
   },
   {
    "key": "m75",
@@ -6384,8 +6384,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 67000.00000414801,
-   "distLy": 67000.00000414801
+   "rank": 67000.00000453388,
+   "distLy": 67000.00000453388
   },
   {
    "key": "m79",
@@ -6411,8 +6411,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 42499.9999911384,
-   "distLy": 42499.9999911384
+   "rank": 42499.9999910011,
+   "distLy": 42499.9999910011
   },
   {
    "key": "m80",
@@ -6438,8 +6438,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 33500.00001243727,
-   "distLy": 33500.00001243727
+   "rank": 33500.00001256644,
+   "distLy": 33500.00001256644
   },
   {
    "key": "m92",
@@ -6465,8 +6465,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 27700.00000634718,
-   "distLy": 27700.00000634718
+   "rank": 27700.0000064115,
+   "distLy": 27700.0000064115
   },
   {
    "key": "m107",
@@ -6492,8 +6492,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 18400.00001326597,
-   "distLy": 18400.00001326597
+   "rank": 18400.000013407214,
+   "distLy": 18400.000013407214
   },
   {
    "key": "pease1",
@@ -6515,8 +6515,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 34999.9999980987,
-   "distLy": 34999.9999980987
+   "rank": 34999.99999846006,
+   "distLy": 34999.99999846006
   },
   {
    "key": "m49",
@@ -6541,8 +6541,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 54499999.99927993,
-   "distLy": 54499999.99927993
+   "rank": 54499999.999279656,
+   "distLy": 54499999.999279656
   },
   {
    "key": "m58",
@@ -6567,8 +6567,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 63599999.99909288,
-   "distLy": 63599999.99909288
+   "rank": 63599999.99909261,
+   "distLy": 63599999.99909261
   },
   {
    "key": "m59",
@@ -6593,8 +6593,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 48599999.999253266,
-   "distLy": 48599999.999253266
+   "rank": 48599999.999253,
+   "distLy": 48599999.999253
   },
   {
    "key": "m60",
@@ -6619,8 +6619,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 53799999.999148004,
-   "distLy": 53799999.999148004
+   "rank": 53799999.999147736,
+   "distLy": 53799999.999147736
   },
   {
    "key": "m61",
@@ -6645,8 +6645,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 55399999.99935275,
-   "distLy": 55399999.99935275
+   "rank": 55399999.99935246,
+   "distLy": 55399999.99935246
   },
   {
    "key": "m85",
@@ -6671,8 +6671,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 58399999.999436475,
-   "distLy": 58399999.999436475
+   "rank": 58399999.99943617,
+   "distLy": 58399999.99943617
   },
   {
    "key": "m88",
@@ -6697,8 +6697,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 63599999.999233015,
-   "distLy": 63599999.999233015
+   "rank": 63599999.99923273,
+   "distLy": 63599999.99923273
   },
   {
    "key": "m89",
@@ -6723,8 +6723,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 52199999.999296986,
-   "distLy": 52199999.999296986
+   "rank": 52199999.9992967,
+   "distLy": 52199999.9992967
   },
   {
    "key": "m90",
@@ -6749,8 +6749,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 57099999.99922446,
-   "distLy": 57099999.99922446
+   "rank": 57099999.99922419,
+   "distLy": 57099999.99922419
   },
   {
    "key": "m91",
@@ -6775,8 +6775,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 52799999.99932341,
-   "distLy": 52799999.99932341
+   "rank": 52799999.99932314,
+   "distLy": 52799999.99932314
   },
   {
    "key": "m98",
@@ -6801,8 +6801,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 53199999.99959205,
-   "distLy": 53199999.99959205
+   "rank": 53199999.999591745,
+   "distLy": 53199999.999591745
   },
   {
    "key": "m99",
@@ -6827,8 +6827,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 45999999.99959116,
-   "distLy": 45999999.99959116
+   "rank": 45999999.99959086,
+   "distLy": 45999999.99959086
   },
   {
    "key": "m100",
@@ -6853,8 +6853,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 49599999.99952465,
-   "distLy": 49599999.99952465
+   "rank": 49599999.99952436,
+   "distLy": 49599999.99952436
   },
   {
    "key": "m94",
@@ -6879,8 +6879,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 13999999.999915928,
-   "distLy": 13999999.999915928
+   "rank": 13999999.999915674,
+   "distLy": 13999999.999915674
   },
   {
    "key": "m95",
@@ -6905,8 +6905,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 31800000.00037066,
-   "distLy": 31800000.00037066
+   "rank": 31800000.000370275,
+   "distLy": 31800000.000370275
   },
   {
    "key": "m96",
@@ -6931,8 +6931,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 34100000.000380196,
-   "distLy": 34100000.000380196
+   "rank": 34100000.000379816,
+   "distLy": 34100000.000379816
   },
   {
    "key": "m105",
@@ -6957,8 +6957,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 36000000.000380374,
-   "distLy": 36000000.000380374
+   "rank": 36000000.000379995,
+   "distLy": 36000000.000379995
   },
   {
    "key": "m102",
@@ -6983,8 +6983,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 48800000.00027735,
-   "distLy": 48800000.00027735
+   "rank": 48800000.00027724,
+   "distLy": 48800000.00027724
   },
   {
    "key": "m108",
@@ -7009,8 +7009,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 29899999.999704886,
-   "distLy": 29899999.999704886
+   "rank": 29899999.9997046,
+   "distLy": 29899999.9997046
   },
   {
    "key": "m109",
@@ -7035,8 +7035,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 67999999.99954878,
-   "distLy": 67999999.99954878
+   "rank": 67999999.99954851,
+   "distLy": 67999999.99954851
   },
   {
    "key": "m18",
@@ -7062,8 +7062,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 4894.683130176648,
-   "distLy": 4894.683130176648
+   "rank": 4894.683130472526,
+   "distLy": 4894.683130472526
   },
   {
    "key": "m21",
@@ -7089,8 +7089,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 3919.7908909884914,
-   "distLy": 3919.7908909884914
+   "rank": 3919.7908912667863,
+   "distLy": 3919.7908912667863
   },
   {
    "key": "m26",
@@ -7116,8 +7116,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 5986.340648622195,
-   "distLy": 5986.340648622195
+   "rank": 5986.340648941181,
+   "distLy": 5986.340648941181
   },
   {
    "key": "m48",
@@ -7143,8 +7143,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 2436.741357797299,
-   "distLy": 2436.741357797299
+   "rank": 2436.74135743384,
+   "distLy": 2436.74135743384
   },
   {
    "key": "m50",
@@ -7170,8 +7170,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 3119.720393669855,
-   "distLy": 3119.720393669855
+   "rank": 3119.7203933656615,
+   "distLy": 3119.7203933656615
   },
   {
    "key": "m93",
@@ -7197,8 +7197,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 3166.687437740361,
-   "distLy": 3166.687437740361
+   "rank": 3166.6874374563126,
+   "distLy": 3166.6874374563126
   },
   {
    "key": "m40",
@@ -7222,8 +7222,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 737.5000023827836,
-   "distLy": 737.5000023827836
+   "rank": 737.5000021438917,
+   "distLy": 737.5000021438917
   },
   {
    "key": "m73",
@@ -7248,8 +7248,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 1628.000000791928,
-   "distLy": 1628.000000791928
+   "rank": 1628.0000011976726,
+   "distLy": 1628.0000011976726
   },
   {
    "key": "virgocluster",
@@ -7271,8 +7271,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 54912297.599323936,
-   "distLy": 54912297.599323936
+   "rank": 54912297.59932365,
+   "distLy": 54912297.59932365
   },
   {
    "key": "roadster",
@@ -7285,19 +7285,19 @@
    ],
    "codes": [],
    "drawnWith": [],
-   "where": "0.78 AU from Earth",
+   "where": "0.79 AU from Earth",
    "fromSun": null,
    "size": null,
    "readout": [
-    "117 million km from Earth · 1.42 AU from the Sun · 24.1 km/s",
+    "118 million km from Earth · 1.42 AU from the Sun · 24.1 km/s",
     "about 5.7 laps of the Sun (one every 557 days) · 6.98 billion km flown since 8 February 2018",
     "next close pass (predicted): Mars, 22 April 2035, 2.4 million km",
     "position from JPL Horizons · the slow spin is illustrative"
    ],
    "parent": "sun",
    "moving": true,
-   "rank": 0.00001236744542312426,
-   "distLy": 0.00001236744542312426
+   "rank": 0.000012489251555764397,
+   "distLy": 0.000012489251555764397
   },
   {
    "key": "starship",
@@ -7362,8 +7362,8 @@
    ],
    "parent": "earth",
    "moving": true,
-   "rank": 7.179492951460595e-10,
-   "distLy": 7.179492951460595e-10
+   "rank": 7.179733639643254e-10,
+   "distLy": 7.179733639643254e-10
   },
   {
    "key": "falconheavy",
@@ -7405,8 +7405,8 @@
    ],
    "parent": null,
    "moving": false,
-   "rank": 0.00013632825947818299,
-   "distLy": 0.00013632825947818299
+   "rank": 0.00013657244022868007,
+   "distLy": 0.00013657244022868007
   }
  ]
 }

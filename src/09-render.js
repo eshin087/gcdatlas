@@ -107,7 +107,7 @@ function drawParticles(o, s, vis = 1){
   gl.uniformMatrix3fv(pr.u.uCamRot, false, camRot); gl.uniform2f(pr.u.uTan, tanX, tanY);
   gl.uniform3fv(pr.u.uRel, rel); gl.uniformMatrix3fv(pr.u.uRot, false, s.rot ? s.rot() : (o ? o.rot : I3)); gl.uniform1f(pr.u.uRad, rad);
   gl.uniform1f(pr.u.uPixAng, 2*tanY/sceneH); gl.uniform1f(pr.u.uMode, s.mode); gl.uniform1f(pr.u.uN, s.ps.count);
-  gl.uniform1f(pr.u.uSB, s.mode === 1 || s.mode === 2 ? s.sb*rad*rad : s.sb); gl.uniform1f(pr.u.uSize, s.size); gl.uniform1f(pr.u.uCap, s.cap || 2);
+  gl.uniform1f(pr.u.uSB, s.mode === 1 || s.mode === 2 ? s.sb*rad*rad : s.mode === 4 ? s.sb*rad : s.sb); gl.uniform1f(pr.u.uSize, s.size); gl.uniform1f(pr.u.uCap, s.cap || 2);
   gl.uniform1f(pr.u.uOut, OUT); gl.uniform1f(pr.u.uT, o ? o.t : 0); gl.uniform1f(pr.u.uVis, vis*(s.vis ? s.vis() : 1));
   if (s.q0) gl.uniform4fv(pr.u.uQ0, s.q0());
   if (s.q1) gl.uniform4fv(pr.u.uQ1, s.q1());

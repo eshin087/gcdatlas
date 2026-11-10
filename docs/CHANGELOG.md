@@ -4,6 +4,15 @@ All notable changes, newest first. Dates are UTC.
 
 ## Unreleased
 
+## 0.27.7 · 2026-11-10
+
+**Open clusters that read as clusters** (the looks, third part of the review of 2026-11-09; owner: "start, and any visual change give me a preview")
+- The 26 open clusters drawn from their Gaia members (`gaiaOpenCluster`: the Beehive, the Wild Duck, Ptolemy's Cluster, M6, M18, M21, M23, M25, M26, M29, M34 to M39, M41, M46 to M48, M50, M52, M67, M93, M103, NGC 6603) open as a swarm of stars that thickens toward its middle. In the review 17 of them opened on a few crosses on black: the Beehive on three, with 2% of the frame lit. Its 600 stars were there, but too faint to become characters.
+- Why: the first two angles stood inside the cluster (0.7 and 0.65 of its radius from the middle), so its stars were strewn across the whole screen, and each was a 1.7 px point whose light fell off with the square of its distance. Now the first two angles stand outside (1.4 and 1.2 radii), the third inside (0.4, was 0.18), the points are 2.5 px, and their light falls off with the distance, not its square (particle mode 4, new in `particleVS`): by the square, a setting bright enough from outside burned out from inside.
+- A star's size on the drawing still goes by its absolute brightness, and is now lifted so the cluster's middle star reads (by up to 1.9 times, `lift` in `gaiaCluster`): Gaia's 600 members of a near cluster reach far down among its dwarfs, the Beehive's most of all. The crosses on the eight brightest stars are set for the outside angles.
+- The link-preview pictures of the 26 clusters are drawn again (`npm run og -- --all --only=...`).
+- docs/ACCURACY.md says what is not measured here: the falloff of the light and the sizes of the points.
+
 ## 0.27.6 · 2026-11-10
 
 **The Moon's map comes in without a pop** (owner, 2026-11-10: "after a second it focuses it shows the detail of the moon and the transition is jarring")
