@@ -5,6 +5,12 @@
      numbers with units. The newest version comes first and opens by itself; its number must match package.json (tests/smoke.mjs checks it).
      Every detail stays in docs/CHANGELOG.md, which the panel links to. -->
 
+## 0.27.3 · 10 Nov 2026 · Easier to read
+- Names stay readable over bright scenes: every label has a dark plate behind it, and the scale on the right a soft shade.
+- New here? A small card at the bottom says how to look round, zoom and fly. It goes away once you have tried.
+- On a phone the small buttons are easier to hit. They look the same and take taps over a larger area.
+- The fonts now come from gcdatlas itself, so the site asks no other company's servers for anything.
+
 ## 0.27.2 · 10 Nov 2026 · Smoother on slow devices
 - The atlas takes about half as much of your processor's time for each frame, so motion is smoother on phones and older laptops.
 - Detail is no longer lowered when a slow processor is the cause. Bigger characters would not have made it any faster.

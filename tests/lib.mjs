@@ -11,7 +11,8 @@ export const OUT = path.join(ROOT, 'tests', 'out');
 // freeze: the page's own animation loop draws nothing and moves nothing; only the test moves the simulation (__cosmos.tick), so no
 // frames of real, machine-dependent length slip in between two steps of a test
 // settings: saved settings to start with; init: a function run in the page before its scripts
-export async function openPage({ width = 1280, height = 800, phone = false, fade = false, now = null, freeze = false, settings = null, init = null, url = null } = {}){
+// hint: keep the first-visit hint card (left out by default, like the daily card, so stills and clicks are the same on every run)
+export async function openPage({ width = 1280, height = 800, phone = false, fade = false, now = null, freeze = false, settings = null, init = null, url = null, hint = false } = {}){
   if (!fs.existsSync(path.join(ROOT, 'dist', 'index.html'))) throw new Error('build first: node build.mjs');
   const browser = await chromium.launch({ args:['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] });
   const context = await browser.newContext(phone ? { viewport:{ width:390, height:844 }, deviceScaleFactor:2, isMobile:true, hasTouch:true } : { viewport:{ width, height } });
@@ -23,7 +24,7 @@ export async function openPage({ width = 1280, height = 800, phone = false, fade
   page.on('pageerror', e => { errors.push('pageerror: ' + e.message); if (!started) fail(new Error('the page did not start: ' + e.message)); });
   page.on('console', m => { if (m.type() === 'error' && !/ERR_|Failed to load resource/.test(m.text())) errors.push('console: ' + m.text().slice(0, 300)); });
   // compile shaders synchronously and keep full quality, so screenshots are deterministic; skip the daily card
-  await page.addInitScript(({ fade, freeze, day, settings }) => { window.__noAdapt = true; window.__syncCompile = true; if (freeze) window.__freeze = true; try { localStorage.setItem('gcdatlas.dailySeen', JSON.stringify(day)); if (!fade || settings) localStorage.setItem('gcdatlas.settings', JSON.stringify({ ...(fade ? {} : { fadeUI:'off' }), ...settings })); } catch (e) {} }, { fade, freeze, day:new Date(now ?? Date.now()).toISOString().slice(0, 10), settings });
+  await page.addInitScript(({ fade, freeze, day, settings, hint }) => { window.__noAdapt = true; window.__syncCompile = true; if (freeze) window.__freeze = true; try { localStorage.setItem('gcdatlas.dailySeen', JSON.stringify(day)); if (!hint && localStorage.getItem('gcdatlas.hinted') == null) localStorage.setItem('gcdatlas.hinted', '1'); if (!fade || settings) localStorage.setItem('gcdatlas.settings', JSON.stringify({ ...(fade ? {} : { fadeUI:'off' }), ...settings })); } catch (e) {} }, { fade, freeze, day:new Date(now ?? Date.now()).toISOString().slice(0, 10), settings, hint });
   if (init) await page.addInitScript(init);
   await page.goto(url || PAGE);   // (url: over http, for what loads only there, such as the Earth's images: tests/earth.mjs)
   await Promise.race([page.waitForFunction(() => window.__cosmos && window.__cosmos.OBJ, null, { timeout:60000 }), failed]).catch(async e => { await browser.close(); throw e; });

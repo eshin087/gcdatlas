@@ -2,10 +2,11 @@
 // /places/<key>, and a list of them all, /places. Written by build.mjs from tools/data/share-meta.json (npm run og -- --meta reads the
 // text from the page itself: name, fact, kind, catalogue numbers, distance, size, the panel's numbers). The same page for every user agent,
 // never one for crawlers: the share pages /p/<key> go on into the atlas at once, these stay put and link to it.
-// Small and self-contained: inline CSS in the site's look (IBM Plex Mono from Google Fonts, fine without it), no scripts but the visit
+// Small and self-contained: inline CSS in the site's look (IBM Plex Mono from the site's own /fonts/, fine without it), no scripts but the visit
 // count (Vercel Web Analytics from our own domain, path only, as the atlas: src/09v-visits.js) and the schema.org JSON-LD.
 import fs from 'node:fs';
 import path from 'node:path';
+import { fontHead } from './lib/fonts.mjs';
 
 const esc = t => String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 const escA = t => esc(t).replace(/"/g, '&quot;');
@@ -56,9 +57,8 @@ const q=new URLSearchParams(location.search).get('flags');if(q)for(const s of q.
 window.va=window.va||function(){(window.vaq=window.vaq||[]).push(arguments)};window.va('beforeSend',e=>({...e,url:String(e.url).split(/[?#]/)[0]}));
 const s=document.createElement('script');s.src='/_vercel/insights/script.js';document.head.appendChild(s)})();`;
 
-const FONTS = `<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Major+Mono+Display&display=swap">`;
+// (the site's own font files, 0.27.3: tools/lib/fonts.mjs; these pages sit one folder down, so the address starts at the root)
+const FONTS = fontHead('/fonts/', { weights:[400, 600] });
 const head = ({ title, desc, url, img, imgAlt, ogTitle, icon, ld }) => `<!doctype html>
 <html lang="en">
 <head>

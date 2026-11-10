@@ -141,7 +141,7 @@ if (LAB.on){
     render(); updateHUD(dtR); updateCaption(dtR);
   }
   document.body.classList.add('halo-lab'); document.title = 'gcdatlas lab';
-  stopTour(false); pauseShow(); tween = null; flyMove = null; flight = null; hideHint();
+  stopTour(false); pauseShow(); tween = null; flyMove = null; flight = null; hideHint(true);
   build(); park(LAB.place);
   requestAnimationFrame(loop);
 }
