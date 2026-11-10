@@ -5,6 +5,10 @@
      numbers with units. The newest version comes first and opens by itself; its number must match package.json (tests/smoke.mjs checks it).
      Every detail stays in docs/CHANGELOG.md, which the panel links to. -->
 
+## 0.27.6 · 10 Nov 2026 · The Moon without the pop
+- Flying to the Moon, NASA's map is now fetched as the flight sets out, so you arrive on the real Moon. Before, it switched about a second after you got there.
+- On a slow connection the map can still come in late. It then dissolves in over 3 seconds instead of 0.4.
+
 ## 0.27.5 · 10 Nov 2026 · A steadier clock
 - A Crew Dragon replay you are not watching no longer moves the date on a day when it docks. Before, the Moon hopped 14 degrees in one frame.
 - Watch a Dragon flight and nothing changes: it still skips about a day to the docking, behind a fade.

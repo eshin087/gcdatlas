@@ -77,6 +77,23 @@ try {
       if (!r.finite || !(r.clear > 1) || r.views < 2 || r.fact < 60) errors.push(k + ': ' + JSON.stringify(r));
     }
     errors.push(...pe); await browser.close(); }
+  // ---- a flight from Earth to the Moon (0.27.6): the maps are asked for as it sets out, while the Moon is still a dot, so it lands on the
+  // map; and a map that comes in on a big disc dissolves in over seconds (no step of more than a twentieth between two frames 1/30 s apart)
+  { const { browser, page, errors:pe } = await openPage({ url:URL0 });
+    await page.evaluate(() => { const c = window.__cosmos; c.setTour(false); c.ssRate = 0; c.view('earth', 0); c.tick(1/30); c.lockOn(c.BYKEY.moon.index); });
+    const early = await page.evaluate(async () => { const c = window.__cosmos, t0 = performance.now();
+      while (performance.now() - t0 < 20000){ const m = c.mpl.dbg().map; if (m.c >= 1 && m.h >= 1) return { rpx:c.BYKEY.moon.rpx, flying:!!c.stepTarget }; await new Promise(r => setTimeout(r, 30)); }
+      return null; });
+    if (!early || !(early.rpx < 10)) errors.push('the maps were not asked for as the flight to the Moon set out: ' + JSON.stringify(early));
+    await page.evaluate(() => window.__cosmos.land(1));
+    await until(page, () => window.__cosmos.mpl.dbg().map.fade === 1, null, 90, "the Moon's map in after a flight to it");
+    // (the dissolve itself: the page frozen on the Moon's first angle, the map taken away and given back)
+    const steps = await page.evaluate(() => { const c = window.__cosmos; window.__freeze = true; c.view('moon', 0); c.mgl.off = true; c.tick(1/30); c.render(); c.mgl.off = false;
+      const f = []; for (let i=0;i<150 && f[f.length - 1] !== 1;i++){ c.tick(1/30); c.render(); f.push(c.mpl.dbg().map.fade); }
+      window.__freeze = false; return { n:f.length, max:Math.max(...f.map((x, i) => x - (i ? f[i - 1] : 0))), end:f[f.length - 1], rpx:c.BYKEY.moon.rpx }; });
+    if (!(steps.end === 1 && steps.n >= 60 && steps.max <= 0.05)) errors.push("the Moon's map does not dissolve in gradually on a big disc: " + JSON.stringify(steps));
+    notes.push(`maps asked for at ${early && early.rpx.toFixed(1)} px, the dissolve ${steps.n} frames`);
+    errors.push(...pe); await browser.close(); }
   // ---- a phone: the smaller maps
   { const { browser, page, errors:pe } = await openPage({ phone:true, url:URL0 });
     const sz = await page.evaluate(() => window.__cosmos.mgl.SZ);
