@@ -122,7 +122,8 @@ const horsehead = (() => {
 })();
 
 // ---------------------------------------------------------------- ring-shaped planetary nebulae: the Helix (NGC 7293) and the Ring (M57)
-// uP0: ring radius, width, barrel half-length, inner fill   uP1: second ring radius, tilt, strength, halo radius   uP2: halo strength, knot glow, colour shift
+// uP0: ring radius, width, barrel half-length, inner fill   uP1: second ring radius, tilt, strength, halo radius   uP2: halo strength, knot glow, colour shift,
+// the look before 0.27.9 (1: Pease 1, which sits among M15's stars and was not part of that change: from the Codex review of PR 72)
 // (0.27.9, the owner's pick from stills: the Helix, the Southern Ring and the Ring Nebula read as rings in dark sky. Their glow filled 40 to
 // 80% of the screen with a bright middle: now about half the light, a faint inner fill (a dark middle, as in the photos), an outer halo of
 // ridges rather than a smooth band, and the first angle further back, at 2.6 radii)
@@ -135,7 +136,7 @@ void main(){
   float t0 = max(h.x, 0.), dt = (h.y - t0)/float(N), jit = hash12(gl_FragCoord.xy)*dt, tm = uTime;
   float R = uP0.x, W = uP0.y, Hh = uP0.z;
   vec3 col = vec3(0.); float T = 1.;
-  mat2 tl = rot2(uP1.y);
+  mat2 tl = rot2(uP1.y); float cl = step(0.5, uP2.w);
   for(int i=0;i<70;i++){
     if(i >= N) break;
     vec3 p = o + d*(t0 + jit + dt*float(i));
@@ -143,12 +144,13 @@ void main(){
     float b = barrel(p, R, W, Hh)*(0.35 + 1.3*n);
     vec3 p2 = vec3(p.x, tl*p.yz); float b2 = uP1.z > 0. ? barrel(p2, uP1.x, W*1.2, Hh*1.3)*(0.3 + 1.2*n)*uP1.z : 0.;
     float rho = length(p.xy);
-    float fill = smoothstep(R, R*0.2, rho)*smoothstep(Hh*1.2, 0., abs(p.z))*uP0.w*(0.12 + 0.6*n*n);
-    float halo = uP2.x > 0. ? exp(-pow((length(p) - uP1.w)/0.06, 2.))*(0.05 + 1.2*pow(ridge(p*6. + 3.), 3.))*uP2.x : 0.;
+    float fill = smoothstep(R, R*0.2, rho)*smoothstep(Hh*1.2, 0., abs(p.z))*uP0.w*mix(0.12 + 0.6*n*n, 0.4 + n, cl);
+    float rg = uP2.x > 0. ? ridge(p*6. + 3.) : 0.;
+    float halo = uP2.x > 0. ? exp(-pow((length(p) - uP1.w)/0.06, 2.))*mix(0.05 + 1.2*rg*rg*rg, 0.2 + rg*rg, cl)*uP2.x : 0.;
     vec3 inner = mix(vec3(0.3, 0.85, 1.), vec3(0.35, 1., 0.75), uP2.z);
     vec3 rimc = mix(vec3(1., 0.38, 0.3), vec3(1., 0.55, 0.35), n);
     vec3 c = mix(inner, rimc, smoothstep(R - W*0.8, R + W*0.5, rho));
-    col += T*(c*(b + b2)*1.5 + inner*fill*0.8 + vec3(1., 0.3, 0.3)*halo)*dt*1.25;
+    col += T*(c*(b + b2)*1.5 + inner*fill*0.8 + vec3(1., 0.3, 0.3)*halo)*dt*mix(1.25, 2.2, cl);
     T *= exp(-(b + b2)*0.6*dt);
   }
   col += vec3(0.8, 0.88, 1.)*(pblob(o, d, vec3(0.), 0.004)*260. + blob(o, d, vec3(0.), 0.03)*0.35);

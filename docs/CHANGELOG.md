@@ -8,6 +8,7 @@ All notable changes, newest first. Dates are UTC.
 
 **Ring nebulae that read as rings** (the looks, from the review of 2026-11-09; the owner picked option B from stills: the first angle further back, over A, the same changes at today's distance)
 - The Helix, the Southern Ring and the Ring Nebula (they share `FS_RINGPN`) filled 81%, 60% and 42% of the frame with glow and a bright middle. Now about half the light (`dt*1.25`, was 2.2), a faint inner fill (`0.12 + 0.6n²`, was `0.4 + n`: a dark middle as in the photos), an outer halo of ridges rather than a smooth band, and the first angle at 2.6 radii (the Helix 1.6, the other two 1.8). First angle: 20%, 21% and 11% of the frame lit; heavy glyphs on every angle from up to 14% to 0%. The Ring Nebula seen from the side, which a comment called "a solid block of bright characters", now reads as its barrel.
+- Pease 1, the planetary nebula inside M15, uses the same shader and keeps its look (`uP2.w` 1 picks the old numbers; from the Codex review of the pull request, which caught that the change reached it too).
 - Their link-preview pictures are drawn again.
 
 ## 0.27.8 · 2026-11-10

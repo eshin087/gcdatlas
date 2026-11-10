@@ -145,7 +145,7 @@ for (const c of GLOB3){
     farColor:[0.6, 0.95, 0.85], labelRange:600, minZoom:0.1,
     fact:'The first planetary nebula found inside a globular cluster: a shell of gas thrown off by a dying star among M15\'s ancient stars. Francis Pease found it in 1928, and only three more are known in globulars.',
     aka:'pease 1 ps 1 pn ps 1 k 648 ku 648 pn ku 648 pk 065-27 1 pn g065.0-27.3 planetary nebula globular cluster pegasus',
-    hero:V.norm([0.1, 0.15, 1]), roll:32, u:[[0.42, 0.14, 0.3, 0.7], [0, 0, 0, 0.92], [0.12, 0, 0.2, 0]],
+    hero:V.norm([0.1, 0.15, 1]), roll:32, u:[[0.42, 0.14, 0.3, 0.7], [0, 0, 0, 0.92], [0.12, 0, 0.2, 1]],   // (uP2.w 1: the look before 0.27.9)
     // (the third angle stands back among M15's stars, its bright core about 5 light-years off to one side)
     views:[{ dirFn:() => V.norm(V.mul(pos, -1)), k:2.2, hold:9, drift:0.02 }, { d:[0.5, 0.3, 0.8], k:1.3, hold:8, drift:0.03 }, { dirFn:() => V.norm(V.mul(pos, -1)), k:10, hold:8, drift:0.02 }],
     tourViews:[0, 2],
