@@ -46,6 +46,9 @@ A check that passes on one run and fails on the next is worth nothing, so a test
 - `openPage({ now })` fixes the page's date and time, so the Solar System starts in the same place.
 - `openPage({ freeze:true })` (`window.__freeze`) stops the page's own animation loop from moving anything. Otherwise it keeps running between two `page.evaluate` calls with frames of real, machine-dependent length, and the next check starts from a different state.
 - The Halo draws its choices from dice a test can seed: `BYKEY.halo.dbg.reset(seed)`. Its route then depends only on the seed, the clock and the camera, not on what ran before it.
+- `openPage({ seed })` starts the page's `Math.random` from a number. The site throws those dice for each visitor: which rocket a launch replay flies, the ride camera's first shots, a random tour's first deal.
+- No launch replays: `__cosmos.sx.SX.nextReplay = Infinity` once the page is up. With the camera on Earth for 20 s the site starts one, and a Crew Dragon replay moves the atlas clock on a day when it docks. Every planet moves with the clock, so a seeded Halo route became another one (0.27.4: about one run in seven failed for this reason).
+- A section that depends on where the moons and the rest stand puts the objects' own clocks back as well as the atlas clock (`for (const o of C.OBJ) o.t = 0`, sections 8 and 11). Otherwise its result depends on how long the sections before it ran.
 
 Its Halo checks fly route 1. `HALO_SEED=n node tests/motion.mjs` flies route `n` instead, the same one every time: use it to replay a route that broke a check, or to try many routes.
 
