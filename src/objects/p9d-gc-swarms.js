@@ -21,8 +21,11 @@ const GC_SYS = {
 };
 function gcSwarm(o, n, rh){
   const R = keyRnd(o.key + ':gc'), m = Math.min(n, MAXGC), ps = makePS(m);
-  const a = Math.max(rh, 1e-3)/2.414;   // (Hernquist: half the clusters within 2.414 a; a dense middle and a long tail, as the systems' own
-  // Sersic profiles. A Plummer sphere of the published radius spread M49's and M87's thousands too thin to see)
+  // (Hernquist: a dense middle and a long tail, as the systems' own Sersic profiles; a Plummer sphere of the published radius spread M49's
+  // and M87's thousands too thin to see. The published radius is an effective radius, measured on the sky: cut at 8 a, half the clusters
+  // lie within 1.25 a of the middle as seen from outside (1.692 a in space), so a = rh/1.25. With the untruncated 2.414 a the radii came
+  // out about 30% too small in space and half as large on the sky: from the Codex review of PR 73, and measured on the drawn points)
+  const a = Math.max(rh, 1e-3)/1.25;
   const gauss = () => Math.sqrt(-2*Math.log(Math.max(R(), 1e-9)))*Math.cos(6.2832*R());
   const blue = blackbodyJS(6600), red = blackbodyJS(4900);
   for (let i = 0; i < m; i++){
@@ -36,6 +39,7 @@ function gcSwarm(o, n, rh){
 }
 for (const [key, [n, all, rhLy]] of Object.entries(GC_SYS)){
   const o = BYKEY[key]; if (!o || !n) continue;
+  o.particles = o.particles.filter(s => !s.gcOld);   // (M87 had a swarm of its own, o18-m87.js: this one replaces it)
   // (a giant's system reaches far beyond its drawn radius: the points stay within 6 a, and rad keeps the volume's bound)
   const rh = rhLy ? rhLy/o.rad : 0.5*((o.sizeR || o.rad)/o.rad);
   o.particles.push({ ps:gcSwarm(o, n, rh), prog:'ptBasic', mode:4, sb:n < 50 ? 6 : 1.7, size:n < 50 ? 2.6 : 1.8 });

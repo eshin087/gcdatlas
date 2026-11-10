@@ -10,7 +10,9 @@ const m87 = (() => {
   const n = Math.round(4000*QUALITY), gc = makePS(n);
   for (let i=0;i<n;i++){ const d = randDir(), r = 0.03 + 0.9*Math.pow(rnd(), 1.8); gc.a.set([d[0]*r, d[1]*r*0.9, d[2]*r, 0.6 + 0.8*rnd()], i*4); const c = blackbodyJS(4400 + 1500*rnd()); gc.c.set([...c, 0], i*4); }
   gc.upload('ac');
-  o.particles.push({ ps:gc, prog:'ptBasic', mode:1, sb:0.5, size:1.6, vis:() => smooth(300, 20000, viewDist()) });
+  // (since 0.27.10 p9d-gc-swarms.js draws M87's swarm at its published count and radius and takes this one out, `gcOld`. It is still made
+  // here: its draws from the shared rnd() keep the numbers of everything after it, the Halo's route included, as they were)
+  o.particles.push({ ps:gc, prog:'ptBasic', mode:1, sb:0.5, size:1.6, vis:() => smooth(300, 20000, viewDist()), gcOld:true });
   return o;
 })();
 const JET_AXIS = V.norm([Math.sin(17*DEG), Math.cos(17*DEG), 0]);
