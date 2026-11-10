@@ -2,14 +2,21 @@
 // exactly on a moving destination (no jump on arrival), ladder picks that keep moving, riding along with the Halo, tour trips without zoom dips,
 // the Halo at work (always travelling, light speed and folds, its jobs, a scan's hologram on the surface, Pip the drone), and the controls that say where they go
 // (next stop, angle arrows that count every tap, Esc closing panels first, the tour's angles at Earth), and the random tour. Deterministic: the page's clock is fixed and
-// its own animation loop frozen, so only __cosmos.tick moves the simulation, and the Halo flies a route of its own (dbg.reset): every run is the same.
+// its own animation loop frozen, so only __cosmos.tick moves the simulation, the Halo flies a route of its own (dbg.reset), Math.random starts
+// from a seed and no launch replay starts by itself (below): every run is the same.
 // Usage: node tests/motion.mjs
 import { openPage, report } from './lib.mjs';
 
 const NOW = Date.UTC(2026, 8, 26, 12);   // (the Solar System as on this date; the Halo sections put the clock back to it with setDays(0))
 const HALO_SEED = +(process.env.HALO_SEED || 1);   // (the Halo's route; HALO_SEED=n node tests/motion.mjs flies another one, the same on every run)
-const { browser, page, errors } = await openPage({ width:1200, height:750, now:NOW, freeze:true });
+const { browser, page, errors } = await openPage({ width:1200, height:750, now:NOW, freeze:true, seed:1 });
 const fail = m => errors.push('check: ' + m);
+// No launch replays (0.27.4). With the camera on Earth for 20 s the site starts one now and then, its rocket picked with Math.random, and a
+// Crew Dragon replay moves the atlas clock on a day as it docks (dockInDaylight in s4-spacex-run.js). Every planet moves with the clock, so
+// the Halo's route from there on was another one: about one run in seven had the Dragon in section 8, where the ship then stayed at Jupiter for
+// a fourth pass and never folded before the 420 s were over ("did not use both light speed and folds"). The page's own Math.random is seeded
+// too (openPage's seed), but the Halo's route must not hang on which rocket the dice pick, so here they never start. tests/spacex.mjs flies them
+await page.evaluate(() => { __cosmos.sx.SX.nextReplay = Infinity; });
 
 // 1. picking an object flies there, then loops through its tour angles
 const loop = await page.evaluate(() => {
@@ -286,12 +293,16 @@ const halo = await page.evaluate(HALO_SEED => {
   const r = { modes:{}, acts:{}, minTurnRadius:1e9, maxTurn20s:0, maxRate:0, stopped:0, steps:0 };
   const head = () => [h.R0[3], h.R0[4], h.R0[5]];
   let H0 = head(), P0 = h.pos.slice(), ph0 = S.phase, win = [], vis0 = S.visits, cur = { at:S.target.key, t:0, passes:1 };
-  r.stays = [];
+  r.stays = []; r.clock = 0;
   D.force({ travel:'light' });   // (hops by light speed until one really is, and a later one by a fold, whatever the dice say)
   for (let i=0;i<30*420;i++){
     if (i < 30*150 && !r.modes.light && !S.force.travel) D.force({ travel:'light' });   // (a hop the ship cannot fly by light speed without a corner folds)
     if (i === 30*150) D.force({ travel:'fold' });
+    // (only these steps may move the atlas clock, at its own rate: anything else that moves it, a launch replay's day on to the docking, moves
+    // every planet, and the route is another one from there on)
+    const day0 = C.days, rate0 = C.ssRate;
     C.tick(dt);
+    r.clock = Math.max(r.clock, Math.abs(C.days - day0 - dt*rate0));
     const H = head(), ph = S.phase, same = ph === ph0 && !(ph0 === 'fold' || ph === 'fold');
     r.modes[ph] = 1; if (D.act) r.acts[D.act] = 1;
     // (each stay: how long the ship roams round a place, from its arrival to the jump away, and how many passes it flies there)
@@ -304,6 +315,9 @@ const halo = await page.evaluate(HALO_SEED => {
     H0 = H; P0 = h.pos.slice(); ph0 = ph;
   }
   r.stays = r.stays.map(s => ({ at:s.at, t:+s.t.toFixed(0), passes:s.passes }));
+  // (where the 420 s left the ship, for the message of a check that fails: the stay it is in, where it goes next and how, what it waits for)
+  r.end = { phase:S.phase, at:cur.at, t:+cur.t.toFixed(0), passes:cur.passes, stayFor:S.stay ? +S.stay.dur.toFixed(0) : null, jobsLeft:S.stay ? S.stay.jobs.join(' ') : '', next:S.next ? S.next.tg.key + ' by ' + S.next.mode : null,
+    job:D.act, pipOut:D.drone.state.out, cameraFlying:!!C.flight, day:+C.days.toFixed(3), launches:C.sx.SX.runs.map(q => q.key).join(' ') };
   r.minTurnRadius = +r.minTurnRadius.toFixed(0); r.maxTurn20s = +r.maxTurn20s.toFixed(0); r.maxRate = +r.maxRate.toFixed(1); r.rateLimit = +(3*D.HALO.TURN*57.3*1.05).toFixed(1);
   // the scan (a hologram sweep) on Jupiter, seen from a camera locked on the ship. Its hologram lies on the drawn surface: its centre and frame
   // are the planet's, and points of its ring, from what the job hands the shader, lie on Jupiter's surface as FS_JUPITER draws it (a sphere of
@@ -456,7 +470,8 @@ if (halo.stopped) fail('the Halo stood still for ' + halo.stopped + ' steps');
 if (halo.minTurnRadius < 20) fail('the Halo turned on the spot (turn radius ' + halo.minTurnRadius + ' ship lengths)');
 if (halo.maxTurn20s > 300) fail('the Halo turned ' + halo.maxTurn20s + ' degrees within 20 s (circling)');
 if (halo.maxRate > halo.rateLimit) fail('the Halo turned at ' + halo.maxRate + ' degrees a second, faster than its tightest turn (a corner in its path)');
-if (!halo.modes.light || !halo.modes.fold) fail('the Halo did not use both light speed and folds: ' + JSON.stringify(halo.modes));
+if (halo.clock > 1e-9) fail('something besides the test moved the atlas clock while the Halo flew its route, by ' + halo.clock.toFixed(4) + ' days in one step (the planets move with it, and the route with them): ' + JSON.stringify(halo.end));
+if (!halo.modes.light || !halo.modes.fold) fail('the Halo did not use both light speed and folds: ' + JSON.stringify({ modes:halo.modes, stays:halo.stays, end:halo.end }));
 if (Object.keys(halo.acts).length < 3) fail('the Halo did fewer than 3 kinds of job: ' + JSON.stringify(halo.acts));
 if (halo.stays.length < 2 || halo.stays.some(s => s.t < 90 || s.t > 200 || s.passes < 3)) fail('the Halo did not roam round each place for about two minutes (90 to 200 s, three passes or more): ' + JSON.stringify(halo.stays));
 const sc = halo.scan;
@@ -598,10 +613,14 @@ if (say.earth.views.join() !== '0,2,1' || say.earth.t < 26 || say.earth.t > 36) 
 // sees it (every angle, then the trip into the next deal) never dips or flies through a third object.
 // (Deterministic: the page is frozen, so no live frame marks places seen between the steps; it starts with nothing seen, whatever the
 // sections above did, and with the Solar System clock on a fixed date, so the planets stand in the same places on any day. What it has
-// seen and the clock are put back at the end)
+// seen and the clock are put back at the end.
+// The objects' own clocks start at 0 too, as in 8 (0.27.4): the moons and the rest move by them, so the trips here depended on how long the
+// sections above had run. A Halo route that took a little longer in 8, after a launch replay had moved the atlas clock, gave other trips,
+// and now and then one that passes through a neighbour: "universe -> roadster, inside sgrdsph" on 0.19.1 and "cartwheel -> cosmicweb,
+// inside cartwheel-g1" on 0.24.0, each seen once and both back at once on those builds with the replays' dice held)
 const rt = await page.evaluate(() => {
   const C = __cosmos, g = document.getElementById('goNext'), key = k => dispatchEvent(new KeyboardEvent('keydown', { key:k, bubbles:true })), r = {};
-  const wasFrozen = window.__freeze; window.__freeze = true; const wasSeen = [...C.SEEN]; C.SEEN.clear();
+  const wasFrozen = window.__freeze; window.__freeze = true; const wasSeen = [...C.SEEN]; C.SEEN.clear(); for (const o of C.OBJ) o.t = 0;
   location.hash = '#o=earth&jd=2461310.5'; C.applyHash(); history.replaceState(null, '', location.pathname);   // (2026-09-27 0:00 UTC)
   const keys = () => C.TOUR.map(i => C.OBJ[i].key), btn = () => g.hidden ? null : g.textContent, catOf = o => o.atlasKind || ((o.isBH || o.prog === C.BYKEY.sgra.prog) ? 'bh' : o.group);   // (as the atlas's catOf: the S-stars are stars)
   const overlap = T => C.TOUR.filter(i => T.includes(i)).length;

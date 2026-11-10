@@ -9,6 +9,10 @@
 - A Crew Dragon replay you are not watching no longer moves the date on a day when it docks. Before, the Moon hopped 14 degrees in one frame.
 - Watch a Dragon flight and nothing changes: it still skips about a day to the docking, behind a fade.
 
+## 0.27.4 · 10 Nov 2026 · A steadier test
+- Behind the scenes: the check that flies the Halo on a fixed route now gives the same answer on every run. A launch replay could move the atlas clock on a day in the middle of it.
+- Nothing changes on screen.
+
 ## 0.27.3 · 10 Nov 2026 · Easier to read
 - Names stay readable over bright scenes: every label has a dark plate behind it, and the scale on the right a soft shade.
 - New here? A small card at the bottom says how to look round, zoom and fly. It goes away once you have tried.
