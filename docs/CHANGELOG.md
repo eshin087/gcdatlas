@@ -4,6 +4,14 @@ All notable changes, newest first. Dates are UTC.
 
 ## Unreleased
 
+## 0.27.6 · 2026-11-10
+
+**The Moon's map comes in without a pop** (owner, 2026-11-10: "after a second it focuses it shows the detail of the moon and the transition is jarring")
+- The cause: the maps (3.5 MB on a desk) were fetched only once the Moon was a big disc, at the end of a flight to it, the map copy of its shader was compiled only after both had arrived, and the painted Moon then gave way to the real one in 25 frames (0.4 s), about a second after landing, while the camera moved in to its first angle.
+- Now the maps are fetched and the shader compiled side by side from the moment the camera heads for the Moon or anything on it (a flight's destination or the lock), and from a smaller disc (`rpx` 14, was 30). Measured on a desk GPU with the maps served at 4 MB/s, flying from Earth: the map is in 2.2 s after setting out, on a disc of 9 px, and the flight lands at 4.3 s on the real Moon.
+- A map that still comes in late (measured at 0.7 MB/s: 1 s after landing) dissolves in by the clock, not by frames: at once on a disc of a few characters, over 3 s on a big one, eased at both ends.
+- tests/moon.mjs: a flight from Earth asks for the maps while the Moon is under 10 px, and on a big disc the dissolve takes 60 frames or more with no step over a twentieth.
+
 ## 0.27.5 · 2026-11-10
 
 **Launch replays and the clock** (owner's pick, 2026-11-10, from two stills a frame apart: "leave the clock alone"; 0.27.4, PR #67, found the hop as the cause of the motion test's rare failures)

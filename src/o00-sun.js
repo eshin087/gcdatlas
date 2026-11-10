@@ -430,7 +430,7 @@ vec3 solSurf(vec3 n){
       + rays(n, sph(16.1, 46.8), 0.12, 5.)*0.7 + rays(n, sph(36., 103.), 0.14, 6.)*0.8 + rays(n, sph(22., -163.), 0.16, 7.)*0.7;
     vec3 painted = mix(c, vec3(0.86, 0.86, 0.84), clamp(ry, 0., 1.)*0.8);
 #ifdef MOON_MAP
-    // (while the map fades in, about a second: the painted relief gives way to the real)
+    // (while the map fades in, up to 3 s on a big disc: the painted relief gives way to the real)
     gN = gN*(1. - mapK) + gM*mapK;
     return mix(painted, mapC, mapK);
 #else

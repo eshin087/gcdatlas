@@ -38,9 +38,14 @@ const MGL = (() => {
   const ready = () => S.c === 2 && S.h === 2 && !off;
   // twice a second: fetch the maps for a near Moon (or one the camera is heading for), let go of them a minute after it has gone; draw the
   // Moon with its map copy once the maps and that copy are ready
+  // (0.27.6, owner: the map came in about a second after the camera had arrived, and the change was jarring. The maps are fetched and the
+  // map copy compiled, side by side, from the moment the camera heads for the Moon or anything on it, and from a smaller disc: a flight
+  // there then lands on the map)
+  const onMoon = o => !!o && (o === moon || o.surfOf === moon || o.parent === moon);
   function tick(){
     if (!can || GT - last < 0.5) return; last = GT;
-    if ((moon.rpx > 30 && !moon.hidden) || want){ seen = GT; load('c', fC); load('h', fH); }
+    const heading = onMoon(OBJ[orbit.lock]) || (!!flight && (onMoon(flight.obj) || onMoon(flight.dest)));
+    if ((moon.rpx > 14 && !moon.hidden) || want || heading){ seen = GT; load('c', fC); load('h', fH); progReady(P.moonMap); }
     if (GT - seen > 60 && (T.c || T.h)) free();
     moon.prog = ready() && progReady(P.moonMap) ? P.moonMap : planetProg(6);
   }
@@ -51,13 +56,18 @@ const MGL = (() => {
     gl.activeTexture(gl.TEXTURE21); gl.bindTexture(gl.TEXTURE_2D, T.h || d); gl.uniform1i(pr.u[uH], 21);
     gl.activeTexture(gl.TEXTURE0);
   }
-  // the globe's uniforms: how far the map has faded in (about a second, never a pop), the relief's exaggeration (three times: from orbit the
-  // real slopes are too gentle to read in characters; ACCURACY.md), the colour's level of detail (about a texel a pixel)
+  // the globe's uniforms: how far the map has faded in, the relief's exaggeration (three times: from orbit the real slopes are too gentle
+  // to read in characters; ACCURACY.md), the colour's level of detail (about a texel a pixel). The fade goes by the clock, not by frames,
+  // and by the Moon's size on the screen (0.27.6): at once on a disc of a few characters, where nothing of it can be told apart, up to
+  // 3 s on a big one, eased at both ends, so the painted Moon dissolves into the real one and never pops
+  let bindAt = -1;
   function bind(pr){
     if (!pr.u.uMg) return;
-    fade = ready() ? Math.min(1, fade + 0.04) : 0;
+    const dt = bindAt < 0 ? 0 : clamp(GT - bindAt, 0, 0.1); bindAt = GT;
+    const sz = clamp((moon.rpx - 10)/30, 0, 1), T = 3*sz*sz*(3 - 2*sz);   // (rpx is about 53 at the Moon's first angle)
+    fade = !ready() ? 0 : T < 0.05 ? 1 : Math.min(1, fade + dt/T);
     bindMaps(pr, 'uMgC', 'uMgH');
-    gl.uniform4f(pr.u.uMg, fade, 0, 3, Math.log2(Math.max(SZ/(4*Math.max(moon.rpx, 1)), 1)));
+    gl.uniform4f(pr.u.uMg, fade*fade*(3 - 2*fade), 0, 3, Math.log2(Math.max(SZ/(4*Math.max(moon.rpx, 1)), 1)));
     gl.uniform4f(pr.u.uMgS, fH.base, fH.step, 0, 0);
   }
   if (G){
@@ -67,5 +77,5 @@ const MGL = (() => {
     { const prev = moon.readout; moon.readout = () => { const t = prev(); return fade > 0.5 && orbit.lock === moon.index ? t + '\nmap: NASA LRO (LROC WAC mosaic, LOLA heights)' : t; }; }
   }
   return { SZ, bindMaps, ready, H:fH, tick, set want(v){ want = !!v; }, set off(v){ off = !!v; fade = 0; }, get on(){ return fade > 0; }, get fade(){ return fade; },
-    get state(){ return { c:S.c, h:S.h, prog:moon.prog === P.moonMap } } };
+    get state(){ return { c:S.c, h:S.h, prog:moon.prog === P.moonMap, fade:+fade.toFixed(3) } } };
 })();
