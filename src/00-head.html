@@ -32,7 +32,7 @@ button,input{font:inherit}
 #view.dragging{cursor:grabbing}
 .info h1,.info .type,.info .where,.info .fact,.info .readout,.info .progress,.caption span,.help-card,.atlas-list .an,.trow small,.tm-sub{pointer-events:auto;-webkit-user-select:text;user-select:text;cursor:text}
 #view,.labels,.ladder,.btn,.nav,.act,.seg,.tog,.shipmark,.shiparrow,.brand,.stop{-webkit-user-select:none;user-select:none}
-body:has(#view.dragging) *{-webkit-user-select:none;user-select:none}
+body.view-drag *{-webkit-user-select:none;user-select:none}
 ::selection{background:rgba(255,179,92,.35);color:#fff}
 
 /* ---- info panel, top left */
@@ -583,6 +583,14 @@ body.showcase .strip{padding-bottom:calc(124px + env(safe-area-inset-bottom,0px)
 .sm-row button.sm-sw[aria-checked="true"] small{color:var(--ship)}
 #btnShip.following{color:var(--ship);background:rgba(143,230,255,.14)}
 .nogl{position:fixed;inset:0;display:grid;place-items:center;padding:16px;text-align:center;color:var(--soft)}
+/* the loading line (0.27.2): in the page's own HTML, so it shows from the first paint, while the script (most of the download) arrives and
+   starts. The dots fade by opacity, which the browser animates off the main thread, so they keep moving while the script runs. */
+.boot{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;z-index:1;color:var(--dim);font-size:12px;letter-spacing:.14em}
+.boot i{font-style:normal;animation:bootDot 1.2s ease-in-out infinite}
+.boot i:nth-child(2){animation-delay:.2s}
+.boot i:nth-child(3){animation-delay:.4s}
+@keyframes bootDot{0%,70%,100%{opacity:.15}35%{opacity:1}}
+@media (prefers-reduced-motion:reduce){ .boot i{animation:none} }
 
 /* collection log */
 .arow.seen .an::after{content:" \2713";color:#a8f0b0;font-weight:400}

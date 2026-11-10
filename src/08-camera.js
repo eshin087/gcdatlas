@@ -608,7 +608,9 @@ canvas.addEventListener('pointerdown', e => {
   const lk = OBJ[orbit.lock], onRocket = LCAM.on || !!(lk && (lk.sx || lk.sxSite));
   if (pointers.size === 1) drag = { x0:e.clientX, y0:e.clientY, t0:performance.now(), moved:0, pan:(e.button === 2 || e.shiftKey) && !onRocket, turn:e.button === 2 || e.ctrlKey };
   else if (drag){ drag.moved = 99; drag.two = null; }   // (a new two-finger gesture starts from here)
-  canvas.classList.add('dragging');
+  // (the class on body stops text being selected under a drag. It was `body:has(#view.dragging) *` until 0.27.2: with :has() on body, every
+  // text the page wrote, a readout or the scale bar's number, made the browser work out the style of all 1,800 elements again, 4 ms a time)
+  canvas.classList.add('dragging'); document.body.classList.add('view-drag');
 });
 canvas.addEventListener('pointermove', e => {
   const p = pointers.get(e.pointerId); if (!p) return;
@@ -702,7 +704,7 @@ function endPointer(e){
   pointers.delete(e.pointerId);
   // one finger of two lifted: the other one does nothing until it lifts too (it used to turn the pinch into a sudden orbit)
   if (pointers.size === 1 && drag) drag.dead = true;
-  if (pointers.size === 0){ canvas.classList.remove('dragging'); if (wasTap && Math.abs(drag.t0 - wakeTapAt) > 150) tapAt(e.clientX, e.clientY); drag = null; }
+  if (pointers.size === 0){ canvas.classList.remove('dragging'); document.body.classList.remove('view-drag'); if (wasTap && Math.abs(drag.t0 - wakeTapAt) > 150) tapAt(e.clientX, e.clientY); drag = null; }
 }
 // a tap picks what is under it; a double-tap on the sky brings the object on the leash back to the middle
 function tapAt(x, y){

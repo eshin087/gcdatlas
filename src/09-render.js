@@ -478,6 +478,19 @@ const moonMarks = MPL.places.map(p => {
   $('#labels').appendChild(el);
   return { el, u:p.u, pri:3, min:110 };
 });
+// A label's width is kept (0.27.2): with Earth's marks on screen the widths were read from the page a dozen times a frame, each read between
+// two moves. It is measured again when the label's words change, when the window or the fonts do (LABV), and every 2 s in any case, which
+// covers a new text size.
+let LABV = 1, labT = 0;
+function labW(el){
+  const t = el.textContent;
+  if (el._wv !== LABV || el._wt !== t){ const w = el.offsetWidth; if (!w) return 80; el._wv = LABV; el._wt = t; el._w = w; }
+  return el._w;
+}
+// words that are written again and again (the ruler, the clock, the tour's count) only reach the page when they have changed
+function setTxt(el, t){ if (el.textContent !== t) el.textContent = t; }
+addEventListener('resize', () => { LABV++; });
+if (document.fonts && document.fonts.addEventListener) document.fonts.addEventListener('loadingdone', () => { LABV++; });
 function updateLabels(){
   const focus = tour.on ? tour.obj : orbit.lock;
   const clean = focus >= 0 ? focus : cam.focus;   // the object whose disc stays free of other labels (in free flight: the one the camera is centred on)
@@ -551,9 +564,12 @@ function updateLabels(){
     return Math.hypot(nx - fd.x, ny - fd.y) < fd.r*0.95;
   };
   cand.sort((a, b) => b.pri - a.pri);
+  // every width is read before any label is moved (labW): a width read right after a move made the browser work out styles again each time
+  const lt = performance.now(); if (lt - labT > 2000){ labT = lt; LABV++; }
+  for (const c of cand) c.w = labW(c.el);
   for (const c of cand){
     if (occ.length && hidden(c)) continue;
-    const w = c.el.offsetWidth || 80, h = 16, off = Math.max(c.rpx*0.72, 5);
+    const w = c.w, h = 16, off = Math.max(c.rpx*0.72, 5);
     const lx = Math.min(c.pr.x + off, innerWidth - w - 8), ly = c.pr.y - off - 16;
     if (avoid.some(r => lx < r.right + 6 && lx + w > r.left - 6 && ly < r.bottom + 4 && ly + h > r.top - 4)) continue;
     if (overFocus(c, lx, ly, w, h)) continue;
@@ -635,7 +651,7 @@ function updateScale(){
   const [val, unit] = lenUnit(km);
   const p = Math.pow(10, Math.floor(Math.log10(val))), m = val/p, nice = (m >= 5 ? 5 : m >= 2 ? 2 : 1)*p;
   scaleBar.style.width = (targetPx*nice/val).toFixed(0) + 'px';
-  scaleTxt.textContent = '= ' + fmtNum(nice) + ' ' + (nice === 1 && unit === 'light-years' ? 'light-year' : unit);
+  setTxt(scaleTxt, '= ' + fmtNum(nice) + ' ' + (nice === 1 && unit === 'light-years' ? 'light-year' : unit));
 }
 
 // ---------------------------------------------------------------- scale ladder (right edge): powers of ten from the Moon to the observable universe
@@ -755,7 +771,7 @@ function updateTourTrack(){
     : (Math.max(L.indexOf(tour.view), 0) + clamp(tour.t/holdOf(o.views[tour.view]), 0, 1))/L.length;
   const f = (k + sub*0.999)/Math.max(n - 1, 1);
   ttFill.style.height = (clamp(f, 0, 1)*100).toFixed(2) + '%';
-  $('#ladCap').textContent = `tour ${k + 1} / ${n}`;
+  setTxt($('#ladCap'), `tour ${k + 1} / ${n}`);
   // with many stops only some names fit: always the current one, its neighbours, the ends, and an even spread
   const H = ladderEl.getBoundingClientRect().height, gap = H/Math.max(n - 1, 1), every = Math.max(1, Math.ceil(17/Math.max(gap, 1)));
   const th = Math.min(28, gap).toFixed(1) + 'px'; if (tourTrack.style.getPropertyValue('--tt-h') !== th) tourTrack.style.setProperty('--tt-h', th);   // (see syncTickSizes)
@@ -1484,13 +1500,25 @@ function autoDetail(){
     AUTO_D.up = runTime > 3 && ema < 19 && LODK >= 1 ? AUTO_D.up + 1 : 0;
     if (AUTO_D.up >= 4){ AUTO_D.up = 0; AUTO_D.tries++; detailIdx = 0; runTime = 0; ema = 16; calmT = 0; resize(); syncSettingsUI(); }
   } else if (detailIdx === 0){
-    AUTO_D.slow = ema > 24 ? AUTO_D.slow + 1 : 0;
+    AUTO_D.slow = ema > 24 && !cpuBound() ? AUTO_D.slow + 1 : 0;   // (slow because of the processor: fine would be no faster than ultra)
     if (AUTO_D.slow >= 3){
       AUTO_D.slow = 0; detailIdx = 1; runTime = 0; ema = 20; calmT = 0; resize(); syncSettingsUI();
       if (AUTO_D.tries >= 2){ AUTO_D.off = true; try { localStorage.setItem('gcdatlas.autoDetail', JSON.stringify({ fine:Date.now() })); } catch (e) {} }
     }
   }
 }
+// What holds the frame rate down, the processor or the graphics card (0.27.2)? `busy` is how long the main thread works on a frame: from the
+// start of frame() to the first task after the browser has drawn it, so the page's script, its styles, layout and painting all count. When
+// that is most of the time between two frames (cpuBound), fewer ray-march steps or bigger characters cannot help, they only make the picture
+// worse: with the processor slowed six times on a fast graphics card the page went down to bold characters and stayed at 19 frames a second.
+// So detail is only lowered while the graphics card is what the frames wait for. The two work side by side, so the time between frames is
+// about the longer of the two: a slow processor gives a share of 0.86 to 0.99, slow graphics 0.01 to 0.14 (measured with Chrome's processor
+// slow-down and with software graphics). The line is at 0.8: below it the graphics card still has something to give.
+let busy = 4, busyT0 = 0;
+const busyCh = typeof MessageChannel !== 'undefined' ? new MessageChannel() : null;
+// (a frame that compiled a shader says nothing, as for `ema`)
+if (busyCh) busyCh.port1.onmessage = () => { if (busyT0){ if (!progBusy) busy = busy*0.95 + Math.min(performance.now() - busyT0, 250)*0.05; busyT0 = 0; } };
+function cpuBound(){ return busy > ema*0.8; }
 addEventListener('resize', () => { if (resizePending) return; resizePending = true; requestAnimationFrame(() => { resizePending = false; resize(); ladTitles(); }); });
 // when zooming out from inside the galaxy, rise gently above the disk so the Milky Way unfolds instead of staying edge-on
 function riseAboveDisk(dt){
@@ -1655,13 +1683,13 @@ function setDeep(kyr){
 }
 function syncTimeUI(){
   const jd = jdNow(), off = jd - realJD();
-  tmDate.textContent = fmtJD(jd);
-  tmSub.textContent = Math.abs(off) < 0.02 ? 'the Solar System as it is right now' : (off > 0 ? 'the Solar System ' + fmtSpan(off) + ' from now' : 'the Solar System ' + fmtSpan(-off) + ' ago');
+  setTxt(tmDate, fmtJD(jd));
+  setTxt(tmSub, Math.abs(off) < 0.02 ? 'the Solar System as it is right now' : (off > 0 ? 'the Solar System ' + fmtSpan(off) + ' from now' : 'the Solar System ' + fmtSpan(-off) + ' ago'));
   const yrs = Math.round(Math.abs(DEEP)*1e6).toLocaleString('en-US');
   const dt = DEEP ? 'the stars ' + yrs + ' years ' + (DEEP > 0 ? 'from now' : 'ago') : "today's sky"; if (deepTxt.textContent !== dt) deepTxt.textContent = dt;
-  $('#timem').querySelectorAll('.seg[data-key="ssrate"] button').forEach(b => b.setAttribute('aria-checked', String(Math.abs(+b.dataset.v - ssRate) < 1e-4)));
+  $('#timem').querySelectorAll('.seg[data-key="ssrate"] button').forEach(b => { const v = String(Math.abs(+b.dataset.v - ssRate) < 1e-4); if (b.getAttribute('aria-checked') !== v) b.setAttribute('aria-checked', v); });
   const badge = DEEP ? 'stars ' + (DEEP > 0 ? '+' : '-') + yrs + ' yr' : (Math.abs(off) > 1 ? fmtJD(jd).slice(0, 10) : '');
-  tbadge.hidden = !badge; if (badge) tbadge.textContent = badge;
+  if (tbadge.hidden !== !badge) tbadge.hidden = !badge; if (badge) setTxt(tbadge, badge);
 }
 function fmtSpan(days){ return days < 1 ? Math.round(days*24) + ' hours' : days < 60 ? Math.round(days) + ' days' : days < 730 ? Math.round(days/30.44) + ' months' : Math.round(days/365.25).toLocaleString('en-US') + ' years'; }
 $('#timem').querySelectorAll('.seg[data-key="ssrate"] button').forEach(b => b.addEventListener('click', () => { ssRate = +b.dataset.v; if (!timeScale) setOpt('time', 1, true); syncTimeUI(); }));
@@ -1772,6 +1800,7 @@ function frame(now){
   if (window.__freeze || glLost){ last = now; return; }
   const dtR = Math.min((now - last)/1000, 0.25); last = now;
   const hitch = progBusy > 0; progBusy = 0;   // the last frame compiled a shader: its time says nothing about how fast the scene draws
+  if (busyCh && !busyT0){ busyT0 = performance.now(); busyCh.port2.postMessage(0); }
   const dt = Math.min(dtR, 0.05);
   tick(dt);
   render();
@@ -1786,9 +1815,11 @@ function frame(now){
   lodT += dtR;
   if (!window.__noAdapt && lodT > 1 && document.visibilityState === 'visible'){
     lodT = 0;
-    if (ema > 38) LODK = Math.max(0.5, LODK - 0.1); else if (ema < 24) LODK = Math.min(1, LODK + 0.05);
+    // (not while the processor is what the frames wait for, cpuBound: the steps then go back up, and the characters stay)
+    const cpu = cpuBound();
+    if (ema > 38 && !cpu) LODK = Math.max(0.5, LODK - 0.1); else if (ema < 24 || cpu) LODK = Math.min(1, LODK + 0.05);
     autoDetail();
-    if (runTime > 10 && ema > 48 && LODK <= 0.5 && adaptCount < 2 && detailIdx < DETAIL.length - 1){
+    if (runTime > 10 && ema > 48 && LODK <= 0.5 && !cpu && adaptCount < 2 && detailIdx < DETAIL.length - 1){
       adaptCount++; runTime = 0; ema = 20; calmT = 0; detailIdx++; resize(); toast('detail lowered to ' + DETAIL[detailIdx].name + ' for smoother motion');
     }
     calmT = detailIdx > SET.detail && ema < 20 && LODK >= 1 ? calmT + 1 : 0;
@@ -1803,13 +1834,15 @@ ladTitles();
 if (document.fonts) document.fonts.load('500 20px "IBM Plex Mono"').then(() => buildAtlas(cellW, cellH)).catch(() => {});
 useTour('grand');
 $('#atlasCount').textContent = `${atlasRows.length} places`;
-music.set(SET.sound);
+// (the music is made right after the first frame, in a task of its own: music.warm)
+music.wish(SET.sound);
+requestAnimationFrame(() => setTimeout(() => music.warm(), 0));
 syncSettingsUI();
 tick(0);
 if (!applyHash()) tourGo(TOUR[0], true);
 tick(0);
 updateModeUI(); syncTimeUI();
-window.__cosmos = { get egl(){ return typeof EGL !== 'undefined' ? EGL : null; }, get etl(){ return ETL; }, get egr(){ return EGR; }, get epl(){ return EPL; }, get ect(){ return ECT; }, get plc(){ return PLC; }, get mpl(){ return MPL; }, get mgl(){ return MGL; }, get mdt(){ return MDT; }, get etr(){ return ETR; }, get eas(){ return EAS; }, get ecld(){ return ECLD; }, get qk(){ return QK; }, startTour, playFlyby, setMove(o, v, f){ flight = null; tween = null; tourGo(o.index, true); tour.on = false; flyMove = { o, v, t:f*v.hold, frozen:true }; },  get flyMove(){ return flyMove; }, startCompare, endCompare, setDeep, viewHash, applyHash, get cmp(){ return cmp; }, get ssRate(){ return ssRate; }, set ssRate(v){ ssRate = v; }, dbg:{ imp, impSpec, atlas, sphereRect, get tan(){ return [tanX, tanY]; }, get cols(){ return cols; }, get sceneH(){ return sceneH; }, get LODK(){ return LODK; }, PROGS }, OBJ, BYKEY, tourGo, lockOn, setTour, cam, orbit, tour, TOUR, SET, setOpt, music, LADDER, goLadder,
+window.__cosmos = { get egl(){ return typeof EGL !== 'undefined' ? EGL : null; }, get etl(){ return ETL; }, get egr(){ return EGR; }, get epl(){ return EPL; }, get ect(){ return ECT; }, get plc(){ return PLC; }, get mpl(){ return MPL; }, get mgl(){ return MGL; }, get mdt(){ return MDT; }, get etr(){ return ETR; }, get eas(){ return EAS; }, get ecld(){ return ECLD; }, get qk(){ return QK; }, startTour, playFlyby, setMove(o, v, f){ flight = null; tween = null; tourGo(o.index, true); tour.on = false; flyMove = { o, v, t:f*v.hold, frozen:true }; },  get flyMove(){ return flyMove; }, startCompare, endCompare, setDeep, viewHash, applyHash, get cmp(){ return cmp; }, get ssRate(){ return ssRate; }, set ssRate(v){ ssRate = v; }, dbg:{ imp, impSpec, atlas, sphereRect, get tan(){ return [tanX, tanY]; }, get cols(){ return cols; }, get sceneH(){ return sceneH; }, get LODK(){ return LODK; }, get frameMs(){ return ema; }, get busyMs(){ return busy; }, get cpuBound(){ return cpuBound(); }, PROGS }, OBJ, BYKEY, tourGo, lockOn, setTour, cam, orbit, tour, TOUR, SET, setOpt, music, LADDER, goLadder,
   land:(extra = 0.2) => { let n = 0; while (flight && n < 60*180){ tick(1/60); n++; } for (let i=0;i<extra*60;i++) tick(1/60); return n/60; },
   setDays:d => { ssDays = d; }, get days(){ return ssDays; }, stepObject, stepAngle, get tourId(){ return TOUR_ID; }, get tourGen(){ return TOUR_GEN; }, randomSeed:n => { RSEED = n >>> 0; }, samePlace, tourable, tourPool, tripClear, dealRandom, RANDOM_W, tripW:(a, b) => tripWeight(tripEnd(a), tripEnd(b)), get nextDeal(){ return nextDeal; }, get stepTarget(){ return flight ? (flight.dest || flight.obj).key : null; }, get via(){ return flight && flight.via ? flight.via.key : null; }, PASS,
   startShipCam, stopShipCam, setShipCamMode, get shipCam(){ return shipCam; }, SHIP_POSE, get show(){ return show; }, togglePlay, get flight(){ return flight; },
