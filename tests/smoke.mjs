@@ -375,8 +375,11 @@ for (const h of ['#o=constructor', '#o=__proto__', '#o=earth&jd=abc&deep=x&c=1,N
   if (!s.shown || !/^drag to look round scroll to zoom, from a planet out to the whole universe click anything to fly there \/ to search$/.test(s.words)) errors.push('a first visit does not show the hint card: ' + JSON.stringify(s));
   await h.page.evaluate(() => window.__cosmos.goHome()); await h.page.waitForTimeout(1200); s = await hint();
   if (!s.shown || s.saved) errors.push('a scripted action took the hint card away: ' + JSON.stringify(s));
-  await h.page.mouse.move(640, 420); await h.page.mouse.down(); await h.page.mouse.move(700, 440, { steps:5 }); await h.page.mouse.up(); await h.page.waitForTimeout(1300); s = await hint();
-  if (s.shown || s.saved !== '1') errors.push('a real drag did not take the hint card away for good: ' + JSON.stringify(s));
+  await h.page.mouse.move(640, 420); await h.page.keyboard.press('Shift'); await h.page.waitForTimeout(300); s = await hint();
+  if (!s.shown || s.saved) errors.push('moving the mouse or pressing Shift took the hint card away: ' + JSON.stringify(s));
+  // (any real press counts, not only one whose handler calls hideHint: the atlas button opens the atlas, and the card goes)
+  await h.page.click('#btnAtlas'); await h.page.waitForTimeout(1300); s = await hint();
+  if (s.shown || s.saved !== '1') errors.push('a real click on a button did not take the hint card away for good: ' + JSON.stringify(s));
   await h.page.reload(); await h.page.waitForFunction(() => window.__cosmos && window.__cosmos.OBJ, null, { timeout:60000 }); s = await hint();
   if (s.shown) errors.push('the hint card came back on the next visit');
   errors.push(...h.errors); await h.browser.close();

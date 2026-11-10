@@ -316,14 +316,20 @@ function projectCSS(rel){
   return { x:(x*0.5 + 0.5)*viewWcss, y:canvasHcss - (y*0.5 + 0.5)*viewHcss, z };
 }
 function toast(msg){ const t = $('#toast'); t.textContent = msg; t.classList.add('on'); clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove('on'), 2600); }
-// The first-visit hint, a small card since 0.27.3 (owner's pick): shown until the first thing the visitor does (a drag, a scroll, a click or a
-// key that leads to hideHint), then never again on this device (gcdatlas.hinted). Until then it stays: it used to go after 18 s whether or
-// not anyone had read it. A call that no input came before (a share link opening its place, a tour starting by itself) leaves it up; the
-// showcase, the lab and the songs page take it away without remembering (scripted).
+// The first-visit hint, a small card since 0.27.3 (owner's pick): shown until the first thing the visitor does, a press of the mouse or a
+// finger anywhere, a turn of the wheel or a key (the listener below takes it away itself, so opening the atlas, the tours or the settings
+// counts as much as a drag: from the Codex review of PR 66), then never again on this device (gcdatlas.hinted). Until then it stays: it
+// used to go after 18 s whether or not anyone had read it. Not counted: a key that only modifies, and an input that arrives while the
+// interface is faded (on a touch screen that tap only wakes it, and the card comes back with it). A call that no input came before (a share
+// link opening its place, a tour starting by itself) leaves it up; the showcase, the lab and the songs page take it away without
+// remembering (scripted).
 const hintEl = $('#hint'); let hintActed = false;
 try { hintHidden = localStorage.getItem('gcdatlas.hinted') === '1'; } catch (e) {}
 if (!hintHidden) hintEl.hidden = false;
-for (const ev of ['pointerdown', 'keydown', 'wheel', 'touchstart']) addEventListener(ev, () => { hintActed = true; }, { capture:true, passive:true });
+for (const ev of ['pointerdown', 'keydown', 'wheel', 'touchstart']) addEventListener(ev, e => {
+  if (hintHidden || (ev === 'keydown' && /^(Shift|Control|Alt|Meta|CapsLock)$/.test(e.key)) || document.body.classList.contains('ui-idle')) return;
+  hintActed = true; hideHint();
+}, { capture:true, passive:true });
 function hideHint(scripted){
   if (hintHidden || !(scripted || hintActed)) return;
   hintHidden = true; hintEl.classList.add('off'); setTimeout(() => { hintEl.hidden = true; }, 900);
