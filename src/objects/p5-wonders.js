@@ -325,7 +325,7 @@ void main(){
     fact:'Shells of gas thrown off by a dying star, layer after layer. The faint star at the centre, not the bright one beside it, made the nebula; JWST showed for the first time that it is wrapped in dust.',
     aka:'ngc 3132 eight burst southern ring jwst planetary nebula', hero:V.norm([0.15, 0.2, 1]), roll:60,
     u:[[0.42, 0.1, 0.55, 0.55], [0.58, 0.5, 0.55, 0.86], [0.9, 0, 0.1, 0]],
-    views:[{ dirFn:() => V.norm(V.mul(pos, -1)), k:1.8, hold:9, drift:0.02 }, { d:[0.9, 0.3, 0.3], k:1.4, hold:8, drift:0.03 }, { d:[0.2, 0.1, 1], k:0.7, hold:7, drift:0.02 }],
+    views:[{ dirFn:() => V.norm(V.mul(pos, -1)), k:2.6, hold:9, drift:0.02 }, { d:[0.9, 0.3, 0.3], k:1.4, hold:8, drift:0.03 }, { d:[0.2, 0.1, 1], k:0.7, hold:7, drift:0.02 }],
     particles:[{ ps:st, prog:'ptBasic', mode:1, sb:1.2, size:2.2 }],
     readout:() => '2,500 light-years · about half a light-year across\nthe ejected shells are spaced by the thousands of years between puffs' });
 }
