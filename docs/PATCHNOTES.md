@@ -5,6 +5,10 @@
      numbers with units. The newest version comes first and opens by itself; its number must match package.json (tests/smoke.mjs checks it).
      Every detail stays in docs/CHANGELOG.md, which the panel links to. -->
 
+## 0.27.4 · 10 Nov 2026 · A steadier test
+- Behind the scenes: the check that flies the Halo on a fixed route now gives the same answer on every run. A launch replay could move the atlas clock on a day in the middle of it.
+- Nothing changes on screen.
+
 ## 0.27.3 · 10 Nov 2026 · Easier to read
 - Names stay readable over bright scenes: every label has a dark plate behind it, and the scale on the right a soft shade.
 - New here? A small card at the bottom says how to look round, zoom and fly. It goes away once you have tried.
