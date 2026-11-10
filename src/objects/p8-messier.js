@@ -231,10 +231,13 @@ function gaiaCluster(key){
   const u01 = () => { z = (z + 0x6D2B79F5) >>> 0; let t = z; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0)/4294967296; };
   const gauss = () => Math.sqrt(-2*Math.log(Math.max(u01(), 1e-9)))*Math.cos(6.2832*u01());
   const mu = 5*Math.log10(c.pc/10) + 0.79*c.av, ebr = 0.42*c.av, ps = makePS(n), all = [];
+  // (a point's size on the drawing: by the star's absolute G, then lifted so the cluster's middle star reads, 0.27.7. Gaia's 600 members of a
+  // near cluster reach far down among its dwarfs, the Beehive's most of all, and at the plain scale the whole cluster was a few faint dots)
+  const w0 = s => clamp(0.6 + (6 - (s.g - mu))*0.2, 0.5, 2.4), med = S.map(w0).sort((a, b) => a - b)[n >> 1], lift = clamp(1.15/med, 1, 1.9);
   S.forEach((s, i) => {
     const w = radec((c.ra + s.xi/cd)/15, c.dec + s.eta, D + gauss()*sig), p = V.mul(M3.applyT(R0, V.sub(w, pos)), 1/RAD);
     const C = clamp(s.bc === -128 ? 0.8 : s.bc/40 - ebr, -0.45, 3), T = clamp(5040/(0.4929 + 0.5092*C - 0.0353*C*C), 3000, 25000);
-    const col = blackbodyJS(T), wt = clamp(0.6 + (6 - (s.g - mu))*0.2, 0.5, 2.4);
+    const col = blackbodyJS(T), wt = Math.min(w0(s)*lift, 2.6);
     ps.a.set([p[0], p[1], p[2], wt], i*4); ps.c.set([col[0], col[1], col[2], 0], i*4); all.push({ p, w:wt, c:col });
   });
   ps.upload('ac');
@@ -245,18 +248,22 @@ function gaiaCluster(key){
 // closer in than a nebula's. In mode 1 drawParticles already scales a point's strength by the square of the object's radius, and its light
 // falls off with the square of its distance, so every cluster looks as bright at its own framing, whatever its size. A second (rad/16)^2 here
 // made M39 about 13 times brighter than M36 and saturated the big clusters: from Codex's review of #50)
+// 0.27.7 (from the review of 2026-11-09: 17 open clusters opened on a few crosses on black, the Beehive on three): the first two angles
+// stand outside the cluster, 1.4 and 1.2 radii from its middle, so it reads as a swarm that thickens toward its centre (they stood inside
+// it, at 0.7, with its stars strewn across the whole screen), and the third is from inside, at 0.4. The stars are points of 2.5 px whose light
+// falls off with their distance, not its square (particle mode 4): by the square, a setting bright enough from outside burned out from
+// inside. The crosses on the brightest stars keep the square law (their shader has no other) and are set for the outside angles.
 function addOpenCluster(def, cl, extra = []){
-  const k2 = 1;
   return addObj(Object.assign({ tags:['clusters'], group:'nebulae', R0:facingEarth(def.pos, [0, 0, 1], 0), minZoom:0.03, pxMin:5, farColor:[0.8, 0.86, 1], farLum:0.6,
-    views:[{ dirFn:() => V.norm(V.mul(def.pos, -1)), k:0.7, hold:9, drift:0.02 }, { d:[0.6, 0.4, 0.7], k:0.65, hold:8, drift:0.03 }, { d:[0.2, 0.15, 1], k:0.18, hold:8, drift:0.03 }],
-    particles:[{ ps:cl.ps, prog:'ptBasic', mode:1, sb:(def.sb ?? 0.7)*k2, size:1.7 }, ...extra, { ps:cl.spikes, prog:'spike', lines:true, mode:1, sb:2.2*k2, size:1, len:0.04, q0:() => [1, 0, 0, 0] }] }, def));
+    views:[{ dirFn:() => V.norm(V.mul(def.pos, -1)), k:1.4, hold:9, drift:0.02 }, { d:[0.6, 0.4, 0.7], k:1.2, hold:8, drift:0.03 }, { d:[0.2, 0.15, 1], k:0.4, hold:8, drift:0.03 }],
+    particles:[{ ps:cl.ps, prog:'ptBasic', mode:4, sb:(def.sb ?? 0.7)*5.1, size:2.5 }, ...extra, { ps:cl.spikes, prog:'spike', lines:true, mode:1, sb:6, size:1, len:0.04, q0:() => [1, 0, 0, 0] }] }, def));
 }
 // an open cluster from its Gaia members, by its key in CLUSTER_STARS (the atlas's key too)
 function gaiaOpenCluster(key, def){
   const G = gaiaCluster(key);
   return addOpenCluster(Object.assign({ key, pos:G.pos, rad:G.RAD, R0:G.R0, sizeR:G.R90, sortKey:Math.round(G.D) }, def), G.cl);
 }
-gaiaOpenCluster('beehive', { name:'Beehive Cluster', label:'Beehive', type:'open star cluster · M44 · Praesepe · in Cancer', labelRange:4e4, sb:0.9,
+gaiaOpenCluster('beehive', { name:'Beehive Cluster', label:'Beehive', type:'open star cluster · M44 · Praesepe · in Cancer', labelRange:4e4,
   fact:'Over a thousand stars born together some 600 to 700 million years ago. Known since ancient times as a little cloud, it was seen as stars by Galileo in 1610. Planets have been found round several of its stars.',
   aka:'m44 messier 44 ngc 2632 praesepe beehive manger cancer',
   readout:() => '600 light-years (Gaia) · its stars spread over about 40 light-years\nabout 650 million years old · 600 of its stars as Gaia measured them' });

@@ -355,7 +355,8 @@ void main(){
   if(uMode < 0.5){ float S = uRad/(v.z*uPixAng); size = clamp(uSize*S/sqrt(uN), 1.6, 3.5); b = min(4.*uSB*3.1416*S*S/(uN*size*size), uCap); }
   else if(uMode < 1.5){ size = uSize; b = min(uSB/(v.z*v.z), 3.); }
   else if(uMode < 2.5){ size = clamp(uSize*uRad/(v.z*uPixAng), 1.5, 9.); b = min(uSB/(v.z*v.z), 2.5); }
-  else { size = uSize; b = uSB; }
+  else if(uMode < 3.5){ size = uSize; b = uSB; }
+  else { size = uSize; b = min(uSB/v.z, 3.); }   // (mode 4, open clusters: a star's light falls off with its distance, not its square, so one setting reads from outside the cluster and from inside it)
   if(pSize > 0.) size = clamp(pSize*uRad/(v.z*uPixAng), size, 14.);
   gl_PointSize = size; vC = col*br*b*uOut*uVis;
 }`; }

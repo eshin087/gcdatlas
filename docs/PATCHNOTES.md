@@ -5,6 +5,11 @@
      numbers with units. The newest version comes first and opens by itself; its number must match package.json (tests/smoke.mjs checks it).
      Every detail stays in docs/CHANGELOG.md, which the panel links to. -->
 
+## 0.27.7 · 10 Nov 2026 · Star clusters that look like clusters
+- The 26 open clusters, the Beehive and the Wild Duck among them, now open as a swarm of stars that thickens toward the middle. Before, most showed a few bright crosses on black.
+- Their first two angles stand outside the cluster, the third inside it.
+- Every star is still one Gaia measured, at its real place on the sky.
+
 ## 0.27.6 · 10 Nov 2026 · The Moon without the pop
 - Flying to the Moon, NASA's map is now fetched as the flight sets out, so you arrive on the real Moon. Before, it switched about a second after you got there.
 - On a slow connection the map can still come in late. It then dissolves in over 3 seconds instead of 0.4.
