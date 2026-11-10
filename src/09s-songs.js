@@ -6,7 +6,7 @@
 const REVIEW = { on:!!window.__SONGS || new URLSearchParams(location.search).has('songs'), key:'gcdatlas.songReview', picks:{}, els:{}, playing:null, raf:0 };
 if (REVIEW.on){
   window.__freeze = true;   // (the site's own frame loop stands aside: nothing is drawn)
-  stopTour(false); pauseShow(); tween = null; flyMove = null; flight = null; hideHint();
+  stopTour(false); pauseShow(); tween = null; flyMove = null; flight = null; hideHint(true);
   music.set(false);         // (the radio stays off; a song plays only from its button)
   document.body.classList.add('song-review'); document.title = 'gcdatlas songs';
   const PICKS = [['keep', 'Keep'], ['drop', 'Drop'], ['unsure', 'Not sure']];

@@ -10,6 +10,7 @@ import path from 'node:path';
 import vm from 'node:vm';
 import { fileURLToPath } from 'node:url';
 import { writePlacePages, short } from './tools/place-pages.mjs';
+import { fontHead, GOOGLE_FONTS } from './tools/lib/fonts.mjs';
 
 const ROOT = path.dirname(fileURLToPath(import.meta.url));
 const SRC = path.join(ROOT, 'src'), DIST = path.join(ROOT, 'dist');
@@ -53,7 +54,12 @@ fs.mkdirSync(DIST, { recursive: true });
 fs.copyFileSync(path.join(ROOT, 'assets', 'og.jpg'), path.join(DIST, 'og.jpg'));
 // every place's own picture (npm run og -- --all), served under /og/ for the share pages below
 { const src = path.join(ROOT, 'assets', 'og'); if (fs.existsSync(src)) syncDir(src, path.join(DIST, 'og')); }
-const head = read('00-head.html');
+// the fonts (0.27.3): our own files under fonts/ (assets/fonts, tools/lib/fonts.mjs), so the page asks no other host for anything.
+// The artifact page is served alone, away from dist/, and keeps Google's stylesheet (headAlone).
+{ const src = path.join(ROOT, 'assets', 'fonts'); if (fs.existsSync(src)) syncDir(src, path.join(DIST, 'fonts')); }
+const head0 = read('00-head.html');
+if (!head0.includes('<!--FONTS-->')){ console.error('src/00-head.html has no <!--FONTS--> line'); process.exit(1); }
+const head = head0.replace('<!--FONTS-->', fontHead('fonts/')), headAlone = head0.replace('<!--FONTS-->', GOOGLE_FONTS);
 // what's new: docs/PATCHNOTES.md ("## version · date · title", then "- " bullets) as the panel's HTML, newest first and open
 const esc = t => t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 const notes = [];
@@ -164,7 +170,7 @@ const siteLd = `<script type="application/ld+json">${JSON.stringify({ '@context'
   description:meta.match(/<meta name="description" content="([^"]*)"/)[1] }).replace(/</g, '\\u003c')}</script>\n`;
 fs.mkdirSync(DIST, { recursive: true });
 fs.writeFileSync(path.join(DIST, 'index.html'), `<!doctype html>\n<html lang="en">\n<head>\n${meta}${siteLd}${head}\n</head>\n<body>\n${body}\n${shareScript}${script}</body>\n</html>\n`);
-fs.writeFileSync(path.join(DIST, 'artifact.html'), `${head}\n${body}\n${script}`);
+fs.writeFileSync(path.join(DIST, 'artifact.html'), `${headAlone}\n${body}\n${script}`);
 // the lab (/lab): the same page, told before its script runs to open as a small stage for trying the Halo's looks (src/09l-lab.js); kept out of search
 const labHead = head.replace(/<title>[^<]*<\/title>/, '<title>gcdatlas lab</title>');
 fs.writeFileSync(path.join(DIST, 'lab.html'), `<!doctype html>\n<html lang="en">\n<head>\n${meta}<meta name="robots" content="noindex">\n${labHead}\n</head>\n<body>\n${body}\n<script>window.__LAB = 1;</script>\n${shareScript}${script}</body>\n</html>\n`);

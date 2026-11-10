@@ -1,7 +1,5 @@
 <title>gcdatlas · the real universe, drawn in ASCII</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Major+Mono+Display&display=swap">
+<!--FONTS-->
 <style>
 :root{
   color-scheme:dark;
@@ -273,11 +271,23 @@ body.showcase .strip{padding-bottom:calc(124px + env(safe-area-inset-bottom,0px)
 .toast{align-self:center;color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:3px;padding:5px 12px;font-size:calc(11.5px*var(--ts));
   opacity:0;transition:opacity .4s;text-align:center;max-width:100%}
 .toast.on{opacity:1}
-.hint{color:var(--faint);font-size:calc(11px*var(--ts));text-align:center;transition:opacity .8s}
+/* the first-visit hint (0.27.3, owner's pick over brighter words in the same place): a small card with the three or four things to do, the
+   action words in orange. It was one line of 11 px in the faintest grey (2.7:1), the only instruction a new visitor gets. Shown by the
+   script only to someone who has not used the atlas yet (09-render.js: hideHint); it fades with the idle interface and comes back with it. */
+.hint{align-self:center;display:flex;flex-wrap:wrap;justify-content:center;gap:4px 22px;max-width:100%;padding:9px 18px;border:1px solid var(--line);border-radius:6px;
+  background:rgba(8,10,18,.86);color:var(--soft);font-size:calc(12px*var(--ts));letter-spacing:.02em;transition:opacity .8s}
+.hint[hidden]{display:none}
+.hint.off{opacity:0}
+.hint b{color:var(--flare);font-weight:500}
+body.ui-idle .hint{opacity:0;transition:opacity 1s ease-in}
+@media (pointer:coarse){ .hint .kb{display:none} }
+@media (pointer:fine){ .hint .touch{display:none} }
 
 /* ---- labels on objects */
 .labels{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:1}
-.lab{position:absolute;left:0;top:0;font-size:calc(10.5px*var(--ts));color:var(--dim);letter-spacing:.06em;white-space:nowrap;background:none;border:0;
+/* (a dark plate behind every label, 0.27.3: the place marks on Earth's bright globe were struck through by the rows of characters, and a
+   stronger dark edge round the letters did not help. Against the dark sky the plate does not show.) */
+.lab{position:absolute;left:0;top:0;font-size:calc(10.5px*var(--ts));color:var(--dim);letter-spacing:.06em;white-space:nowrap;background:rgba(4,5,10,.8);border:0;border-radius:3px;
   padding:2px 4px;cursor:pointer;pointer-events:auto;text-shadow:0 0 6px #000,0 0 2px #000;will-change:transform,opacity;
   opacity:0;visibility:hidden;transition:opacity .3s ease-in,visibility 0s linear .3s}
 .lab.on{opacity:1;visibility:visible;transition:opacity .8s ease-out,visibility 0s}
@@ -495,6 +505,11 @@ body.showcase .strip{padding-bottom:calc(124px + env(safe-area-inset-bottom,0px)
 /* ---- scale ladder, right edge */
 .ladder{position:fixed;right:calc(36px + env(safe-area-inset-right,0px));top:calc(var(--ctl-b,54px) + 60px);bottom:calc(84px + env(safe-area-inset-bottom,0px));width:2px;
   background:linear-gradient(rgba(143,160,210,.55),rgba(143,160,210,.25));border-radius:1px;z-index:2;transition:right .25s}
+/* a soft shade under the scale (0.27.3, owner's pick over a plate behind each name): over a bright scene, Earth's second tour angle or
+   M87*'s disc, its names could not be read. Like the info panel's own (.info::before); against the dark sky it does not show. */
+.ladder::before{content:"";position:absolute;top:-76px;bottom:-70px;right:calc(-36px - env(safe-area-inset-right,0px));width:300px;z-index:-1;pointer-events:none;
+  background:linear-gradient(to left,rgba(3,4,9,.86),rgba(3,4,9,.8) 45%,rgba(3,4,9,.55) 72%,rgba(3,4,9,0));
+  -webkit-mask-image:linear-gradient(to bottom,transparent,#000 44px,#000 calc(100% - 44px),transparent);mask-image:linear-gradient(to bottom,transparent,#000 44px,#000 calc(100% - 44px),transparent)}   /* (its two ends fade out too) */
 .atlas-open .ladder{display:none}   /* (while search or the atlas is open; it used to move out into the scene) */
 .lad-cap{position:absolute;right:-2px;top:-26px;color:var(--dim);font-size:calc(10px*var(--ts));letter-spacing:.14em;text-transform:uppercase;white-space:nowrap}
 .lad-track{position:absolute;inset:-6px -18px -6px -30px;cursor:ns-resize;touch-action:none}
@@ -728,6 +743,7 @@ body.sky .info .acts,body.sky .info .qrow,body.sky .ladder,body.sky .lad-chip,bo
   .arow{padding-top:6px;padding-bottom:6px}   /* (a little taller for thumbs) */
   /* the scale ladder: folded behind a chip at the top right, opens over a dark scrim */
   .ladder{display:none}
+  .ladder::before{display:none}   /* (the scrim is its shade here) */
   .controls #btnPlay{display:none}
   .play-m{display:grid;place-items:center;width:32px;height:32px;padding:0;border-radius:50%;color:var(--ink);background:rgba(5,7,14,.62);border:1px solid var(--line);font-size:calc(12px*var(--ts));cursor:pointer;
     -webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
@@ -737,6 +753,19 @@ body.sky .info .acts,body.sky .info .qrow,body.sky .ladder,body.sky .lad-chip,bo
     -webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
   .lad-chip b{color:var(--flare);font-weight:400}
   .lad-chip span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  /* bigger places to tap, the same look (0.27.3): an invisible margin round the pause button, the scale chip and the card's small buttons,
+     which were 28 to 36 px tall. 44 px tall where there is room (pause, the chip, the angle arrows); the tour's name, more, hide and next
+     stop reach 38 px: the rows of the card are 5 px apart, and above the first row the margin stops short of the grip's handle.
+     (None of them has an ::after of its own. The margins never reach over a neighbour's own shape.) */
+  .play-m,.lad-chip,.mode.tourpick,.itool,.gonext,.progress .anav{position:relative}
+  .play-m::after,.lad-chip::after,.mode.tourpick::after,.itool::after,.gonext::after,.progress .anav::after{content:"";position:absolute}
+  .play-m::after{inset:-7px -3px -7px -7px}
+  .lad-chip::after{inset:-8px -5px -9px -3px}
+  .mode.tourpick::after,.itool::after{inset:-9px -2px -3px -2px;z-index:2}   /* (over the card's grip, which is z-index 1) */
+  .gonext::after{inset:-2px 0}
+  .progress .anav::after{inset:-2px 0 -10px}
+  .progress .anav:first-child::after{left:-4px}
+  .progress .anav:last-child::after{right:-4px}
   body.lad-open .lad-chip{color:var(--flare);border-color:rgba(255,179,92,.6)}
   body.lad-open::after{content:"";position:fixed;top:0;right:0;bottom:0;width:min(290px,82vw);z-index:5;pointer-events:none;background:linear-gradient(to left,rgba(3,4,9,.94),rgba(3,4,9,.84) 60%,rgba(3,4,9,0))}
   body.lad-open .ladder,body.lad-open.atlas-open .ladder{display:block;z-index:6;right:calc(28px + env(safe-area-inset-right,0px));top:calc(88px + env(safe-area-inset-top,0px));bottom:calc(var(--dock-h,64px) + 30px);opacity:1;pointer-events:auto}

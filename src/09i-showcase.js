@@ -41,7 +41,7 @@ if (SHOWCASE.on){
     else S_.next = { tg:BYKEY.saturn, mode:'fold' };
   }
   function begin(){
-    document.body.classList.add('showcase'); hideHint();
+    document.body.classList.add('showcase'); hideHint(true);
     stopTour(false); pauseShow(); tween = null; flyMove = null; flight = null;
     foldVisit(BYKEY.saturn); onStay(); S_.t = 1; SC.visits = S_.visits;
     shipCam.on = true; shipCam.pending = false; shipCam.eye = null; shipCam.zoom = 1; motion.last = 'ship';

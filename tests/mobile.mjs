@@ -436,5 +436,26 @@ await shot('12-landscape-slide');
 if (ls.lock !== 'earth' || !(ls.x > 0 && ls.x < 844 && ls.y > 0 && ls.y < 390) || (ls.x > ls.card[0] + 1 && ls.x < ls.card[2] - 1 && ls.y > ls.card[1] + 1 && ls.y < ls.card[3] - 1))
   fail('on its side a two-finger slide put Earth off screen or under the card: ' + JSON.stringify(ls));
 
+// 0.27.3: bigger places to tap, the same look. Each small button's tap area is measured by walking out from its edges (an invisible margin
+// reaches further than the button is drawn): pause, the scale chip and the angle arrows 42 px or more tall, the tour's name, more, hide and
+// next stop 36 px or more (the card's rows are 5 px apart), and never over a neighbour's own shape (the walk stops where another element
+// answers, so a margin that swallowed a neighbour would show up as that neighbour's area shrinking below its drawn size).
+{ const t = await openPage({ phone:true });
+  await t.page.waitForTimeout(800);
+  const taps = await t.page.evaluate(() => { const out = {};
+    for (const id of ['btnPlayM', 'ladChip', 'modeTour', 'infoMore', 'infoHide', 'goNext', 'prevObj', 'nextObj']){
+      const el = document.getElementById(id), b = el.getBoundingClientRect(); if (!b.width){ out[id] = null; continue; }
+      const hit = (x, y) => { const e = document.elementFromPoint(x, y); return !!e && (e === el || el.contains(e)); };
+      const cx = (b.left + b.right)/2, cy = (b.top + b.bottom)/2; let up = 0, down = 0;
+      while (up < 30 && hit(cx, b.top - up - 1)) up++; while (down < 30 && hit(cx, b.bottom + down)) down++;
+      out[id] = { h:Math.round(b.height + up + down), drawn:Math.round(b.height), own:hit(cx, b.top + 1) && hit(cx, b.bottom - 1) }; }
+    return out; });
+  for (const [id, min] of [['btnPlayM', 42], ['ladChip', 42], ['prevObj', 42], ['nextObj', 42], ['modeTour', 36], ['infoMore', 36], ['infoHide', 36], ['goNext', 36]]){
+    const v = taps[id];
+    if (!v) fail('tap areas: #' + id + ' is not shown on a phone at the start');
+    else if (v.h < min || !v.own) fail(`#${id} takes taps over ${v.h} px (drawn ${v.drawn}), wanted ${min} or more` + (v.own ? '' : ', and a neighbour\'s margin covers its own shape'));
+  }
+  errors.push(...t.errors); await t.browser.close();
+}
 report('mobile', errors, 'screenshots in tests/out/mobile' + ` · atlas fits at 90 to 160% menu text; rows with a kind and "not seen yet": upright ${upright.join(', ')}; on its side ${sideways.join(', ')}` + (lab ? ` · wake-up tap on "${lab.t}" checked` : '') + ` · pinch x${ratio.toFixed(2)} for fingers 3x apart · two-finger slide stays locked, Earth at ${Math.round(g2.x)}, ${Math.round(g2.y)} · home first in the dock · song list: ${sl.n} songs, a tap played ${pickId} · first tap on the faded "${gn.txt}" flew on to ${gn.next}`);
 await browser.close();

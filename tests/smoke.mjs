@@ -353,5 +353,33 @@ for (const h of ['#o=constructor', '#o=__proto__', '#o=earth&jd=abc&deep=x&c=1,N
   if (!total || !ev.length) errors.push('the style test wrote no words or saw no style pass (' + total + ' elements, ' + ev.length + ' passes)');
   else if (most > 200) errors.push(`writing a word restyles ${most} of the page's ${total} elements (a page-wide rule such as body:has(...)?)`);
 }
+// 0.27.3, readability. The fonts are the page's own files (no other host is asked for anything; only the artifact page, served alone, keeps
+// Google's stylesheet) and load from a file as well; every label has its dark plate and the scale its shade; the first-visit hint is a
+// card that stays through a scripted action, goes at the first real drag and does not come back.
+{ const fsm = await import('node:fs'), dist = new URL('.', new URL(PAGE)), read = f => fsm.readFileSync(new URL(f, dist), 'utf8');
+  for (const f of ['index.html', 'lab.html', 'songs.html', 'places.html', 'places/orion.html']) if (/fonts\.(googleapis|gstatic)\.com/.test(read(f))) errors.push(f + ' still asks Google for its fonts');
+  if (!/fonts\.googleapis\.com/.test(read('artifact.html'))) errors.push('the artifact page lost its fonts (it is served alone and cannot reach fonts/)');
+  const files = [...read('index.html').matchAll(/url\((fonts\/[^)]+\.woff2)\)/g)].map(m => m[1]);
+  if (files.length !== 4) errors.push('the page names ' + files.length + ' font files, not 4');
+  for (const f of files) if (!fsm.existsSync(new URL(f, dist))) errors.push('font file missing from dist: ' + f);
+  const fonts = await page.evaluate(async () => { await document.fonts.ready; return [...document.fonts].filter(f => f.status === 'loaded').map(f => f.family.replace(/"/g, '') + ' ' + f.weight); });
+  for (const f of ['IBM Plex Mono 400', 'IBM Plex Mono 500', 'Major Mono Display 400']) if (!fonts.includes(f)) errors.push('font not loaded from the page\'s own files: ' + f + ' (loaded: ' + fonts.join(', ') + ')');
+  const look = await page.evaluate(() => { const a = c => +(String(c).match(/rgba\([^)]*,\s*([\d.]+)\)/) || [0, c && c.startsWith('rgb(') ? 1 : 0])[1];
+    return { plate:a(getComputedStyle(document.querySelector('#labels .lab')).backgroundColor), shade:getComputedStyle(document.querySelector('#ladder'), '::before').backgroundImage.includes('gradient'), hintOff:document.querySelector('#hint').hidden }; });
+  if (!(look.plate > 0.5)) errors.push('labels have no dark plate behind them (alpha ' + look.plate + ')');
+  if (!look.shade) errors.push('the scale has no shade under it');
+  if (!look.hintOff) errors.push('the hint card shows in a test page (tests/lib.mjs leaves it out)');
+  const h = await openPage({ hint:true });
+  const hint = () => h.page.evaluate(() => { const e = document.querySelector('#hint'), cs = getComputedStyle(e); return { shown:!e.hidden && cs.display !== 'none' && +cs.opacity > 0.9, words:e.innerText.replace(/\s+/g, ' ').trim(), saved:localStorage.getItem('gcdatlas.hinted') }; });
+  let s = await hint();
+  if (!s.shown || !/^drag to look round scroll to zoom, from a planet out to the whole universe click anything to fly there \/ to search$/.test(s.words)) errors.push('a first visit does not show the hint card: ' + JSON.stringify(s));
+  await h.page.evaluate(() => window.__cosmos.goHome()); await h.page.waitForTimeout(1200); s = await hint();
+  if (!s.shown || s.saved) errors.push('a scripted action took the hint card away: ' + JSON.stringify(s));
+  await h.page.mouse.move(640, 420); await h.page.mouse.down(); await h.page.mouse.move(700, 440, { steps:5 }); await h.page.mouse.up(); await h.page.waitForTimeout(1300); s = await hint();
+  if (s.shown || s.saved !== '1') errors.push('a real drag did not take the hint card away for good: ' + JSON.stringify(s));
+  await h.page.reload(); await h.page.waitForFunction(() => window.__cosmos && window.__cosmos.OBJ, null, { timeout:60000 }); s = await hint();
+  if (s.shown) errors.push('the hint card came back on the next visit');
+  errors.push(...h.errors); await h.browser.close();
+}
 report('smoke', errors, `${keys.length} objects rendered, ${ui.rows} atlas rows · atlas controls fit at 90 to 160% menu text, room for ${atl.rows} rows at 1280 x 800 · ${atl.solar}`);
 await browser.close();

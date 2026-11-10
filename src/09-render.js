@@ -316,7 +316,19 @@ function projectCSS(rel){
   return { x:(x*0.5 + 0.5)*viewWcss, y:canvasHcss - (y*0.5 + 0.5)*viewHcss, z };
 }
 function toast(msg){ const t = $('#toast'); t.textContent = msg; t.classList.add('on'); clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove('on'), 2600); }
-function hideHint(){ if (hintHidden) return; hintHidden = true; $('#hint').style.opacity = '0'; }
+// The first-visit hint, a small card since 0.27.3 (owner's pick): shown until the first thing the visitor does (a drag, a scroll, a click or a
+// key that leads to hideHint), then never again on this device (gcdatlas.hinted). Until then it stays: it used to go after 18 s whether or
+// not anyone had read it. A call that no input came before (a share link opening its place, a tour starting by itself) leaves it up; the
+// showcase, the lab and the songs page take it away without remembering (scripted).
+const hintEl = $('#hint'); let hintActed = false;
+try { hintHidden = localStorage.getItem('gcdatlas.hinted') === '1'; } catch (e) {}
+if (!hintHidden) hintEl.hidden = false;
+for (const ev of ['pointerdown', 'keydown', 'wheel', 'touchstart']) addEventListener(ev, () => { hintActed = true; }, { capture:true, passive:true });
+function hideHint(scripted){
+  if (hintHidden || !(scripted || hintActed)) return;
+  hintHidden = true; hintEl.classList.add('off'); setTimeout(() => { hintEl.hidden = true; }, 900);
+  if (!scripted) try { localStorage.setItem('gcdatlas.hinted', '1'); } catch (e) {}
+}
 const distFromEarth = o => o.distEarth || fmtDist(V.len(V.sub(o.pos, earth.pos))) + ' from Earth';
 const readoutEl = $('#readout'); let roLast = '';
 function setReadout(t){
@@ -1827,7 +1839,6 @@ function frame(now){
       raised++; calmT = 0; runTime = 0; ema = 20; adaptCount = Math.max(0, adaptCount - 1); detailIdx--; resize(); toast('detail back to ' + DETAIL[detailIdx].name);
     }
   }
-  if (!hintHidden && performance.now() > 18000) hideHint();
 }
 resize();
 ladTitles();
