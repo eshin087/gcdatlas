@@ -123,6 +123,9 @@ const horsehead = (() => {
 
 // ---------------------------------------------------------------- ring-shaped planetary nebulae: the Helix (NGC 7293) and the Ring (M57)
 // uP0: ring radius, width, barrel half-length, inner fill   uP1: second ring radius, tilt, strength, halo radius   uP2: halo strength, knot glow, colour shift
+// (0.27.9, the owner's pick from stills: the Helix, the Southern Ring and the Ring Nebula read as rings in dark sky. Their glow filled 40 to
+// 80% of the screen with a bright middle: now about half the light, a faint inner fill (a dark middle, as in the photos), an outer halo of
+// ridges rather than a smooth band, and the first angle further back, at 2.6 radii)
 const FS_RINGPN = COMMON + `
 float barrel(vec3 q, float R, float W, float Hh){ float rho = length(q.xy); return exp(-pow((rho - R*(1. + 0.14*q.z*q.z/(Hh*Hh)))/W, 2.))*smoothstep(Hh, Hh*0.55, abs(q.z)); }
 void main(){
@@ -140,12 +143,12 @@ void main(){
     float b = barrel(p, R, W, Hh)*(0.35 + 1.3*n);
     vec3 p2 = vec3(p.x, tl*p.yz); float b2 = uP1.z > 0. ? barrel(p2, uP1.x, W*1.2, Hh*1.3)*(0.3 + 1.2*n)*uP1.z : 0.;
     float rho = length(p.xy);
-    float fill = smoothstep(R, R*0.2, rho)*smoothstep(Hh*1.2, 0., abs(p.z))*uP0.w*(0.4 + n);
-    float halo = uP2.x > 0. ? exp(-pow((length(p) - uP1.w)/0.06, 2.))*(0.2 + pow(ridge(p*6. + 3.), 2.))*uP2.x : 0.;
+    float fill = smoothstep(R, R*0.2, rho)*smoothstep(Hh*1.2, 0., abs(p.z))*uP0.w*(0.12 + 0.6*n*n);
+    float halo = uP2.x > 0. ? exp(-pow((length(p) - uP1.w)/0.06, 2.))*(0.05 + 1.2*pow(ridge(p*6. + 3.), 3.))*uP2.x : 0.;
     vec3 inner = mix(vec3(0.3, 0.85, 1.), vec3(0.35, 1., 0.75), uP2.z);
     vec3 rimc = mix(vec3(1., 0.38, 0.3), vec3(1., 0.55, 0.35), n);
     vec3 c = mix(inner, rimc, smoothstep(R - W*0.8, R + W*0.5, rho));
-    col += T*(c*(b + b2)*1.5 + inner*fill*0.8 + vec3(1., 0.3, 0.3)*halo)*dt*2.2;
+    col += T*(c*(b + b2)*1.5 + inner*fill*0.8 + vec3(1., 0.3, 0.3)*halo)*dt*1.25;
     T *= exp(-(b + b2)*0.6*dt);
   }
   col += vec3(0.8, 0.88, 1.)*(pblob(o, d, vec3(0.), 0.004)*260. + blob(o, d, vec3(0.), 0.03)*0.35);
@@ -173,7 +176,7 @@ const helix = (() => {
     fact:'One of the closest planetary nebulae: the outer layers of a dying Sun-like star, blown into a double ring that looks like a giant eye. Its inner edge is peppered with thousands of comet-shaped knots.',
     aka:'ngc 7293 eye of god planetary nebula', hero:V.norm([0.1, 0.25, 1]), roll:20,
     u:[[0.42, 0.09, 0.45, 0.25], [0.66, 0.9, 0.7, 0.93], [0.55, 1, 0.2, 0]],
-    views:nebView(pos, [{ d:[0.6, 0.3, 0.7], k:1.2, hold:8, drift:0.03 }, { d:[0.05, 0.1, 1], k:0.5, off:[0.3, 0.1, 0], hold:8, drift:0.02 }]),
+    views:[{ dirFn:() => V.norm(V.mul(pos, -1)), k:2.6, hold:9, drift:0.02 }, { d:[0.6, 0.3, 0.7], k:1.2, hold:8, drift:0.03 }, { d:[0.05, 0.1, 1], k:0.5, off:[0.3, 0.1, 0], hold:8, drift:0.02 }],
     particles:[{ ps:heads, prog:'ptBasic', mode:1, sb:1.2, size:1.6 }, { ps:tails, prog:'lnBasic', lines:true, mode:1, sb:0.8, size:1 }],
     readout:() => '655 light-years · 2.9 light-years across\nits central white dwarf is about 100,000 °C' });
 })();
@@ -182,7 +185,7 @@ const ringNeb = addRingPN({ key:'ringneb', name:'Ring Nebula', label:'Ring Nebul
   fact:'A glowing barrel of gas thrown off by a dying star, seen almost end-on so it looks like a smoke ring. The blue-green centre is oxygen; the red rim is hydrogen and nitrogen.',
   aka:'m57 ngc 6720 planetary nebula lyra', hero:V.norm([0.05, 0.1, 1]), roll:-30,
   u:[[0.46, 0.1, 0.55, 0.45], [0, 0, 0, 0.9], [0.35, 0, 0.8, 0]],
-  views:[{ dirFn:() => V.norm(V.mul(ringNeb.pos, -1)), k:1.8, hold:9, drift:0.02 }, { d:[1, 0.2, 0.1], k:2.3, hold:8, drift:0.03 }, { d:[0.3, 0.15, 1], k:0.7, hold:7, drift:0.02 }],
+  views:[{ dirFn:() => V.norm(V.mul(ringNeb.pos, -1)), k:2.6, hold:9, drift:0.02 }, { d:[1, 0.2, 0.1], k:2.3, hold:8, drift:0.03 }, { d:[0.3, 0.15, 1], k:0.7, hold:7, drift:0.02 }],
   // (tours play only the ring seen from Earth: from the side the barrel is a solid block of bright characters, even set back in dark sky,
   // and the closest angle fills the screen with them)
   tourViews:[0],

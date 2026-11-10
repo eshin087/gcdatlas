@@ -5,6 +5,10 @@
      numbers with units. The newest version comes first and opens by itself; its number must match package.json (tests/smoke.mjs checks it).
      Every detail stays in docs/CHANGELOG.md, which the panel links to. -->
 
+## 0.27.9 · 10 Nov 2026 · Rings that look like rings
+- The Helix, the Southern Ring and the Ring Nebula now open as a glowing ring in dark sky, with a dark middle, like the famous photos. Their glow used to fill most of the screen.
+- Up close they are easier on the eye too.
+
 ## 0.27.8 · 10 Nov 2026 · The Orion Nebula, sharper
 - The Orion Nebula has its shape back: a bright core round the Trapezium, two wings of glowing gas, the dark bay to the north, and dust lanes across the middle.
 - Up close it reads as clouds instead of a screen full of white.
