@@ -5,6 +5,11 @@
      numbers with units. The newest version comes first and opens by itself; its number must match package.json (tests/smoke.mjs checks it).
      Every detail stays in docs/CHANGELOG.md, which the panel links to. -->
 
+## 0.27.10 · 10 Nov 2026 · Globular clusters round the giant galaxies
+- The elliptical galaxies of the Virgo Cluster, M87, M105 and M110 are now surrounded by their swarms of globular clusters, from a handful to 13,000, each at its published number. They no longer all look alike.
+- M60 and M105 open with their neighbours beside them.
+- The Fornax and Sagittarius dwarfs show their few globular clusters too.
+
 ## 0.27.9 · 10 Nov 2026 · Rings that look like rings
 - The Helix, the Southern Ring and the Ring Nebula now open as a glowing ring in dark sky, with a dark middle, like the famous photos. Their glow used to fill most of the screen.
 - Up close they are easier on the eye too.

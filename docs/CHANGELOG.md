@@ -4,6 +4,17 @@ All notable changes, newest first. Dates are UTC.
 
 ## Unreleased
 
+## 0.27.10 · 2026-11-10
+
+**Globular cluster swarms round the smooth galaxies** (the looks, from the review of 2026-11-09; the owner picked this from stills after the quick fixes, pulling back and a brighter outer glow, made no difference)
+- About 15 smooth galaxies opened as the same small fuzzy ball, three angles alike. An elliptical really is a smooth ball of stars; what tells them apart in photos is the swarm of globular clusters round each. Now twelve have theirs (`src/objects/p9d-gc-swarms.js`, `GC_SYS`): M49 7,000, M87 13,000, M84 4,301, M60 4,000, M86 2,800, M85 1,110, M89 1,100, M59 803, M105 216, M110 11, the Fornax dwarf 6, the Sagittarius dwarf 6 (4 in its main body, drawn there). Counts: Harris, Harris & Alessi 2013, the newer compilation (Peng et al. 2008 give M49 7,813, M60 4,745, M86 2,660, M87 14,660, M89 984); Fornax 6 from Pace et al. 2021; Sagittarius from Bellazzini et al. 2020. Fact-checked by a separate agent against the papers.
+- Where each cluster sits is made up: a Hernquist sphere of the system's published half-number radius (M49 58 kpc and M86 28 kpc, Hargis & Rhode 2014; M87 87 kpc, Hudson & Robison 2018), else half the galaxy's drawn radius. Two colours, the metal-poor and metal-rich populations, and brightness from the clusters' luminosity function. At most 9,000 drawn a galaxy (M87: the brightest 9,000 of 13,000). The first angle stands back far enough to show the swarm round the galaxy.
+- M60 opens with the spiral NGC 4647 beside it, M105 with NGC 3384 (`withNeighbour`: aimed between the two across our line of sight). Not M84 with M86: on the atlas's distances M86 is about a million light-years nearer to us, so it stands behind any camera close enough to show M84.
+- Readouts give each count where they did not already; M87's fact says 13,000 (it said 12,000).
+- From the Codex review of the pull request: the swarms' radii are scaled so half the clusters lie within the published effective radius as seen on the sky (they came out half as large: a Hernquist sphere cut at 8 a was scaled as if it were not cut, and in space, not on the sky; measured on the drawn points, M49, M86 and M87 now within 2%), and M87's older swarm of 4,000 (o18-m87.js, `gcOld`) is taken out, so it is not drawn twice. That older swarm is still made, so the shared random numbers of everything after it, the Halo's route included, stay as they were.
+- None are known round M32, Sculptor, Leo I or Draco: they keep their look.
+- The link-preview pictures of the twelve are drawn again.
+
 ## 0.27.9 · 2026-11-10
 
 **Ring nebulae that read as rings** (the looks, from the review of 2026-11-09; the owner picked option B from stills: the first angle further back, over A, the same changes at today's distance)
