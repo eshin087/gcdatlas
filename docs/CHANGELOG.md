@@ -4,6 +4,15 @@ All notable changes, newest first. Dates are UTC.
 
 ## Unreleased
 
+## 0.27.11 · 2026-11-10
+
+**A smaller download** (the download part of the review of 2026-11-09: comments were 17% of the script)
+- build.mjs takes the comments and the indentation out of the page's script (`tools/lib/strip.mjs`): the home page goes from 998 KB to 868 KB compressed (brotli; gzip 1,181 to 1,012 KB), 2.98 to 2.49 MB raw. The lab, the songs page and the artifact page get the same script.
+- No minifier and no new dependency (Vercel's build installs nothing): a scanner of its own that drops `//` and `/* */` comments standing in code and the indentation of lines that start in code, and never touches strings, template literals (the GLSL) or regular expressions, never joins lines and never renames anything. The build fails if the result does not compile or if anything removed does not look like a comment. `GCD_NOSTRIP=1 node build.mjs` keeps them.
+- Checked: the page built with and without them holds the same 143 shader programs byte for byte, the same 402 objects with the same data and texts, the same visible text, and draws the same frames (the differences measured were the same as between two loads of the same page); `npm test` passes.
+- The `// ---- file` markers between source files go too, so a line number in an error on the live site no longer says which file: build with `GCD_NOSTRIP=1` to find it.
+- Still open from the review: loading the cluster stars and the cities' roads only when they are needed.
+
 ## 0.27.10 · 2026-11-10
 
 **Globular cluster swarms round the smooth galaxies** (the looks, from the review of 2026-11-09; the owner picked this from stills after the quick fixes, pulling back and a brighter outer glow, made no difference)

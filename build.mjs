@@ -11,6 +11,7 @@ import vm from 'node:vm';
 import { fileURLToPath } from 'node:url';
 import { writePlacePages, short } from './tools/place-pages.mjs';
 import { fontHead, GOOGLE_FONTS } from './tools/lib/fonts.mjs';
+import { stripJS } from './tools/lib/strip.mjs';
 
 const ROOT = path.dirname(fileURLToPath(import.meta.url));
 const SRC = path.join(ROOT, 'src'), DIST = path.join(ROOT, 'dist');
@@ -36,6 +37,15 @@ catch (e) { console.error('Syntax error in the bundled script:\n' + e.stack.spli
 { const seen = new Map(), dup = [];
   for (const f of list) for (const m of read(f).matchAll(/^(?:async\s+)?function\s+([A-Za-z_$][\w$]*)/gm)){ if (seen.has(m[1])) dup.push(`${m[1]} (${seen.get(m[1])} and ${f})`); else seen.set(m[1], f); }
   if (dup.length){ console.error('The same top-level function name in two places:\n  ' + dup.join('\n  ')); process.exit(1); } }
+// the page gets the script without its comments and indentation (0.27.11, tools/lib/strip.mjs: they were 17% of it, about 130 KB of the
+// compressed page). GCD_NOSTRIP=1 node build.mjs keeps them, to read the built page or to compare the two (tests/smoke.mjs does).
+// Checks: the stripped script must compile, and everything removed must look like a comment (a regular expression read as division
+// would show up here as removed code)
+const { text:jsOut, comments:removed } = process.env.GCD_NOSTRIP ? { text:js, comments:[] } : stripJS(js);
+{ const odd = removed.filter(c => !(/^\/\/([ \t(\-=!\/*.,:;~>#|\[]|$)/.test(c) || c.startsWith('/*')));
+  if (odd.length){ console.error('tools/lib/strip.mjs removed text that does not look like a comment:\n  ' + odd.slice(0, 5).map(c => JSON.stringify(c.slice(0, 80))).join('\n  ')); process.exit(1); }
+  try { new vm.Script(jsOut, { filename: 'gcdatlas.min.js' }); }
+  catch (e) { console.error('The script without its comments does not compile (tools/lib/strip.mjs):\n' + e.stack.split('\n').slice(0, 6).join('\n')); process.exit(1); } }
 
 // the Earth's images (tools/earth-*.mjs) are served next to the page, never inside it: dist/earth/, folders and all (the tiles live in a
 // folder named after their set, 0.12.0); whatever is no longer in assets/earth goes
@@ -72,7 +82,7 @@ if (!notes.length){ console.error('docs/PATCHNOTES.md has no versions'); process
 const notesHtml = notes.map((n, i) => `<details data-v="${esc(n.v)}"${i ? '' : ' open'}><summary><span class="nv">${esc(n.v)}</span><span class="nd">${esc(n.date)}</span><span class="nt">${esc(n.title)}</span></summary><ul>${n.items.map(t => `<li>${esc(t)}</li>`).join('')}</ul></details>`).join('\n');
 const body = read('01-body.html').replace('<!--PATCHNOTES-->', notesHtml);
 const version = new Date().toISOString().slice(0, 10);
-const script = `<script>\n/* gcdatlas ${version} */\n${js}\n</script>\n`;
+const script = `<script>\n/* gcdatlas ${version} */\n${jsOut}\n</script>\n`;
 
 const meta = `<meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
