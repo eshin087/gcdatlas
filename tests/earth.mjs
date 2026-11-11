@@ -202,12 +202,15 @@ try {
       out.pull = key(); out.pitch = c.orbit.pitch;
       // (out to between the two distances, then back in before the camera has gone over)
       c.epl.go(paris); c.land(1); const p = c.OBJ[c.orbit.lock]; c.zoomTo(R*2.5); for (let i = 0; i < 40; i++) c.tick(1/60);
-      out.mid = p.riseW; c.zoomTo(d0); out.backLow = 1e9; for (let i = 0; i < 60*4; i++){ c.tick(1/60); out.backLow = Math.min(out.backLow, Math.hypot(...earth.rel)/R); }
+      out.mid = p.riseW; c.zoomTo(d0); out.backLow = 1e9; out.backRoll = 0; out.backStep = 0; pu = c.cam.up.slice(); let po = c.orbit.off.slice();
+      for (let i = 0; i < 60*4; i++){ c.tick(1/60); out.backLow = Math.min(out.backLow, Math.hypot(...earth.rel)/R);
+        const u = c.cam.up.slice(); out.backRoll = Math.max(out.backRoll, ang(pu, u)); pu = u;
+        out.backStep = Math.max(out.backStep, Math.hypot(...c.orbit.off.map((v, j) => v - po[j]))/R); po = c.orbit.off.slice(); }
       out.back = key(); out.backW = p.riseW; out.backOff = Math.hypot(...c.orbit.off)/R; out.place = p.key; return out; });
     if (z.name !== 'Paris' || z.moved > 1e-9) errors.push(`scrolling out with the cursor off to a side moved the place: ${z.name}, ${z.moved} degrees`);
     if (z.wheel !== 'earth' || z.pull !== 'earth') errors.push(`scrolled far out of Paris the camera is locked on ${z.wheel} and ${z.pull}, not Earth`);
     if (!(z.turn < 0.5) || !(z.roll < 1.5) || !(z.low > 1)) errors.push(`going over to the Earth the view turned ${z.turn.toFixed(2)} and rolled ${z.roll.toFixed(2)} degrees in a tick, lowest ${z.low.toFixed(3)} Earth radii`);
-    if (!(z.mid > 0.1 && z.mid < 0.9) || z.back !== z.place || z.backW !== 0 || !(z.backOff < 1e-3) || !(z.backLow > 1)) errors.push(`scrolling back in on the way out did not come back to the place: ${JSON.stringify(z)}`);
+    if (!(z.mid > 0.1 && z.mid < 0.9) || z.back !== z.place || z.backW !== 0 || !(z.backOff < 1e-3) || !(z.backLow > 1) || !(z.backRoll < 0.9) || !(z.backStep < 0.03)) errors.push(`scrolling back in on the way out did not come back to the place: ${JSON.stringify(z)}`);
     notes.push(`scrolled out of Paris: the place stays, the camera goes over to Earth rolling at most ${(z.roll*60).toFixed(0)} degrees a second`);
     errors.push(...pe); await browser.close(); }
 } catch (e) { errors.push(String(e && e.stack || e)); }
