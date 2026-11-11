@@ -4,6 +4,14 @@ All notable changes, newest first. Dates are UTC.
 
 ## Unreleased
 
+## 0.27.12 · 2026-11-11
+
+**Scrolling out of a place on Earth** (owner: "when I am locked on a place on Earth and I zoom out, it gets very buggy and things seem to spiral out of control")
+- The cause: near the ground the wheel zooms about the cursor by moving the place, by the cursor's distance from it in pixels at the camera's height. Scrolling out, a pixel soon stood for km of ground: with the cursor 400 px off the middle, 20 notches carried Paris to 85 degrees south, its longitude running past -500 degrees, the name changing as it went, and the camera stayed locked on that point out to light-years.
+- Scrolling out of a place now goes straight up from it: the place never moves (scrolling in still goes toward the cursor). The longitude wraps properly for any move.
+- Between 8,000 and 32,000 km from the place (6 and 24 of its radii for a big region) the camera goes over to the Earth: the point it circles glides to the Earth's middle and its up rolls from the place's vertical to the Earth's north about the line of sight, so the direction it looks in never changes; then the lock is Earth's, with the same picture. It takes 1.7 s or more each way, and scrolling back in before the end comes back to the place. On the way a drag turns the view and the place stays put.
+- Measured tick by tick (tests/earth.mjs, new): the view turns under 0.001 degrees a tick, rolls at most 21 degrees a second from Paris (49 from Everest), no step as the lock changes, the camera never under the ground.
+
 ## 0.27.11 · 2026-11-10
 
 **A smaller download** (the download part of the review of 2026-11-09: comments were 17% of the script)

@@ -633,7 +633,7 @@ canvas.addEventListener('pointermove', e => {
   // (near a surface the ground follows the mouse, and a right-drag or Ctrl-drag turns and tilts: surfaceMode)
   const S = surfaceMode();
   if (S){
-    if (S.kind === 'ground' && !drag.turn) EPL.panPx(S.o, dx, dy);
+    if (S.kind === 'ground' && !drag.turn && !S.far) EPL.panPx(S.o, dx, dy);
     else { const k = drag.turn || S.kind === 'ground' ? 0.005 : grabK(S); orbit.yaw -= dx*k; orbit.pitch = clamp(orbit.pitch + dy*k, S.kind === 'ground' ? 0.03 : -1.52, 1.52); }
     return;
   }
@@ -647,7 +647,7 @@ canvas.addEventListener('pointermove', e => {
 // toward the cursor, W A S D and the arrows glide over the ground, Q E turn, R F tilt. Farther out the camera works as before.
 function surfaceMode(){
   const o = OBJ[orbit.lock]; if (!o || flight || SKYV.on || shipCam.on || LCAM.on || cmp) return null;
-  if (o.earthSpot) return { kind:'ground', o };
+  if (o.earthSpot) return { kind:'ground', o, far:EPL.rising(o) };   // (far: on the way out to the Earth, where a drag turns and the place stays put)
   if (o.solid && orbit.dist < o.rad*6 && !o.sx && !o.sxSite) return { kind:'globe', o, R:o.rad*o.solid*magOf(o) };
   return null;
 }
@@ -728,7 +728,10 @@ function onWheel(e){ e.preventDefault();
   zoomBy(f);
   // (near a surface the zoom goes toward the cursor: the part of the way the zoom covers, eased with it)
   if (S){ const c = projectCSS(V.add(OBJ[orbit.lock].rel, S.kind === 'ground' ? orbit.off : [0, 0, 0])) || { x:viewWcss/2, y:canvasHcss/2 };
-    const t = 1 - f; gPend.x += (e.clientX - c.x)*t; gPend.y += (e.clientY - c.y)*t; } }
+    // (scrolling out of a place on Earth goes straight up from it: the pull away from the cursor moved the place, km a pixel from high up,
+    // and a few notches carried it across a continent; scrolling in still goes toward the cursor)
+    const t = f > 1 && S.kind === 'ground' ? 0 : 1 - f;
+    if (!S.far){ gPend.x += (e.clientX - c.x)*t; gPend.y += (e.clientY - c.y)*t; } } }
 // the famous place on Earth nearest the cursor (within 1,500 km of the ground under it): fly down to it. False if the cursor is off the Earth
 let snapAt = -1e9;
 function snapToPlace(cx, cy){

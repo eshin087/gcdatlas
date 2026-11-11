@@ -5,6 +5,10 @@
      numbers with units. The newest version comes first and opens by itself; its number must match package.json (tests/smoke.mjs checks it).
      Every detail stays in docs/CHANGELOG.md, which the panel links to. -->
 
+## 0.27.12 · 11 Nov 2026 · Scrolling out of a place on Earth
+- Scrolling out from a place on Earth no longer sends it sliding across the globe. The place stays where it is.
+- Keep scrolling and the camera moves over to the whole Earth, smoothly, from about 8,000 km up.
+
 ## 0.27.11 · 10 Nov 2026 · A smaller download
 - The page is about 13% smaller to download: 130 KB less. Nothing you see changes.
 

@@ -181,6 +181,35 @@ try {
     if (Math.abs(s.rate - 1/86400) > 1e-9) errors.push(`with SpaceX off the clock at ${where} runs at ${s.rate} days a second, not in real time`);
     notes.push(`SpaceX off: the ground drawn at ${where} after ${t} s, ${s.d.alt} km up, the Sun ${s.d.sun} degrees up`);
     errors.push(...pe); await browser.close(); }
+  // ---- scrolling out of a place (0.27.12, owner: "it gets very buggy and things seem to spiral out of control"): the wheel with the cursor
+  // off to a side never moves the place, the camera goes over to the Earth with no jump in where it looks, a gentle roll and never under
+  // the ground, and scrolling back in on the way comes back to the place. From a file, the clock and the page's loop held still.
+  { const { browser, page, errors:pe } = await openPage({ freeze:true, now:NOW });
+    const z = await page.evaluate(() => { const c = window.__cosmos, earth = c.OBJ.find(o => o.key === 'earth'), paris = c.epl.PICKS.cities.find(r => r[0] === 'Paris'); c.ssRate = 0;
+      const ang = (a, b) => Math.acos(Math.max(-1, Math.min(1, a[0]*b[0] + a[1]*b[1] + a[2]*b[2])))*180/Math.PI, key = () => c.OBJ[c.orbit.lock].key;
+      c.epl.go(paris); c.land(1);
+      const o = c.OBJ[c.orbit.lock], la = o.place.la, lo = o.place.lo, d0 = c.orbit.dist, R = Math.hypot(...o.offset), cv = document.querySelector('#view');
+      // (the wheel, 400 px right of and 200 px above the middle: 24 notches out)
+      for (let i = 0; i < 24; i++){ cv.dispatchEvent(new WheelEvent('wheel', { deltaY:300, clientX:innerWidth/2 + 400, clientY:innerHeight/2 - 200, bubbles:true, cancelable:true })); for (let k = 0; k < 6; k++) c.tick(1/60); }
+      for (let i = 0; i < 120; i++) c.tick(1/60);
+      const out = { name:o.name, moved:Math.abs(o.place.la - la) + Math.abs(o.place.lo - lo), wheel:key() };
+      // (again, in one hard pull, every tick measured)
+      c.epl.go(paris); c.land(1); c.zoomTo(d0*1e5);
+      let pf = null, pu = null; out.turn = out.roll = 0; out.low = 1e9;
+      for (let i = 0; i < 60*4; i++){ c.tick(1/60); const f = c.cam.fwd.slice(), u = c.cam.up.slice();
+        if (pf){ out.turn = Math.max(out.turn, ang(pf, f)); out.roll = Math.max(out.roll, ang(pu, u)); } pf = f; pu = u;
+        out.low = Math.min(out.low, Math.hypot(...earth.rel)/R); }
+      out.pull = key(); out.pitch = c.orbit.pitch;
+      // (out to between the two distances, then back in before the camera has gone over)
+      c.epl.go(paris); c.land(1); const p = c.OBJ[c.orbit.lock]; c.zoomTo(R*2.5); for (let i = 0; i < 40; i++) c.tick(1/60);
+      out.mid = p.riseW; c.zoomTo(d0); for (let i = 0; i < 60*4; i++) c.tick(1/60);
+      out.back = key(); out.backW = p.riseW; out.backOff = Math.hypot(...c.orbit.off)/R; out.place = p.key; return out; });
+    if (z.name !== 'Paris' || z.moved > 1e-9) errors.push(`scrolling out with the cursor off to a side moved the place: ${z.name}, ${z.moved} degrees`);
+    if (z.wheel !== 'earth' || z.pull !== 'earth') errors.push(`scrolled far out of Paris the camera is locked on ${z.wheel} and ${z.pull}, not Earth`);
+    if (!(z.turn < 0.5) || !(z.roll < 1.5) || !(z.low > 1)) errors.push(`going over to the Earth the view turned ${z.turn.toFixed(2)} and rolled ${z.roll.toFixed(2)} degrees in a tick, lowest ${z.low.toFixed(3)} Earth radii`);
+    if (!(z.mid > 0.1 && z.mid < 0.9) || z.back !== z.place || z.backW !== 0 || !(z.backOff < 1e-3)) errors.push(`scrolling back in on the way out did not come back to the place: ${JSON.stringify(z)}`);
+    notes.push(`scrolled out of Paris: the place stays, the camera goes over to Earth rolling at most ${(z.roll*60).toFixed(0)} degrees a second`);
+    errors.push(...pe); await browser.close(); }
 } catch (e) { errors.push(String(e && e.stack || e)); }
 server.close();
 report('earth', errors, notes.join(' · '));
