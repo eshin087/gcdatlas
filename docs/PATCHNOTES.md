@@ -5,6 +5,9 @@
      numbers with units. The newest version comes first and opens by itself; its number must match package.json (tests/smoke.mjs checks it).
      Every detail stays in docs/CHANGELOG.md, which the panel links to. -->
 
+## 0.28.1 · 11 Nov 2026 · Corrections
+- Five corrections to the new southern clusters' texts, after checking them against their sources. NGC 6752 is the fourth-brightest globular cluster, not the third.
+
 ## 0.28.0 · 11 Nov 2026 · Southern star clusters
 - Eight new places in the southern sky, from Patrick Moore's Caldwell list: 47 Tucanae, the second-brightest globular cluster, and four more globulars.
 - Three open clusters drawn from their real stars as the Gaia spacecraft measured them: the Jewel Box, the Southern Pleiades and the Wishing Well.

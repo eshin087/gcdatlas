@@ -4,6 +4,16 @@ All notable changes, newest first. Dates are UTC.
 
 ## Unreleased
 
+## 0.28.1 · 2026-11-11
+
+**Corrections to 0.28.0's texts** (a fact-check against the sources, as the Messier packs had before they were merged; this one came after)
+- NGC 6752 is the fourth-brightest globular cluster in the sky, not the third: by Harris 2010's integrated V, Omega Centauri 3.68, 47 Tucanae 3.95, M22 5.1, NGC 6752 5.4.
+- 47 Tucanae: Lacaille recorded it from the Cape in 1751-52 (his southern survey ran from August 1751 to July 1752), not "in 1751".
+- NGC 3201: Giesers et al. 2018 give a minimum mass, 4.36 Suns: "at least four times the Sun's mass".
+- NGC 1851: its split into groups (Milone et al. 2008's double subgiant branch; more groups in later work) is not settled as two generations; a merger of two clusters is the other reading. The text and readout now say "at least two groups".
+- The Jewel Box: John Herschel's documented words are "a superb piece of fancy jewellery" (Outlines of Astronomy, 1849); the "casket of variously coloured precious stones" often quoted could not be traced to him.
+- NGC 6752's pulsar: "thrown out of the core by a close encounter" (D'Amico et al. 2002; Colpi, Possenti & Gualandris 2002), not "long ago".
+
 ## 0.28.0 · 2026-11-11
 
 **Caldwell's southern showpieces, part 1** (`src/objects/q1-caldwell1.js`; the first pack from the Caldwell list, docs/CONTENT.md)
