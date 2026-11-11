@@ -5,6 +5,9 @@
      numbers with units. The newest version comes first and opens by itself; its number must match package.json (tests/smoke.mjs checks it).
      Every detail stays in docs/CHANGELOG.md, which the panel links to. -->
 
+## 0.27.14 · 11 Nov 2026 · A quicker start
+- The page is about 70 KB smaller and starts a little sooner: the stars of the open clusters now load just after it. They look exactly as before.
+
 ## 0.27.13 · 11 Nov 2026 · Scrolling out of a place on the Moon
 - Scroll out from a place on the Moon, such as Apollo 11 or Tycho, and the camera now moves over to the whole Moon, as it does from a place on Earth.
 - The turn that brings the Moon's north to the top is gentler.
