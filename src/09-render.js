@@ -1793,6 +1793,7 @@ function tick(dt){
     dealAhead();   // (a random tour dealt ahead, a bit each frame: the next one on its last stop, or a first one while the list of tours is open)
     updateKeys(dt);
     if (!tween) orbit.dist = Math.exp(Math.log(orbit.dist) + (Math.log(orbit.distT) - Math.log(orbit.dist))*(1 - Math.exp(-dt*7)));
+    if (distFloor.at === GT && orbit.dist < distFloor.d) orbit.dist = distFloor.d;   // (on the way back in from a place's body: riseTo, 08-camera.js)
     riseAboveDisk(dt);
     // locked on the Halo, the orbit frame turns with the ship, so the camera keeps trailing it as it steers
     if (orbit.lock >= 0 && orbit.lock === ship.index) orbit.frame = camFrameOf(ship);

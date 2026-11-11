@@ -659,7 +659,10 @@ function surfaceMode(){
 // the distance (scrolling back in before the end comes back to the place), but takes 1.7 s or more each way (longer for a big roll, at most about 50 degrees a second) (`o.riseW`): a hard scroll
 // passes both distances within a quarter of a second, and the up then rolled at 300 degrees a second. The place's update calls it before
 // its own framing (true: it has the camera this tick, so the place leaves its frame and ground clearance alone). Rb: the body's radius, km
-function riseK(a){ return clamp(Math.log(Math.max(orbit.dist/KM, 1e-9)/a)/Math.log(4), 0, 1); }
+function riseK(a, d = orbit.dist){ return clamp(Math.log(Math.max(d/KM, 1e-9)/a)/Math.log(4), 0, 1); }
+// (scrolling back in on the way: the camera may come no nearer than the distance that matches how far over it still is, so the way back
+// keeps the same pace as the way out and never goes through the ground; the frame's zoom easing obeys it in the same tick, 09-render.js)
+const distFloor = { d:0, at:-1 };
 const turnAbout = (d, t) => { const c = Math.cos(t), s = Math.sin(t), col = v => V.add(V.add(V.mul(v, c), V.mul(V.cross(d, v), s)), V.mul(d, V.dot(d, v)*(1 - c)));
   return [...col([1, 0, 0]), ...col([0, 1, 0]), ...col([0, 0, 1])]; };
 function riseTo(o, body, Rb, a){
@@ -672,15 +675,18 @@ function riseTo(o, body, Rb, a){
   const pa = flat(M3.apply(o.R0, [0, 1, 0])), pb = flat(M3.apply(F, [0, 1, 0])), th = pa && pb ? Math.atan2(V.dot(d, V.cross(pa, pb)), V.dot(pa, pb)) : 0;
   // (0.6 a second, slower for a big roll: at most about 50 degrees a second, smooth's steepest slope being 1.5)
   const rate = Math.min(0.6, 0.58/Math.max(Math.abs(th), 1e-3));
+  // (after a gap the aim kept for the way back belongs to another visit: forget it, or a new angle opened on the old one's aim; Codex)
+  if (!(dt < 0.25)) o.riseOff = null;
   if (!byHand || !(dt < 0.25)) o.riseW = 0;
-  else { const to = riseK(a), v = o.riseW || 0; o.riseW = v + clamp(to - v, -dt*rate, dt*rate); }
-  // (never further over than the distance allows: scrolling back in, the distance falls much faster than riseW, and the camera, circling
-  // a point still hundreds of km down toward the body's middle, went through the ground (Codex's review). With the point w of the way
-  // down and the camera level with the place's horizon or above, it stays outside the body while w < (distance / its radius)^2 / 2.
-  // This runs before the frame eases the distance toward where the wheel sent it: on the way in, count on the distance being as short
-  // as halfway there, in the logarithm, which a frame of a tenth of a second covers; with this frame's own distance the camera still
-  // dipped 7 km under Paris)
-  const w = Math.min(smooth(0, 1, o.riseW), 0.4*orbit.dist*Math.min(orbit.dist, orbit.distT)/(KM*Rb)**2);
+  else {
+    // (out: it follows the distance the camera has reached; in: it heads for where the wheel sent it, and the camera waits for it
+    // (distFloor), so the point it circles and its roll come back as smoothly as they went. Two of Codex's reviews: first the camera went
+    // through the ground scrolling back in, then a cap on how far over it could be, worked out from the distance, undid tens of degrees of
+    // roll in one tick)
+    const to = riseK(a, Math.min(orbit.dist, orbit.distT)), v = o.riseW || 0; o.riseW = v + clamp(to - v, -dt*rate, dt*rate);
+    if (o.riseW > 0){ distFloor.d = a*KM*Math.pow(4, o.riseW); distFloor.at = GT; }
+  }
+  const w = smooth(0, 1, o.riseW);
   if (!(o.riseW > 0)){ if (o.riseOff){ orbit.off = M3.apply(o.R0, o.riseOff); o.riseOff = null; } return false; }
   // (the aim the camera had at the place, kept in the place's frame for the way back)
   if (!o.riseOff){ o.riseOff = M3.applyT(o.R0, orbit.off); orbit.offFn = null; }
