@@ -4,6 +4,15 @@ All notable changes, newest first. Dates are UTC.
 
 ## Unreleased
 
+## 0.28.0 · 2026-11-11
+
+**Caldwell's southern showpieces, part 1** (`src/objects/q1-caldwell1.js`; the first pack from the Caldwell list, docs/CONTENT.md)
+- Five globular clusters: 47 Tucanae (C106), NGC 6397 (C86), NGC 6752 (C93), NGC 3201 (C79) and NGC 1851 (C73), made as Messier's are (`glob3Stars`): SIMBAD positions, Baumgardt & Vasiliev 2021 distances and Baumgardt's masses, Harris 2010's core and half-light radii, ellipticity and metallicity, Harris 1996's horizontal-branch colour, SIMBAD's angular size. Their stars are made up, shaped by those numbers.
+- Three open clusters from their Gaia DR3 members (Hunt & Reffert 2023, `tools/cluster-stars.mjs jewelbox southernpleiades wishingwell`): the Jewel Box (C94), the Southern Pleiades (C102) and the Wishing Well (C91). Their star lists load with the others' (0.27.14).
+- CDS in Strasbourg could not be reached again: positions came from SIMBAD's Harvard mirror and the members from VizieR's; Harris 2010 from Harris's own file (mwgc.dat), Baumgardt's numbers from his site.
+- The Coalsack (C99) and the Running Chicken Nebula (C100), the rest of the pack's list, need looks of their own and come next.
+- Caldwell: 16 to 24 of 109.
+
 ## 0.27.14 · 2026-11-11
 
 **The open clusters' stars load after the page** (the download part of the review of 2026-11-09: the star lists were 67 KB of the page's 871 KB compressed, and decoding them took about 14 ms of every start, 60 ms on a phone's processor)
