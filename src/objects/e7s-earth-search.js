@@ -119,7 +119,10 @@ const EPL = (() => {
     // (never further over than the distance allows: scrolling back in, the distance falls much faster than riseW, and the camera, circling
     // a point still hundreds of km down toward the Earth's middle, went through the ground (Codex's review). With the point w of the way
     // down and the camera level with the place's horizon or above, it stays outside the Earth while w < (distance / Earth's radius)^2 / 2)
-    const w = Math.min(smooth(0, 1, o.riseW), 0.4*(orbit.dist/KM/R)**2);
+    // (this runs before the frame eases the distance toward where the wheel sent it: on the way in, count on the distance being as
+    // short as halfway there, in the logarithm, which a frame of a tenth of a second covers; with this frame's own distance the camera
+    // still dipped 7 km under Paris)
+    const w = Math.min(smooth(0, 1, o.riseW), 0.4*orbit.dist*Math.min(orbit.dist, orbit.distT)/(KM*R)**2);
     if (!(o.riseW > 0)){ if (o.riseOff){ orbit.off = M3.apply(o.R0, o.riseOff); o.riseOff = null; } return false; }
     // (the aim the camera had at the place, kept in the place's frame for the way back)
     if (!o.riseOff){ o.riseOff = M3.applyT(o.R0, orbit.off); orbit.offFn = null; }
