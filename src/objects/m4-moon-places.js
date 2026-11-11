@@ -133,7 +133,8 @@ const MPL = (() => {
     o.hNow = Math.abs(o.hNow - h) > 500 ? h : o.hNow + (h - o.hNow)*0.1;
     o.offset = V.mul(M3.apply(moon.rot, V.mul(p.u, R + o.hNow/1000)), KM); o.pos = V.add(moon.pos, o.offset);
     o.R0 = M3.mul(moon.rot, p.F.M);
-    if (orbit.lock === o.index && !flight && !LCAM.on && !SKYV.on){ orbit.frame = o.R0; clearGround(o); }
+    // (scrolling out, from about 2,200 km up the camera goes over to the whole Moon: riseTo, 08-camera.js; 0.27.13)
+    if (orbit.lock === o.index && !flight && !LCAM.on && !SKYV.on && !riseTo(o, moon, R, 1.25*R)){ orbit.frame = o.R0; clearGround(o); }
   }
   // the lander for the ground drawn round a site: where it stands in the site's frame (m), its feet's height, how it is turned
   function landerOf(S, F){

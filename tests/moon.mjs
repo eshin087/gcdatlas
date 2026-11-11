@@ -99,6 +99,41 @@ try {
     const sz = await page.evaluate(() => window.__cosmos.mgl.SZ);
     if (sz !== 2048) errors.push('a phone takes the ' + sz + ' maps, not the 2048 ones');
     errors.push(...pe); await browser.close(); }
+  // ---- scrolling out of a place on the Moon (0.27.13): the camera goes over to the whole Moon with no turn in where it looks, a roll of at
+  // most about 50 degrees a second (from Tycho's first angle the Moon's north is nearly upside down) and never under the ground; scrolling
+  // back in on the way comes back to the place. From a file (the bare sphere), the page's loop held still, the clock settled first.
+  { const { browser, page, errors:pe } = await openPage({ freeze:true, now:Date.UTC(2026, 10, 8, 12) });
+    for (const key of ['apollo11', 'tycho']){
+      const r = await page.evaluate(key => { const c = window.__cosmos, moon = c.OBJ.find(o => o.key === 'moon'), o = c.OBJ.find(o => o.key === key);
+        const ang = (a, b) => Math.acos(Math.max(-1, Math.min(1, a[0]*b[0] + a[1]*b[1] + a[2]*b[2])))*180/Math.PI, lk = () => c.OBJ[c.orbit.lock].key;
+        c.ssRate = 0; c.view(key, 0); for (let i = 0; i < 60*6; i++) c.tick(1/60);
+        const d0 = c.orbit.dist, R = Math.hypot(...o.offset); c.zoomTo(R*20);
+        let pf = null, pu = null; const out = { turn:0, roll:0, low:1e9 };
+        for (let i = 0; i < 60*8; i++){ c.tick(1/60); const f = c.cam.fwd.slice(), u = c.cam.up.slice();
+          if (pf){ out.turn = Math.max(out.turn, ang(pf, f)); out.roll = Math.max(out.roll, ang(pu, u)); } pf = f; pu = u; out.low = Math.min(out.low, Math.hypot(...moon.rel)/R); }
+        out.out = lk();
+        // (back in: partway out and settled there for 3 s, then one hard scroll back in, every tick measured: the roll, the point the camera
+        // circles (a step of it moves the whole picture) and the height. Codex: a cap on the handover undid tens of degrees of roll in a tick)
+        c.view(key, 0); for (let i = 0; i < 60*6; i++) c.tick(1/60); c.zoomTo(R*2.4); for (let i = 0; i < 180; i++) c.tick(1/60);
+        out.mid = o.riseW; c.zoomTo(d0); out.backLow = 1e9; out.backRoll = 0; out.backStep = 0; pu = c.cam.up.slice(); let po = c.orbit.off.slice();
+        for (let i = 0; i < 60*5; i++){ c.tick(1/60); out.backLow = Math.min(out.backLow, Math.hypot(...moon.rel)/R);
+          const u = c.cam.up.slice(); out.backRoll = Math.max(out.backRoll, ang(pu, u)); pu = u;
+          out.backStep = Math.max(out.backStep, Math.hypot(...c.orbit.off.map((v, j) => v - po[j]))/R); po = c.orbit.off.slice(); }
+        out.back = lk();
+        // (left partway out and opened again at another angle: that angle's aim, not the one kept from the first visit. Codex)
+        const loc = v => [0, 1, 2].map(j => o.R0[j*3]*v[0] + o.R0[j*3 + 1]*v[1] + o.R0[j*3 + 2]*v[2]);
+        c.view(key, 2); for (let i = 0; i < 60; i++) c.tick(1/60); const want = loc(c.orbit.off);
+        c.view(key, 0); for (let i = 0; i < 60; i++) c.tick(1/60); c.zoomTo(R*2.4); for (let i = 0; i < 60; i++) c.tick(1/60);
+        c.view('moon', 0); for (let i = 0; i < 60; i++) c.tick(1/60); c.view(key, 2); for (let i = 0; i < 60; i++) c.tick(1/60);
+        out.aimOff = Math.hypot(...loc(c.orbit.off).map((v, j) => v - want[j]))/Math.hypot(...want);
+        return out; }, key);
+      if (r.out !== 'moon') errors.push(`scrolled far out of ${key} the camera is locked on ${r.out}, not the Moon`);
+      if (!(r.turn < 0.01) || !(r.roll < 0.9) || !(r.low > 1)) errors.push(`going over to the Moon from ${key} the view turned ${r.turn.toFixed(3)} and rolled ${r.roll.toFixed(2)} degrees in a tick, lowest ${r.low.toFixed(4)} Moon radii`);
+      if (!(r.mid > 0.2) || r.back !== key || !(r.backLow > 1) || !(r.backRoll < 0.9) || !(r.backStep < 0.03)) errors.push(`scrolling back in on the way out of ${key} did not come back to it smoothly and above the ground: ${JSON.stringify(r)}`);
+      if (!(r.aimOff < 1e-3)) errors.push(`opened again at another angle after leaving it partway out, ${key} kept the old aim: ${JSON.stringify(r)}`);
+      notes.push(`scrolled out of ${key}: over to the Moon, rolling at most ${(r.roll*60).toFixed(0)} degrees a second`);
+    }
+    errors.push(...pe); await browser.close(); }
 } catch (e) { errors.push('threw: ' + (e.stack || e)); }
 server.close();
 report('moon', errors, notes.join(' · '));
