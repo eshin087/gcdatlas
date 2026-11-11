@@ -116,8 +116,11 @@ const EPL = (() => {
     const byHand = !tween && !tour.on && !show.on && !flyMove && !cmp && !shipCam.on, dt = GT - (o.riseAt == null ? GT : o.riseAt); o.riseAt = GT;
     if (!byHand || !(dt < 0.25)) o.riseW = 0;
     else { const to = riseK(o), v = o.riseW || 0; o.riseW = v + clamp(to - v, -dt*0.6, dt*0.6); }
-    const w = smooth(0, 1, o.riseW);
-    if (!(w > 0)){ if (o.riseOff){ orbit.off = M3.apply(o.R0, o.riseOff); o.riseOff = null; } return false; }
+    // (never further over than the distance allows: scrolling back in, the distance falls much faster than riseW, and the camera, circling
+    // a point still hundreds of km down toward the Earth's middle, went through the ground (Codex's review). With the point w of the way
+    // down and the camera level with the place's horizon or above, it stays outside the Earth while w < (distance / Earth's radius)^2 / 2)
+    const w = Math.min(smooth(0, 1, o.riseW), 0.4*(orbit.dist/KM/R)**2);
+    if (!(o.riseW > 0)){ if (o.riseOff){ orbit.off = M3.apply(o.R0, o.riseOff); o.riseOff = null; } return false; }
     // (the aim the camera had at the place, kept in the place's frame for the way back)
     if (!o.riseOff){ o.riseOff = M3.applyT(o.R0, orbit.off); orbit.offFn = null; }
     const d = M3.apply(o.R0, sphL(orbit.yaw, orbit.pitch)), F = camFrameOf(earth);
