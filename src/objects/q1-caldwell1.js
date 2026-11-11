@@ -13,20 +13,20 @@ const CON_C1 = { Tuc:'Tucana', Col:'Columba', Vel:'Vela', Ara:'Ara', Pav:'Pavo' 
 // (Harris 2010); size: SIMBAD's angular size (arcmin), turned into light-years across at its distance
 const GLOBC1 = [
   { c:106, key:'tuc47', ngc:104, nm:'47 Tucanae', con:'Tuc', ra:6.02233, dec:-72.08144, ly:14700, mass:853000, rc:0.36, rh:3.17, size:43.8, ell:0.09, feh:-0.72, hbr:-0.99,
-    fact:'The second-brightest globular cluster in the sky, after Omega Centauri, and easy to see without a telescope beside the Small Magellanic Cloud, which is about 14 times farther away. Nicolas-Louis de Lacaille listed it in 1751.',
+    fact:'The second-brightest globular cluster in the sky, after Omega Centauri, and easy to see without a telescope beside the Small Magellanic Cloud, which is about 14 times farther away. Nicolas-Louis de Lacaille recorded it from the Cape of Good Hope in 1751-52.',
     aka:'47 tuc 47 tucanae forty-seven tucanae', r2:'about 850,000 times the Sun\'s mass · dozens of known millisecond pulsars' },
   { c:86, key:'ngc6397', ngc:6397, con:'Ara', ra:265.17538, dec:-53.67433, ly:8100, mass:82400, rc:0.05, rh:2.9, size:25.7, ell:0.07, feh:-2.02, hbr:0.98, cc:true,
     fact:'One of the two nearest globular clusters, with M4. Its core has collapsed into a tight knot of stars. The Hubble Space Telescope followed its white dwarfs down to the faintest and coolest to measure how old it is.',
     aka:'', r2:'about 82,000 times the Sun\'s mass · its core collapsed' },
   { c:93, key:'ngc6752', ngc:6752, con:'Pav', ra:287.71713, dec:-59.98456, ly:13400, mass:261000, rc:0.17, rh:1.91, size:20.4, ell:0.04, feh:-1.54, hbr:1, cc:true,
-    fact:'The third-brightest globular cluster in the sky, after Omega Centauri and 47 Tucanae. Its core has collapsed, and a millisecond pulsar orbits far out in its halo, perhaps thrown out of the core long ago.',
+    fact:'The fourth-brightest globular cluster in the sky, after Omega Centauri, 47 Tucanae and M22. Its core has collapsed, and a millisecond pulsar orbits far out in its halo, perhaps thrown out of the core by a close encounter.',
     aka:'', r2:'about 261,000 times the Sun\'s mass · its core collapsed' },
   { c:79, key:'ngc3201', ngc:3201, con:'Vel', ra:154.40342, dec:-46.41247, ly:15500, mass:193000, rc:1.3, rh:3.1, size:18.2, ell:0.12, feh:-1.59, hbr:0.08,
-    fact:'It orbits the Milky Way backwards, against the turning of the disc, and is moving away from us at about 494 km/s. In 2018 astronomers found a star in it circling an unseen black hole about four times the Sun\'s mass.',
+    fact:'It orbits the Milky Way backwards, against the turning of the disc, and is moving away from us at about 494 km/s. In 2018 astronomers found a star in it circling an unseen black hole of at least four times the Sun\'s mass.',
     aka:'', r2:'about 193,000 times the Sun\'s mass · a loose core 1.3 arcminutes wide' },
   { c:73, key:'ngc1851', ngc:1851, con:'Col', ra:78.52817, dec:-40.04656, ly:39000, mass:283000, rc:0.09, rh:0.51, size:11, ell:0.05, feh:-1.18, hbr:-0.36,
-    fact:'A dense globular cluster about 39,000 light-years away. Its stars fall into two groups with slightly different make-up, a sign that it made stars more than once.',
-    aka:'', r2:'about 283,000 times the Sun\'s mass · two generations of stars' },
+    fact:'A dense globular cluster about 39,000 light-years away. Its stars fall into at least two groups with slightly different make-up: it may have made stars more than once, or formed when two clusters merged.',
+    aka:'', r2:'about 283,000 times the Sun\'s mass · at least two groups of stars' },
 ];
 for (const c of GLOBC1){
   const key = c.key, D = c.ly, pos = simbadPos(c.ra, c.dec, D), arc = D*Math.PI/10800;   // light-years per arcminute at its distance
@@ -48,7 +48,7 @@ for (const c of GLOBC1){
 // ---------------------------------------------------------------- three open clusters, from their real stars (gaiaOpenCluster, p8-messier.js)
 // (distances: Hunt & Reffert 2023, Gaia DR3; ages: published fits, or a range where they disagree; sizes: the spread of the members drawn)
 gaiaOpenCluster('jewelbox', { name:'Jewel Box', label:'Jewel Box', type:'open star cluster · C94 · NGC 4755 · in Crux', labelRange:9e4,
-  fact:'John Herschel called it "a casket of variously coloured precious stones" in the 1830s: a red supergiant shines among its blue-white giants. It sits beside Beta Crucis, one of the stars of the Southern Cross.',
+  fact:'John Herschel, who studied it from the Cape in the 1830s, said it looked like "a superb piece of fancy jewellery": a red supergiant shines among its blue-white giants. It sits beside Beta Crucis, one of the stars of the Southern Cross.',
   aka:'c94 caldwell 94 ngc 4755 jewel box kappa crucis cluster crux southern cross',
   readout:() => '6,450 light-years (Gaia) · its stars spread over about 38 light-years\nabout 10 to 20 million years old · 600 of its stars as Gaia measured them' });
 gaiaOpenCluster('southernpleiades', { name:'Southern Pleiades', label:'Southern Pleiades', type:'open star cluster · C102 · IC 2602 · in Carina', labelRange:4e4,
