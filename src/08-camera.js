@@ -651,6 +651,52 @@ function surfaceMode(){
   if (o.solid && orbit.dist < o.rad*6 && !o.sx && !o.sxSite) return { kind:'globe', o, R:o.rad*o.solid*magOf(o) };
   return null;
 }
+// ---------------------------------------------------------------- scrolling out of a place on a body (0.27.12 for Earth, 0.27.13 for the Moon;
+// owner: zooming out of a place on Earth "spiralled out of control"). Locked on a place, the camera used to stay locked on it however far
+// out it went. Between a and 4a km from it the camera goes over from the place to its body: the point it circles glides from the place to
+// the body's middle, and its up turns from the place's vertical to the body's north, about the line of sight, so the camera itself never
+// swings. At the far end the picture is exactly the one a lock on the body gives, and the lock becomes that. How far over it is follows
+// the distance (scrolling back in before the end comes back to the place), but takes 1.7 s or more each way (longer for a big roll, at most about 50 degrees a second) (`o.riseW`): a hard scroll
+// passes both distances within a quarter of a second, and the up then rolled at 300 degrees a second. The place's update calls it before
+// its own framing (true: it has the camera this tick, so the place leaves its frame and ground clearance alone). Rb: the body's radius, km
+function riseK(a){ return clamp(Math.log(Math.max(orbit.dist/KM, 1e-9)/a)/Math.log(4), 0, 1); }
+const turnAbout = (d, t) => { const c = Math.cos(t), s = Math.sin(t), col = v => V.add(V.add(V.mul(v, c), V.mul(V.cross(d, v), s)), V.mul(d, V.dot(d, v)*(1 - c)));
+  return [...col([1, 0, 0]), ...col([0, 1, 0]), ...col([0, 0, 1])]; };
+function riseTo(o, body, Rb, a){
+  // (only a camera moved by hand: a tour, the angles playing and a swing between two of them frame the place themselves)
+  // (riseAt: the last tick this ran; after a gap, a flight or a lock elsewhere, it starts from the place again)
+  const byHand = !tween && !tour.on && !show.on && !flyMove && !cmp && !shipCam.on, dt = GT - (o.riseAt == null ? GT : o.riseAt); o.riseAt = GT;
+  const d = M3.apply(o.R0, sphL(orbit.yaw, orbit.pitch)), F = camFrameOf(body);
+  // (the roll from the place's up to the body's, seen along the line of sight: up to half a turn, from Tycho's first angle 170 degrees)
+  const flat = y => { const v = V.sub(y, V.mul(d, V.dot(y, d))); return V.len(v) > 1e-4 ? V.norm(v) : null; };
+  const pa = flat(M3.apply(o.R0, [0, 1, 0])), pb = flat(M3.apply(F, [0, 1, 0])), th = pa && pb ? Math.atan2(V.dot(d, V.cross(pa, pb)), V.dot(pa, pb)) : 0;
+  // (0.6 a second, slower for a big roll: at most about 50 degrees a second, smooth's steepest slope being 1.5)
+  const rate = Math.min(0.6, 0.58/Math.max(Math.abs(th), 1e-3));
+  if (!byHand || !(dt < 0.25)) o.riseW = 0;
+  else { const to = riseK(a), v = o.riseW || 0; o.riseW = v + clamp(to - v, -dt*rate, dt*rate); }
+  // (never further over than the distance allows: scrolling back in, the distance falls much faster than riseW, and the camera, circling
+  // a point still hundreds of km down toward the body's middle, went through the ground (Codex's review). With the point w of the way
+  // down and the camera level with the place's horizon or above, it stays outside the body while w < (distance / its radius)^2 / 2.
+  // This runs before the frame eases the distance toward where the wheel sent it: on the way in, count on the distance being as short
+  // as halfway there, in the logarithm, which a frame of a tenth of a second covers; with this frame's own distance the camera still
+  // dipped 7 km under Paris)
+  const w = Math.min(smooth(0, 1, o.riseW), 0.4*orbit.dist*Math.min(orbit.dist, orbit.distT)/(KM*Rb)**2);
+  if (!(o.riseW > 0)){ if (o.riseOff){ orbit.off = M3.apply(o.R0, o.riseOff); o.riseOff = null; } return false; }
+  // (the aim the camera had at the place, kept in the place's frame for the way back)
+  if (!o.riseOff){ o.riseOff = M3.applyT(o.R0, orbit.off); orbit.offFn = null; }
+  if (w >= 1){
+    const n = M3.applyT(F, d); o.riseOff = null; o.riseW = 0;
+    cam.focus = body.index; orbit.lock = body.index; orbit.frame = F; orbit.off = [0, 0, 0]; orbit.offFn = null;
+    orbit.yaw = Math.atan2(n[0], n[2]); orbit.pitch = Math.asin(clamp(n[1], -0.999, 0.999));
+    if (typeof setInfo === 'function' && infoObj === o.index) setInfo(body.index);
+    if (typeof updateModeUI === 'function') updateModeUI();
+    return true;
+  }
+  // (o.offset: the place from its body's middle)
+  orbit.off = V.add(V.mul(M3.apply(o.R0, o.riseOff), 1 - w), V.mul(o.offset, -w));
+  orbit.frame = M3.mul(turnAbout(d, th*w), o.R0);
+  return true;
+}
 // (a globe: how far to turn it for a pixel, so the ground under the middle of the view moves with the mouse; never faster than before)
 const grabK = S => Math.min(0.005, 2*tanY/viewHcss*Math.max(orbit.dist - S.R, S.R*1e-4)/S.R);
 // (the wheel's move toward the cursor, still to go: eased over the same time as the zoom)

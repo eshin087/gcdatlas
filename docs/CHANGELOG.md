@@ -4,6 +4,13 @@ All notable changes, newest first. Dates are UTC.
 
 ## Unreleased
 
+## 0.27.13 · 2026-11-11
+
+**Scrolling out of a place on the Moon** (follows 0.27.12's for Earth)
+- Locked on one of the nine places on the Moon, the camera stayed locked on the spot however far out you scrolled. Now, from about 2,200 to 8,700 km up (1.25 to 5 Moon radii), it goes over to the whole Moon as it does from a place on Earth: the view's direction never changes, and the lock becomes the Moon's with the same picture. Scrolling back in before the end comes back to the place.
+- The handover is one function for both now (`riseTo` in 08-camera.js). A big roll takes longer: from Tycho's first angle the Moon's north is about 170 degrees from the place's up, which turned at 155 degrees a second; every roll is now at most about 50 degrees a second (on Earth too).
+- tests/moon.mjs measures it tick by tick at Apollo 11 and Tycho: no turn in the view, the roll, never under the ground, and the way back.
+
 ## 0.27.12 · 2026-11-11
 
 **Scrolling out of a place on Earth** (owner: "when I am locked on a place on Earth and I zoom out, it gets very buggy and things seem to spiral out of control")
