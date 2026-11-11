@@ -219,12 +219,34 @@ const nurseryProg = kind => program(VS_RECT, COMMON + '#define KIND ' + kind + '
 // Only how far along our line of sight each one sits is made up (a bell curve as wide as the cluster on the sky): one star's parallax is not
 // precise enough at these distances. Colour: BP-RP less the reddening (E(BP-RP) about 0.42 AV) turned into a temperature (Mucciarelli &
 // Bellazzini 2020, for dwarfs); the size of a point goes by the star's absolute G magnitude. Stars only, no volume.
+// The stars come later (0.27.14, from the review of 2026-11-09: the star lists were 67 KB of the page's 871 KB compressed, and decoding them
+// took 14 ms of every start, 60 ms on a phone's processor): build.mjs moves them to their own file, data/cs-<hash>.js (CLUSTER_STARS_SRC),
+// and leaves each cluster its size (r98, r90: the radii in degrees holding 98% and 90% of its members), so the cluster is placed and sized
+// at start-up exactly as before. The file is asked for the first time a cluster is drawn (a script, which also loads from a page opened as
+// a file), and each cluster's stars are made the first time it is drawn after that, fading in over 1.2 s if they arrived while it was in
+// view. The artifact page (served alone) keeps the lists in the page: CLUSTER_STARS_SRC is null there and every star is ready at once.
+let CS_DATA = null, csAt = -1e9;
+function csLoad(){
+  if (CS_DATA || !CLUSTER_STARS_SRC || performance.now() - csAt < 30000) return;   // (asked once; again after 30 s if it failed)
+  csAt = performance.now();
+  window.__clusterStars = d => { CS_DATA = d; };
+  const el = document.createElement('script'); el.src = CLUSTER_STARS_SRC; el.async = true; el.onerror = () => el.remove(); document.head.appendChild(el);
+}
 function gaiaCluster(key){
-  const c = CLUSTER_STARS[key], D = c.pc*3.2616, pos = radec(c.ra/15, c.dec, D), R0 = facingEarth(pos, [0, 0, 1], 0);
-  const bin = atob(c.s), dv = new DataView(Uint8Array.from(bin, ch => ch.charCodeAt(0)).buffer), n = c.k, cd = Math.cos(c.dec*DEG), lyDeg = DEG*D;
+  const c = CLUSTER_STARS[key], D = c.pc*3.2616, pos = radec(c.ra/15, c.dec, D), R0 = facingEarth(pos, [0, 0, 1], 0), lyDeg = DEG*D;
+  const RAD = c.r98*lyDeg*1.05, R90 = c.r90*lyDeg;
+  // (st: its stars once made; at: when, for the fade; -1e9 when they were there the first time it was drawn)
+  const st = { ps:null, spikes:null, at:0, tried:false };
+  const ready = () => { if (st.ps) return true;
+    const s = c.s || (CS_DATA && CS_DATA[key]); if (!s){ st.tried = true; csLoad(); return false; }
+    Object.assign(st, gaiaStars(key, c, s, D, pos, R0, RAD)); st.at = st.tried ? GT : -1e9; return true; };
+  const fade = () => smooth(0, 1.2, GT - st.at);
+  return { pos, D, RAD, R0, R90, cl:{ get ps(){ return st.ps; }, get spikes(){ return st.spikes; }, ready, fade } };
+}
+function gaiaStars(key, c, s64, D, pos, R0, RAD){
+  const bin = atob(s64), dv = new DataView(Uint8Array.from(bin, ch => ch.charCodeAt(0)).buffer), n = c.k, cd = Math.cos(c.dec*DEG), lyDeg = DEG*D;
   const S = [];
   for (let i=0;i<n;i++) S.push({ xi:dv.getInt16(i*6, true)/6000, eta:dv.getInt16(i*6 + 2, true)/6000, g:dv.getUint8(i*6 + 4)/10, bc:dv.getInt8(i*6 + 5) });
-  const rr = S.map(s => Math.hypot(s.xi, s.eta)*lyDeg).sort((a, b) => a - b), RAD = rr[Math.floor(0.98*(n - 1))]*1.05;
   const sig = Math.sqrt(S.reduce((a, s) => a + (s.xi*s.xi + s.eta*s.eta)*lyDeg*lyDeg, 0)/(2*n));
   // (the depths come from a little generator of its own, seeded by the key, so the shared rnd() is left alone)
   let z = [...key].reduce((h, ch) => Math.imul(h ^ ch.charCodeAt(0), 16777619), 2166136261) >>> 0;
@@ -242,7 +264,7 @@ function gaiaCluster(key){
   });
   ps.upload('ac');
   const bright = all.filter(s => s.w > 1.8).sort((a, b) => b.w - a.w).slice(0, 8).map(s => ({ p:s.p, w:Math.min(s.w, 2.4), c:s.c }));
-  return { pos, D, RAD, R0, R90:rr[Math.floor(0.9*(n - 1))], cl:{ ps, spikes:makeSpikes(bright) } };
+  return { ps, spikes:makeSpikes(bright) };
 }
 // (the angles: from Earth, from the side, and from inside the cluster's middle; RAD reaches out to its farthest members, so the angles sit
 // closer in than a nebula's. In mode 1 drawParticles already scales a point's strength by the square of the object's radius, and its light
@@ -256,7 +278,9 @@ function gaiaCluster(key){
 function addOpenCluster(def, cl, extra = []){
   return addObj(Object.assign({ tags:['clusters'], group:'nebulae', R0:facingEarth(def.pos, [0, 0, 1], 0), minZoom:0.03, pxMin:5, farColor:[0.8, 0.86, 1], farLum:0.6,
     views:[{ dirFn:() => V.norm(V.mul(def.pos, -1)), k:1.4, hold:9, drift:0.02 }, { d:[0.6, 0.4, 0.7], k:1.2, hold:8, drift:0.03 }, { d:[0.2, 0.15, 1], k:0.4, hold:8, drift:0.03 }],
-    particles:[{ ps:cl.ps, prog:'ptBasic', mode:4, sb:(def.sb ?? 0.7)*5.1, size:2.5 }, ...extra, { ps:cl.spikes, prog:'spike', lines:true, mode:1, sb:6, size:1, len:0.04, q0:() => [1, 0, 0, 0] }] }, def));
+    // (cl.ready: a Gaia cluster's stars may still be on their way; drawParticles asks show() before it reads ps)
+    particles:[{ get ps(){ return cl.ps; }, show:cl.ready, prog:'ptBasic', mode:4, get sb(){ return (def.sb ?? 0.7)*5.1*(cl.fade ? cl.fade() : 1); }, size:2.5 }, ...extra,
+      { get ps(){ return cl.spikes; }, show:cl.ready, prog:'spike', lines:true, mode:1, get sb(){ return 6*(cl.fade ? cl.fade() : 1); }, size:1, len:0.04, q0:() => [1, 0, 0, 0] }] }, def));
 }
 // an open cluster from its Gaia members, by its key in CLUSTER_STARS (the atlas's key too)
 function gaiaOpenCluster(key, def){

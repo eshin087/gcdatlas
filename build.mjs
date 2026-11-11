@@ -8,6 +8,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import vm from 'node:vm';
+import crypto from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 import { writePlacePages, short } from './tools/place-pages.mjs';
 import { fontHead, GOOGLE_FONTS } from './tools/lib/fonts.mjs';
@@ -29,7 +30,27 @@ const list = fs.readdirSync(SRC).filter(f => f.endsWith('.js'));
 if (fs.existsSync(path.join(SRC, 'objects'))) for (const f of fs.readdirSync(path.join(SRC, 'objects'))) if (f.endsWith('.js')) list.push('objects/' + f);
 list.sort((a, b) => rank(a) - rank(b) || a.localeCompare(b));
 
-const js = list.map(f => `\n// ---- ${f}\n` + read(f)).join('');
+// The open clusters' star lists (0.27.14) go to a file of their own, data/cs-<hash>.js, fetched when a cluster is first drawn (gaiaCluster in
+// p8-messier.js): the page keeps each cluster's numbers and its size, r98 and r90 (the radius in degrees holding 98% and 90% of its
+// members, worked out here exactly as the page did, so every cluster is placed and sized as before). The artifact page, served alone,
+// keeps the lists (CLUSTER_STARS_SRC null): it is the same script with one line put back.
+const CS_FILE = 'objects/p0-cluster-stars-data.js';
+const cs = (() => {
+  const src = read(CS_FILE), at = src.indexOf('const CLUSTER_STARS = ');
+  if (at < 0){ console.error(`${CS_FILE} has no "const CLUSTER_STARS = "`); process.exit(1); }
+  const all = Function('return ' + src.slice(at + 'const CLUSTER_STARS = '.length).trim().replace(/;\s*$/, ''))(), lists = {}, lean = {};
+  for (const [k, c] of Object.entries(all)){
+    const b = Buffer.from(c.s, 'base64'), r = [];
+    for (let i = 0; i < c.k; i++) r.push(Math.hypot(b.readInt16LE(i*6)/6000, b.readInt16LE(i*6 + 2)/6000));
+    r.sort((a, b) => a - b);
+    const { s, ...rest } = c; lists[k] = s; lean[k] = { ...rest, r98:r[Math.floor(0.98*(c.k - 1))], r90:r[Math.floor(0.9*(c.k - 1))] };
+  }
+  const lit = o => JSON.stringify(o).replace(/"(\w+)":/g, '$1:');
+  const file = `__clusterStars(${JSON.stringify(lists)});\n`, name = 'data/cs-' + crypto.createHash('sha256').update(file).digest('hex').slice(0, 10) + '.js';
+  const full = {}; for (const k in lean) full[k] = { ...lean[k], s:lists[k] };
+  return { file, name, fullLine:`const CLUSTER_STARS = ${lit(full)}; const CLUSTER_STARS_SRC = null;`, leanLine:`const CLUSTER_STARS = ${lit(lean)}; const CLUSTER_STARS_SRC = ${JSON.stringify(name)};` };
+})();
+const js = list.map(f => `\n// ---- ${f}\n` + (f === CS_FILE ? cs.fullLine + '\n' : read(f))).join('');
 try { new vm.Script(js, { filename: 'gcdatlas.js' }); }
 catch (e) { console.error('Syntax error in the bundled script:\n' + e.stack.split('\n').slice(0, 6).join('\n')); process.exit(1); }
 // every file shares one scope: two top-level functions with one name are not a syntax error, the later one silently replaces the first
@@ -82,7 +103,12 @@ if (!notes.length){ console.error('docs/PATCHNOTES.md has no versions'); process
 const notesHtml = notes.map((n, i) => `<details data-v="${esc(n.v)}"${i ? '' : ' open'}><summary><span class="nv">${esc(n.v)}</span><span class="nd">${esc(n.date)}</span><span class="nt">${esc(n.title)}</span></summary><ul>${n.items.map(t => `<li>${esc(t)}</li>`).join('')}</ul></details>`).join('\n');
 const body = read('01-body.html').replace('<!--PATCHNOTES-->', notesHtml);
 const version = new Date().toISOString().slice(0, 10);
-const script = `<script>\n/* gcdatlas ${version} */\n${jsOut}\n</script>\n`;
+if (jsOut.split(cs.fullLine).length !== 2){ console.error('the open clusters\' line is not in the script once, as written'); process.exit(1); }
+const scriptAlone = `<script>\n/* gcdatlas ${version} */\n${jsOut}\n</script>\n`;
+const script = scriptAlone.replace(cs.fullLine, () => cs.leanLine);
+{ const dir = path.join(DIST, 'data'); fs.mkdirSync(dir, { recursive:true });
+  for (const f of fs.readdirSync(dir)) if (/^cs-\w+\.js$/.test(f) && 'data/' + f !== cs.name) fs.rmSync(path.join(dir, f));
+  fs.writeFileSync(path.join(DIST, cs.name), cs.file); }
 
 const meta = `<meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -180,7 +206,7 @@ const siteLd = `<script type="application/ld+json">${JSON.stringify({ '@context'
   description:meta.match(/<meta name="description" content="([^"]*)"/)[1] }).replace(/</g, '\\u003c')}</script>\n`;
 fs.mkdirSync(DIST, { recursive: true });
 fs.writeFileSync(path.join(DIST, 'index.html'), `<!doctype html>\n<html lang="en">\n<head>\n${meta}${siteLd}${head}\n</head>\n<body>\n${body}\n${shareScript}${script}</body>\n</html>\n`);
-fs.writeFileSync(path.join(DIST, 'artifact.html'), `${headAlone}\n${body}\n${script}`);
+fs.writeFileSync(path.join(DIST, 'artifact.html'), `${headAlone}\n${body}\n${scriptAlone}`);
 // the lab (/lab): the same page, told before its script runs to open as a small stage for trying the Halo's looks (src/09l-lab.js); kept out of search
 const labHead = head.replace(/<title>[^<]*<\/title>/, '<title>gcdatlas lab</title>');
 fs.writeFileSync(path.join(DIST, 'lab.html'), `<!doctype html>\n<html lang="en">\n<head>\n${meta}<meta name="robots" content="noindex">\n${labHead}\n</head>\n<body>\n${body}\n<script>window.__LAB = 1;</script>\n${shareScript}${script}</body>\n</html>\n`);

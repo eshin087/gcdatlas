@@ -4,6 +4,14 @@ All notable changes, newest first. Dates are UTC.
 
 ## Unreleased
 
+## 0.27.14 · 2026-11-11
+
+**The open clusters' stars load after the page** (the download part of the review of 2026-11-09: the star lists were 67 KB of the page's 871 KB compressed, and decoding them took about 14 ms of every start, 60 ms on a phone's processor)
+- build.mjs moves the 26 clusters' Gaia star lists out of the page into `data/cs-<hash>.js` (66 KB compressed, cached for a year under `/data/`), and leaves each cluster its numbers and its size (`r98`, `r90`, worked out at build time exactly as the page did). The home page goes from 871 to 799 KB compressed (brotli).
+- The file is asked for the first time a cluster is drawn, as a script, so it loads from a page opened as a file too; each cluster's stars are made the first time it is drawn after that (none at start-up), and fade in over 1.2 s if they arrive while the cluster is in view.
+- The artifact page, served alone, keeps the lists inside it.
+- Checked: every cluster's size, star count, positions and colours are bit for bit the same as before, on the home page and the artifact page; stills of the Beehive and the Wild Duck unchanged; `npm test` passes.
+
 ## 0.27.13 · 2026-11-11
 
 **Scrolling out of a place on the Moon** (follows 0.27.12's for Earth)
