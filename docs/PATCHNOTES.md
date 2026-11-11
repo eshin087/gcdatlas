@@ -5,6 +5,10 @@
      numbers with units. The newest version comes first and opens by itself; its number must match package.json (tests/smoke.mjs checks it).
      Every detail stays in docs/CHANGELOG.md, which the panel links to. -->
 
+## 0.28.0 · 11 Nov 2026 · Southern star clusters
+- Eight new places in the southern sky, from Patrick Moore's Caldwell list: 47 Tucanae, the second-brightest globular cluster, and four more globulars.
+- Three open clusters drawn from their real stars as the Gaia spacecraft measured them: the Jewel Box, the Southern Pleiades and the Wishing Well.
+
 ## 0.27.14 · 11 Nov 2026 · A quicker start
 - The page is about 70 KB smaller and starts a little sooner: the stars of the open clusters now load just after it. They look exactly as before.
 

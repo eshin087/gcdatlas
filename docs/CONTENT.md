@@ -38,7 +38,7 @@ Since 0.25.0 all 110 Messier objects are in. The Caldwell catalogue is next, in 
 
 | Pack | Objects |
 | --- | --- |
-| Caldwell 1: southern showpieces | 47 Tucanae (C106), the Jewel Box (C94), the Coalsack (C99), the Southern Pleiades (C102), the Wishing Well (C91), NGC 6397 (C86), NGC 6752 (C93), the Running Chicken (C100), NGC 3201 (C79), NGC 1851 (C73) |
+| Caldwell 1: southern showpieces | in progress: 47 Tucanae (C106), NGC 6397 (C86), NGC 6752 (C93), NGC 3201 (C79), NGC 1851 (C73), the Jewel Box (C94), the Southern Pleiades (C102) and the Wishing Well (C91) done in 0.28.0; the Coalsack (C99) and the Running Chicken (C100) next, each with a look of its own (stills for the owner to pick) |
 | Caldwell 2: northern nebulae | the Double Cluster (C14), the North America Nebula (C20), the Crescent (C27), the Rosette (C49, C50), the Cocoon (C19), the Iris (C4), the Cave (C9), the Flaming Star (C31), Hubble's Variable Nebula (C46) |
 | Caldwell 3: planetary nebulae | the Saturn Nebula (C55), the Eskimo (C39), the Ghost of Jupiter (C59), the Blue Snowball (C22), the Bug or Butterfly (C69), the Skull (C56), the Bow-Tie (C2), the Blinking Planetary (C15) |
 | Caldwell 4: galaxies | the Needle (C38), NGC 891 (C23), the Whale (C32), the Fireworks (C12), the Hidden Galaxy (C5), NGC 1097 (C67), NGC 4945 (C83), NGC 300 (C70), NGC 55 (C72), the Spindle (C53) |

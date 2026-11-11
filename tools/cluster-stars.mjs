@@ -16,7 +16,9 @@ const LIST = { beehive:'NGC_2632', wildduck:'NGC_6705', ptolemy:'NGC_6475', m6:'
   m35:'NGC_2168', m36:'NGC_1960', m37:'NGC_2099', m38:'NGC_1912', m39:'Theia_517', m41:'NGC_2287', m46:'NGC_2437', m47:'NGC_2422', m52:'NGC_7654',
   m67:'NGC_2682', m103:'NGC_581', ngc6603:'NGC_6603',
   // (0.25.0, the last of Messier's open clusters)
-  m18:'NGC_6613', m21:'NGC_6531', m26:'NGC_6694', m48:'NGC_2548', m50:'NGC_2323', m93:'NGC_2447' };
+  m18:'NGC_6613', m21:'NGC_6531', m26:'NGC_6694', m48:'NGC_2548', m50:'NGC_2323', m93:'NGC_2447',
+  // (0.28.0, Caldwell's southern showpieces)
+  jewelbox:'NGC_4755', southernpleiades:'IC_2602', wishingwell:'NGC_3532' };
 const MAX = 600, PMIN = 0.5;
 const only = process.argv.slice(2);
 for (const k of only) if (!LIST[k]) throw new Error('not in LIST: ' + k);
