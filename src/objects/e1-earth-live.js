@@ -122,7 +122,10 @@ const earthLive = (() => {
   const prevRead = earth.readout;
   earth.readout = () => {
     const d = viewDist()/earth.rad, next = L.launches.find(l => Date.parse(l.net) > (jdNow() - 2440587.5)*86400000);
-    if (d < 6 && d >= 2 && L.status === 'live') return `${L.satCount.toLocaleString('en-US')} active satellites, live from CelesTrak · colours: Starlink blue, navigation green, geostationary gold\n` + (next ? `next launch: ${next.name} · ${next.site || next.pad}` : 'yellow dots near the ground are illustrative air traffic on real routes');
+    // (0.28.3, owner: too long. The launch's name without "Unknown Payload", its site to the first comma, the colours' key a line of its own)
+    if (d < 6 && d >= 2 && L.status === 'live') return `${L.satCount.toLocaleString('en-US')} active satellites, live from CelesTrak\n`
+      + (next ? `next launch: ${next.name.replace(/ \| Unknown Payload$/i, '')} · ${String(next.site || next.pad || '').split(',')[0]}\n` : 'yellow dots near the ground are illustrative air traffic on real routes\n')
+      + 'colours: Starlink blue · navigation green · geostationary gold';
     if (d < 2) return 'yellow dots: illustrative air traffic on 55 of the busiest routes\n' + (L.status === 'live' ? `${L.satCount.toLocaleString('en-US')} satellites overhead (live orbits)` : 'satellites shown as their typical orbital shells');
     return prevRead();
   };

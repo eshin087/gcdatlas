@@ -71,7 +71,13 @@ body.info-compact .stopl:has(> .stopinfo.kind:not(:empty)){grid-template-columns
 .readout.fade{animation:fadeIn 1s ease-out}
 @keyframes fadeIn{from{opacity:0}to{opacity:1}}
 .info{animation:fadeIn 1.2s ease-out}
-.readout{margin-top:8px;color:var(--flare);font-size:calc(11.5px*var(--ts));font-variant-numeric:tabular-nums;white-space:pre-wrap;min-height:1.5em;max-width:50ch}
+.readout{margin-top:8px;color:var(--flare);font-size:calc(11.5px*var(--ts));font-variant-numeric:tabular-nums;white-space:normal;min-height:1.5em;max-width:50ch}
+/* (a row a line, 0.28.3: labels and the dots between parts grey, credits last and smaller, a button for the rest of a long one) */
+.readout .ro-l{white-space:pre-wrap;margin:0 0 3px}
+.readout .ro-k,.readout .ro-s{color:var(--dim)}
+.readout .ro-c{color:var(--dim);font-size:calc(10.5px*var(--ts))}
+.readout .ro-more{pointer-events:auto;background:none;border:0;padding:2px 0;margin-top:1px;font:inherit;font-size:calc(10.5px*var(--ts));color:var(--soft);letter-spacing:.04em;cursor:pointer}
+.readout .ro-more:hover{color:var(--ink)}
 .scale{display:flex;align-items:center;gap:8px;margin-top:8px;color:var(--soft);font-size:calc(11px*var(--ts));font-variant-numeric:tabular-nums;white-space:nowrap;pointer-events:auto;cursor:help;width:max-content}
 .scale .rlab{color:var(--dim);letter-spacing:.1em;text-transform:uppercase;font-size:calc(10px*var(--ts))}
 .scale .bar{display:inline-block;height:5px;border:1px solid var(--soft);border-top:0;flex:none}
@@ -137,6 +143,10 @@ body.ui-idle .caption.rest{opacity:0;transition:background 1s,border-color 1s,op
 .caption span{flex:1}
 .caption span::after{content:"_";color:var(--flare);margin-left:2px;animation:blink 1s steps(1) infinite}
 .caption.done span::after{content:""}
+/* (a launch notice's x and its fade after 10 s: NOTE in 09-render.js) */
+.cap-x{flex:none;background:none;border:0;color:var(--dim);cursor:pointer;font-size:calc(16px*var(--ts));line-height:1;padding:0;display:grid;place-items:center;min-width:28px;min-height:28px;margin:-6px -8px -6px -4px}
+.cap-x:hover{color:var(--ink)}
+.caption.going{opacity:0;pointer-events:none;transition:opacity 1.2s ease-in}
 @keyframes blink{50%{opacity:0}}
 
 /* ---- controls, top right. The bar leaves 400 px on its left for the logo and the info panel (440 before 0.9.9: the top row sits above the
@@ -619,6 +629,7 @@ body.ui-idle .hint{opacity:0;transition:opacity 1s ease-in}
 .d-x{background:none;border:0;color:var(--dim);cursor:pointer;font-size:calc(16px*var(--ts));line-height:1;padding:0 2px;
   display:grid;place-items:center;min-width:28px;min-height:28px;margin:-6px -7px -6px 0}   /* (a 28 px target; the negative margins keep the x where it was) */
 .d-x:hover{color:var(--ink)}
+.daily.going{opacity:0;pointer-events:none;transition:opacity 1.2s ease-in}
 .d-name{margin-top:4px;font-size:calc(15px*var(--ts));color:var(--ink);font-weight:500}
 .d-type{color:var(--dim);font-size:calc(11px*var(--ts))}
 .d-acts{display:flex;gap:6px;margin-top:8px}
@@ -715,7 +726,7 @@ body.sky .info .acts,body.sky .info .qrow,body.sky .ladder,body.sky .lad-chip,bo
   .acts{flex-wrap:wrap;margin:10px 0 4px}
   .act{padding:4px 11px}
   .fact{font-size:calc(12px*var(--ts));max-width:none}
-  .readout{white-space:pre-wrap;width:auto;max-width:none}
+  .readout{white-space:normal;width:auto;max-width:none}
   .progress{margin-top:4px}
   .progress.hintish{display:none}
   body.ui-idle .info{background:transparent;border-color:transparent;-webkit-backdrop-filter:none;backdrop-filter:none;pointer-events:none;transition:background 1s,border-color 1s,transform 1.2s ease-in-out}

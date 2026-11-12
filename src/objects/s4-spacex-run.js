@@ -447,7 +447,7 @@ function sxTick(dt){
   }
   if (!atEarth && SX.nextReplay < SX_T + 20) SX.nextReplay = SX_T + 20;
   // the caption: what is flying, with a button to watch it (while you watch: the button switches between highlights and real speed)
-  LCAP.txt = ''; LCAP.btn = ''; LCAP.go = null; LCAP.live = false;
+  LCAP.txt = ''; LCAP.btn = ''; LCAP.go = null; LCAP.live = false; LCAP.run = null;
   if (LCAM.on){ const r = LCAM.run, real = r.mode !== 'real' && SET.launchReal;
     LCAP.txt = `${r.mis.name} · ${r.mode === 'real' ? 'live' : real ? 'replay at real speed' : 'replay'}${eventNow(r) ? ' · ' + eventNow(r) : ''} · ${clk(r.mt)}`;
     if (r.mode !== 'real'){ LCAP.btn = SET.launchReal ? 'highlights' : 'real speed'; LCAP.go = () => { setOpt('launchReal', !SET.launchReal, true); toast(SET.launchReal ? 'real speed: every second as it happens (a Starship flight takes about 9 minutes)' : 'highlights: the quiet parts sped up'); }; } }
@@ -457,7 +457,7 @@ function sxTick(dt){
     if (r && !(SX.pend && SX.pend.run === r)){
       const where = SXS[r.site].short;
       LCAP.txt = r.mode === 'real' ? `live · ${r.mis.name}${r.label ? ' · ' + r.label : ''} from ${where} · ${clk(r.mt)}` : `illustrative replay · ${r.mis.name} from ${where}${eventNow(r) ? ' · ' + eventNow(r) : ''} · ${clk(r.mt)}`;
-      LCAP.btn = 'watch'; LCAP.go = () => sxWatch(r); LCAP.live = r.mode === 'real' && r.mt > -600;
+      LCAP.btn = 'watch'; LCAP.go = () => sxWatch(r); LCAP.live = r.mode === 'real' && r.mt > -600; LCAP.run = r;   // (a notice: 09-render.js shows it 10 s)
     }
   }
   // near the ground (or watching) the Solar System clock runs in real time, so the Sun stays put and the pad does not spin round

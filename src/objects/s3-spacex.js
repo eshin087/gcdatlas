@@ -215,7 +215,7 @@ const MIS = {
 
 // ---------------------------------------------------------------- the objects: a stage per part (what the camera locks on), the pads and landing sites (drawn as clusters)
 const SX = { runs:[], parts:{}, sites:{}, clusters:[], pend:null, nextReplay:25, trail:null, real:new Set(), dismissed:new Set() };
-const LCAP = { txt:'', btn:'', go:null };   // the caption (and its button) while a launch is on (read by updateCaption in 09-render.js)
+const LCAP = { txt:'', btn:'', go:null, run:null };   // the caption (and its button) while a launch is on (read by updateCaption in 09-render.js)
 const SX_FACTS = {
   superheavy:'Starship\'s first stage, about 71 m tall, lifts off on 33 methane-fuelled Raptor engines. On 13 October 2024 the arms of its launch tower caught one in mid-air as it came back, seven minutes after launch.',
   starship:'The largest rocket ever flown: about 120 m tall with its Super Heavy booster (124 m in its newest version), lifting off on 33 Raptor engines. Both stages are built to be reused. Here it stands on the launch mount at Starbase, Texas, beside the tower whose arms catch the booster.',
