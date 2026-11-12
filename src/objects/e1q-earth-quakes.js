@@ -4,10 +4,11 @@
 // quake of magnitude 7 or more in the last day (once a visit), and an angle of Earth's own over the week's largest. Fetched only over http(s),
 // while Earth is big on screen and the switch is on (settings, show: quakes & fires), again after each answer's cache time; let go of a minute
 // after Earth has shrunk away. Without /api (the artifact page, file://, offline, an error) nothing is drawn and nothing is said.
-//   - Quakes: a dot at each epicentre and a ring round it (lines), sized by magnitude (the ring 25 km x 2^(M - 2.5) in radius, far bigger than
-//     the real break in the rock: the readouts say so), coloured by depth (red under 70 km, violet to 300, blue below: never the orange of
-//     the fires and the city lights), full for their first hour and fading over the week by their real age; the ring only in their first two
-//     days, and only once it spans a few characters. The newest one pings: a ring that swells and fades every 3.6 s. The quake in view (a
+//   - Quakes (glowing spots since 0.28.5, owner's pick from stills: the rings, one-pixel lines, broke into dotted circles of : and ' all over
+//     the ocean): a spot at each epicentre of magnitude 3.5 and over, bigger and brighter with magnitude (QSPOT), coloured by depth (red under
+//     70 km, violet to 300, blue below: never the orange of the fires and the city lights), full for their first hour and fading over the week
+//     by their real age. No standing rings, except round the quake in view (25 km x 2^(M - 2.5) in radius, far bigger than the real break in
+//     the rock: the readouts say so), and only once it spans a few characters. The newest one pings: a ring that swells and fades every 3.6 s. The quake in view (a
 //     place object set to it, or Earth's angle over the largest while it plays) keeps its ring and ping whatever its age. The replay plays the
 //     week in REP.T seconds on a clock of its own (each quake pings as it comes); the atlas clock goes on as it was.
 //   - Fires and heat sources: a warm point per cell, brightest on the night side (sunlight hides real fires), added up on coarser grids for
@@ -25,6 +26,9 @@ const QK = (() => {
   const now = () => Date.now()/1000, rjd = () => Date.now()/86400000 + 2440587.5;   // (the real clock: the marks' ages; GT paces the fetches)
   // how strong the marks are (calm: owner, 2026-11-08), and how far down the fires are thinned at each level (their strength, 0 to 1.3)
   const K = { dot:5, ring:2.2, fire:2.0, day:0.12 }, CUT = [0.16, 0.24, 0.3];
+  // the spots: the smallest magnitude drawn (all of them in the replay and the quake in view), how much a spot grows a magnitude over that
+  // (times the spot's size, 1.7 px), and their brightness over K.dot
+  const QSPOT = { minM:3.5, grow:1.3, gain:2.2 };
   // ---------------------------------------------------------------- shaders (one small vertex shader each; FS_POINT and FS_LINE)
   const HEAD = `#version 300 es
 layout(location=0) in vec4 aP; layout(location=1) in vec4 aC;
@@ -49,6 +53,7 @@ void main(){
   vec3 col = depthCol(aC.z);
   // (the quake in view, a place object set to it or Earth's angle over the largest: its ring and its ping whatever its age)
   float foc = abs(aC.x - uQ1.y) < 0.5 && abs(m - uQ1.z) < 0.05 ? 1. : 0.;
+  br *= uQ1.x > 0.5 ? 1. : max(step(${QSPOT.minM.toFixed(2)}, m), foc);
 #ifdef RING
   float al = min(25.*exp2(m - 2.5), 1800.)/6371.;
   if(mod(aC.w, 2.) > 0.5){
@@ -56,7 +61,7 @@ void main(){
     float ph = uQ1.x > 0.5 ? a/uQ0.y/1.8 : (aC.w > 1.5 || foc > 0.5 ? fract(uQ0.w/3.6) : 9.);
     br *= ph < 1. ? 1.7*(1. - ph)*(1. - ph)*smoothstep(0., 0.06, ph) : 0.;
     al *= 0.2 + 1.2*min(ph, 1.);
-  } else br *= max(1. - smoothstep(18., 48., h), foc);
+  } else br *= foc;
   vec3 e = normalize(cross(abs(c.y) < 0.99 ? vec3(0., 1., 0.) : vec3(1., 0., 0.), c)), n = cross(c, e);
   p = (c*cos(al) + (e*cos(aP.w) + n*sin(aP.w))*sin(al))*${UNIT};
 #else
@@ -75,7 +80,7 @@ void main(){
   gl_PointSize = 1.; vC = col*br*uSB*uOut*uVis;
 #else
   if(v.z <= 0. || br <= 0.){ gl_Position = vec4(2., 2., 0., 1.); gl_PointSize = 1.; vC = vec3(0.); return; }
-  gl_PointSize = uSize*(1. + 0.3*(m - 2.5)); vC = col*br*uSB*uOut*uVis;
+  gl_PointSize = uSize*(1. + ${QSPOT.grow.toFixed(2)}*max(m - ${QSPOT.minM.toFixed(2)}, 0.)); vC = col*br*uSB*uOut*uVis*${QSPOT.gain.toFixed(2)};
 #endif
 }`;
   // fires: aP = (the cell's middle in Earth's frame; its strength, 0 to 1.3 from its power), aC.x its size in pixels. uQ0 = (this level's
@@ -128,12 +133,13 @@ void main(){
     if (!rows.length) throw 'no earthquakes';
     rows.sort((a, b) => a.t - b.t);
     const gen = Number.isFinite(j.generated) ? j.generated : rows[rows.length - 1].t, from = Number.isFinite(j.from) ? j.from : gen - 7*86400;
-    const ref = from, newest = rows[rows.length - 1], segs = m => m < 5 ? 24 : m < 6 ? 36 : 48;
+    // (the ping goes to the newest quake that is drawn as a spot)
+    const ref = from, newest = rows[rows.length - 1], pinged = rows.filter(q => q.m >= QSPOT.minM).pop() || newest, segs = m => m < 5 ? 24 : m < 6 ? 36 : 48;
     let nv = 0; for (const q of rows) nv += 4*segs(q.m);
     const dots = makePS(rows.length), ring = makePS(nv);
     let k = 0;
     rows.forEach((q, i) => {
-      const u = unit(q.la, q.lo), tr = q.t - ref, nw = q === newest ? 2 : 0, N = segs(q.m);
+      const u = unit(q.la, q.lo), tr = q.t - ref, nw = q === pinged ? 2 : 0, N = segs(q.m);
       dots.a.set([u[0], u[1], u[2], 0], i*4); dots.c.set([tr, q.m, q.d, nw], i*4);
       for (let kind = 0; kind < 2; kind++) for (let s = 0; s < N; s++) for (const e of [s, s + 1]){
         ring.a.set([u[0], u[1], u[2], e/N*2*Math.PI], k*4); ring.c.set([tr, q.m, q.d, kind ? 1 + nw : 0], k*4); k++; }

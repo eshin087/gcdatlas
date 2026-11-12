@@ -5,6 +5,10 @@
      numbers with units. The newest version comes first and opens by itself; its number must match package.json (tests/smoke.mjs checks it).
      Every detail stays in docs/CHANGELOG.md, which the panel links to. -->
 
+## 0.28.5 · 12 Nov 2026 · Calmer earthquakes
+- Earthquakes and fires on Earth are off unless you turn them on (settings, show).
+- Turned on, each quake is a glowing spot instead of a ring, only from magnitude 3.5, bigger for bigger quakes.
+
 ## 0.28.4 · 12 Nov 2026 · Calmer
 - A place's numbers are easier to read: one line each, labels in grey. Long lists, like Earth's live data, show two lines and a "more" button, which remembers your choice.
 - A rocket launch you are not watching is named for 10 seconds, then the notice fades. Its x hides launch notices for the rest of your visit.
