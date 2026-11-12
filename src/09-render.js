@@ -337,11 +337,29 @@ function hideHint(scripted){
 }
 const distFromEarth = o => o.distEarth || fmtDist(V.len(V.sub(o.pos, earth.pos))) + ' from Earth';
 const readoutEl = $('#readout'); let roLast = '';
-function setReadout(t){
-  // the numbers wrap inside the panel, the same width as the fact above them
-  if (t === roLast) return; roLast = t;
-  readoutEl.textContent = t;
+// the numbers under the fact, a row a line (0.28.3, owner: Earth's six live lines in one colour were "way too cluttered, long, and hard to
+// read"). The words before a line's colon and the dots between its parts are grey; lines that say where an image or a map comes from go
+// last, smaller (RO_CREDIT). More than three lines show the first two and a button for the rest, remembered (SET.roAll). The rows are
+// separated by line breaks in the text, so the element's textContent still reads line by line.
+const RO_CREDIT = /^(ground|clouds|images?|photos?|maps?|terrain|heights)\b[^:]{0,30}:/i;
+const RO_SHORT = 2;
+function roRow(line, cls){
+  const d = document.createElement('div'); d.className = cls ? 'ro-l ' + cls : 'ro-l';
+  const m = /^([a-z][^:·]{0,38}): (.+)$/.exec(line);
+  if (m){ const k = document.createElement('span'); k.className = 'ro-k'; k.textContent = m[1] + ': '; d.appendChild(k); line = m[2]; }
+  line.split(' · ').forEach((part, i) => { if (i){ const s = document.createElement('span'); s.className = 'ro-s'; s.textContent = ' · '; d.appendChild(s); } d.appendChild(document.createTextNode(part)); });
+  return d;
 }
+function setReadout(t){
+  if (t === roLast) return; roLast = t;
+  const all = String(t || '').split('\n').filter(s => s.trim()), main = all.filter(s => !RO_CREDIT.test(s)), cred = all.filter(s => RO_CREDIT.test(s));
+  const fold = all.length > RO_SHORT + 1, open = !fold || SET.roAll, rows = open ? [...main.map(s => [s, '']), ...cred.map(s => [s, 'ro-c'])] : main.slice(0, RO_SHORT).map(s => [s, '']);
+  readoutEl.textContent = '';
+  rows.forEach(([s, c], i) => { if (i) readoutEl.appendChild(document.createTextNode('\n')); readoutEl.appendChild(roRow(s, c)); });
+  if (fold){ const b = document.createElement('button'); b.type = 'button'; b.className = 'ro-more'; b.setAttribute('aria-expanded', String(!!SET.roAll));
+    b.textContent = SET.roAll ? 'less ▴' : `${all.length - RO_SHORT} more ▾`; readoutEl.appendChild(document.createTextNode('\n')); readoutEl.appendChild(b); }
+}
+readoutEl.addEventListener('click', e => { if (!e.target.closest('.ro-more')) return; SET.roAll = !SET.roAll; saveSet(); const t = roLast; roLast = null; setReadout(t); });
 // the Halo tour shows the place, not the ship (owner, 0.9.9): while it plays and the camera is with the ship (riding along, or locked on it
 // after a drag), the panel shows the place the ship visits or is going to (htPlace, 09t-halotour.js), with a blue line over the name saying
 // what the ship is doing. Not during a flight to somewhere else (the tour ends when it lands).
@@ -1603,7 +1621,7 @@ function startTour(id){
   tour.on = true; tourGo(TOUR[0]); updateModeUI();
   toast(tourName() + ' · ' + TOUR.length + ' stops');
 }
-const capEl = $('#caption'), capText = $('#capText'), capBtn = $('#capBtn');
+const capEl = $('#caption'), capText = $('#capText'), capBtn = $('#capBtn'), capX = $('#capX');
 let capFull = '', capShown = 0, capT = 0;
 // (while the interface has faded away the caption fades too, a few seconds after it is written out, and comes back only for a new one:
 // owner, 0.10.1. A caption is new when more than its numbers change, so a launch clock ticking on does not bring it back)
@@ -1621,14 +1639,26 @@ function setCaption(txt, btn){
   const key = txt.replace(/[0-9]+/g, '#'); if (key !== capKey){ const had = new Set(capKey.split(/\s+/)); if (!txt || key.split(/\s+/).some(w => !had.has(w))){ capDoneAt = 0; capEl.classList.remove('rest'); } capKey = key; }
   capEl.hidden = !txt; capBtn.hidden = !btn; if (btn) capBtn.textContent = btn;
 }
+// launch notices (a launch or replay you are not watching, LCAP.run; owner, 2026-11-11: "very distracting and annoying that you cant get rid
+// of it or it doesnt go away on its own"): each is shown NOTE_T, then fades over 1.2 s and is not shown again; its x hides them all for the
+// rest of the visit. Watching a launch, its caption stays (it says what is happening)
+const NOTE = { run:null, at:0, gone:new WeakSet(), off:false }, NOTE_T = 10000;
+function noteOk(r, now){
+  if (NOTE.off || NOTE.gone.has(r)) return false;
+  if (NOTE.run !== r){ NOTE.run = r; NOTE.at = now; }
+  if (now - NOTE.at > NOTE_T + 1200){ NOTE.gone.add(r); return false; }
+  return true;
+}
 function updateCaption(dt){
-  let txt = '', btn = '';
+  let txt = '', btn = '', note = false;
+  const nowC = performance.now(), nr = !LCAM.on && LCAP.txt ? LCAP.run : null, nOk = nr ? noteOk(nr, nowC) : true;
   if (cmp) { txt = cmpText(); btn = 'end compare'; }
-  else if (LCAP.live){ txt = LCAP.txt; btn = LCAP.btn; }   // (a real launch happening now, even on a tour)
+  else if (LCAP.live && nOk){ txt = LCAP.txt; btn = LCAP.btn; note = !!nr; }   // (a real launch happening now, even on a tour)
   else if (tour.on && tour.phase !== 'fly' && TOUR_CAP[tour.obj]) txt = TOUR_CAP[tour.obj];
   else if (SHOWCAP.txt) txt = SHOWCAP.txt;
-  else if (LCAP.txt){ txt = LCAP.txt; btn = LCAP.btn; }
+  else if (LCAP.txt && nOk){ txt = LCAP.txt; btn = LCAP.btn; note = !!nr; }
   setCaption(txt, btn);
+  capX.hidden = !note; capEl.classList.toggle('going', note && nowC - NOTE.at > NOTE_T);
   if (capFull && capShown < capFull.length){
     capT += dt*(reduceMotion ? 1e4 : 55); const k = Math.min(capFull.length, Math.floor(capT));
     if (k !== capShown){ capShown = k; capText.textContent = capFull.slice(0, k); if (k >= capFull.length) capEl.classList.add('done'); }
@@ -1639,6 +1669,7 @@ function updateCaption(dt){
   capEl.classList.toggle('rest', !!capDoneAt && now - capDoneAt > CAP_REST && document.body.classList.contains('ui-idle'));
 }
 capBtn.addEventListener('click', () => { if (cmp) endCompare(true); else if (LCAP.go) LCAP.go(); });
+capX.addEventListener('click', () => { NOTE.off = true; capX.hidden = true; capEl.hidden = true; });
 
 // ---------------------------------------------------------------- size compare: put a second object beside this one, at true scale
 let cmp = null, cmpPick = false, cmpA = -1;

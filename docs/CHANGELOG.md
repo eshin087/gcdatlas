@@ -10,6 +10,14 @@ All notable changes, newest first. Dates are UTC.
 - The earthquakes and fires are off by default (settings, show: quakes & fires). Settings saved before carried the old default on, so they are turned off once for everyone; a click on the switch since (`SET.quakesPick`) counts as a choice and is kept.
 - Quakes are glowing spots, no longer rings: one-pixel rings broke into dotted circles of `:` and `'` over the ocean. Only magnitude 3.5 and over (about half the week's list), each spot bigger and brighter with magnitude (`QSPOT` in e1q-earth-quakes.js). The newest of those still pings, the quake in view keeps its ring, and the replay of the week still shows every quake. The fires are unchanged.
 
+## 0.28.4 · 2026-11-12
+
+**Calmer** (owner, 2026-11-11: Earth's yellow text "way too cluttered, long, and hard to read"; the live launch banner "very distracting and annoying that you cant get rid of it or it doesnt go away on its own"; today's discovery the same: "i dont want this site to be like an ad fest". Numbered 0.28.4 because another session's work on the earthquakes is 0.28.3)
+- The readout is a row a line (`setReadout`, `roRow` in 09-render.js): the words before a line's colon and the dots between its parts in grey; lines crediting an image or a map (`RO_CREDIT`: ground, clouds, images, photos, maps, terrain, heights) last and smaller. More than three lines show the first two and a button ("5 more", "less"), remembered in the settings (`SET.roAll`). The rows are separated by line breaks in the text, so the element's textContent still reads line by line. Of the 333 readouts the page writes without the live data, all but the Roadster's (four lines, which folds) have three or fewer and look as before, less the grey; Earth's live data folds.
+- Earth's live lines are shorter (e1-earth-live.js): the satellites on a line of their own, the colours' key on another, the next launch without "Unknown Payload" and with its site to the first comma.
+- Launch notices (a launch or replay you are not watching, `LCAP.run`) show for 10 s, then fade over 1.2 s and do not come back for that flight (`NOTE` in 09-render.js); their x (`#capX`) hides them for the rest of the visit. Watching a launch, its caption stays as before.
+- Today's discovery fades after 15 s unless the pointer rests on it (`DAILY_T` in 09f-features.js), and counts as seen for the day as soon as it shows, so it never comes back that day.
+
 ## 0.28.2 · 2026-11-11
 
 **Easier to read** (the readability part of the review of 2026-11-09; owner's pick C from four stills, and a fix the owner asked for on a phone)

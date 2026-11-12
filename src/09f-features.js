@@ -96,10 +96,18 @@ function dailyStreak(){
   for (;;){ if (!log.has(dayKey(d))) break; n++; d.setUTCDate(d.getUTCDate() - 1); }
   return n;
 }
+// (0.28.4, owner: "i dont want this site to be like an ad fest and things to click/hide nonstop": the card fades on its own after DAILY_T,
+// unless the pointer rests on it, and counts as seen for the day either way, so it never comes back that day)
+const DAILY_T = 15000;
 function showDaily(){
-  const o = DAILY.o; $('#dailyName').textContent = o.name; $('#dailyType').textContent = o.type;
+  const o = DAILY.o, el = $('#daily'); $('#dailyName').textContent = o.name; $('#dailyType').textContent = o.type;
   const n = dailyStreak(); $('#dailyStreak').textContent = n > 1 ? `${n}-day streak` : '';
-  $('#daily').hidden = false;
+  el.classList.remove('going'); el.hidden = false; store.set('dailySeen', DAILY.key);
+  const t0 = performance.now(), step = () => { if (el.hidden) return;
+    if (el.matches(':hover')) return void setTimeout(step, 1000);
+    if (performance.now() - t0 < DAILY_T) return void setTimeout(step, 1000);
+    el.classList.add('going'); setTimeout(() => { el.hidden = true; el.classList.remove('going'); }, 1300); };
+  setTimeout(step, 1000);
 }
 $('#dailyGo').addEventListener('click', () => {
   const log = store.get('dailyLog', []); if (!log.includes(DAILY.key)){ log.push(DAILY.key); store.set('dailyLog', log.slice(-400)); }
