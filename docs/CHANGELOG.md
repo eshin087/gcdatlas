@@ -4,6 +4,13 @@ All notable changes, newest first. Dates are UTC.
 
 ## Unreleased
 
+## 0.28.2 · 2026-11-11
+
+**Easier to read** (the readability part of the review of 2026-11-09; owner's pick C from four stills, and a fix the owner asked for on a phone)
+- Big screens, 1440 x 860 or more, show every text 10% bigger than the text size setting says (`bigText`, `applyTextSize` in 09-render.js; `--ts` and `--tsm` are multiplied, the setting itself is unchanged; class `txt-big` on the root). At 1440 x 900, 54 of 58 texts were under 12 px; now 11. Not below 1440: at 1280 px the desk's top bar would wrap. The search box is 212 px wide there (190) and its hint says "search space or Earth". Checked at 1440 x 860, 1440 x 900, 1920 x 1080 and 2560 x 1440: the top bar keeps two rows, help fits without scrolling, the atlas has nothing to scroll sideways.
+- "travel", "ruler" and the search key (`/`) are drawn in the secondary grey (`--dim`, about 6:1 against the background) instead of the faint one (about 2.7:1).
+- Phones: when the interface fades, what stays of the info card (the stop, the name, the angle line) slides down to sit 14 px above the bottom of the screen, where the faded dock was (`idleSlide` in 09h-ui.js, `body.slid`, `--idle-y`). It hung about 100 px up, over the hidden buttons. The angle arrows fold away while faded, so the angle line starts at the edge, and the tour's name loses its frame. Woken by a tap, the card stays down until the finger is off and 0.4 s more, so a faded button in the card still works on the first tap. tests/mobile.mjs checks the place and that the dock's buttons still take a tap at their middles.
+
 ## 0.28.1 · 2026-11-11
 
 **Corrections to 0.28.0's texts** (a fact-check against the sources, as the Messier packs had before they were merged; this one came after)

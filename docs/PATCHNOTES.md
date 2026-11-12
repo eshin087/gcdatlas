@@ -5,6 +5,11 @@
      numbers with units. The newest version comes first and opens by itself; its number must match package.json (tests/smoke.mjs checks it).
      Every detail stays in docs/CHANGELOG.md, which the panel links to. -->
 
+## 0.28.2 · 11 Nov 2026 · Easier to read
+- On a big screen (1440 px wide or more) all the text is 10% bigger.
+- "travel", "ruler" and the search key are no longer faint.
+- On a phone, when the buttons fade, the name and the angle now sit at the bottom of the screen instead of hanging in the sky.
+
 ## 0.28.1 · 11 Nov 2026 · Corrections
 - Five corrections to the new southern clusters' texts, after checking them against their sources. NGC 6752 is the fourth-brightest globular cluster, not the third.
 
