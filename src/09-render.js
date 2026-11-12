@@ -924,8 +924,14 @@ function setOpt(key, v, quiet){
 const cycle = (list, cur) => list[(list.indexOf(cur) + 1) % list.length];
 let toggleSettings = on => { settingsEl.hidden = !on; $('#btnSettings').setAttribute('aria-expanded', String(on)); if (on) syncSettingsUI(); };
 document.querySelectorAll('.seg[data-key] button').forEach(b => b.addEventListener('click', () => setOpt(b.parentElement.dataset.key, b.dataset.v)));
-function applyTextSize(){ const r = document.documentElement.style; r.setProperty('--ts', String(SET.textSize)); r.setProperty('--tsm', String(+(SET.textSize*SET.menuSize).toFixed(3))); roLast = ''; if (!atlasEl.hidden){ fitAtlas(); fitSeenBar(); } }
+// (big screens, 1440 x 860 or more, read every text 10% bigger than the settings say: owner's pick, 2026-11-11. At 1440 x 900 54 of 58 texts
+// were under 12 px. Not below that: at 1280 px the desk's top bar would wrap)
+const bigText = () => !isCompact() && innerWidth >= 1440 && innerHeight >= 860;
+let bigTextOn = null;
+function applyTextSize(){ const r = document.documentElement.style, k = (bigTextOn = bigText()) ? 1.1 : 1; document.documentElement.classList.toggle('txt-big', bigTextOn);
+  r.setProperty('--ts', String(+(SET.textSize*k).toFixed(3))); r.setProperty('--tsm', String(+(SET.textSize*SET.menuSize*k).toFixed(3))); roLast = ''; if (!atlasEl.hidden){ fitAtlas(); fitSeenBar(); } }
 applyTextSize();
+addEventListener('resize', () => { if (bigText() !== bigTextOn){ applyTextSize(); requestAnimationFrame(() => typeof fitTopSearch === 'function' && fitTopSearch()); } });
 $('#textSize').addEventListener('input', e => { setOpt('textSize', e.target.value, true); });
 $('#menuSize').addEventListener('input', e => { setOpt('menuSize', e.target.value, true); });
 settingsEl.querySelectorAll('.tog button').forEach(b => b.addEventListener('click', () => setOpt(b.dataset.key, !SET[b.dataset.key])));

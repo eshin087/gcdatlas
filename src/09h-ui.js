@@ -119,6 +119,34 @@ function updateIdle(){
   if (IDLE.on){ if (idleBlocked()) wakeUI(); return; }
   if (!idleBlocked() && now - IDLE.at > idleAfter() && now > IDLE.readUntil){ IDLE.on = true; bodyCL.add('ui-idle'); }
 }
+// phones: while idle, what stays of the card (the stop, the name, the angle line) slides down to sit at the bottom of the screen, where the
+// faded dock was (owner, 2026-11-11: left where the card stood, it hung in the sky "randomly floating"). How far is measured four times a
+// second, from the last line still shown (a long name wraps, the angle line comes and goes) to the screen's bottom less a margin; the
+// lines shown and their transitions are CSS (00-head.html, phone block)
+// Woken by a tap, the card stays down until the finger is off and 0.4 s more: sliding back under the finger, the tap's click went to nothing,
+// and a faded button must work on the first tap (09-render.js's goNext)
+const SLIDE = { y:0, at:0, off:0, down:false };
+addEventListener('pointerdown', () => { SLIDE.down = true; }, { capture:true, passive:true });
+for (const ev of ['pointerup', 'pointercancel']) addEventListener(ev, () => { SLIDE.down = false; SLIDE.off = performance.now() + 400; }, { capture:true, passive:true });
+function idleSlide(now){
+  if (!(IDLE.on && isCompact() && !bodyCL.contains('info-hidden'))){
+    if (SLIDE.y && !SLIDE.down && now >= SLIDE.off){ SLIDE.y = 0; bodyCL.remove('slid'); infoEl.style.removeProperty('--idle-y'); }
+    return;
+  }
+  if (now - SLIDE.at < 250) return;
+  SLIDE.at = now;
+  const ty = new DOMMatrixReadOnly(getComputedStyle(infoEl).transform).m42 || 0;
+  let bot = -1;
+  for (const e of infoEl.querySelectorAll('.stop, .htline, .title, .progress')){
+    if (!e.offsetHeight || e.hidden || e.matches('.progress.hintish, .progress.tip')) continue;
+    bot = Math.max(bot, e.getBoundingClientRect().bottom - ty);
+  }
+  if (bot < 0) return;
+  const safe = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--safe-b')) || 0;
+  const y = Math.max(0, Math.round(innerHeight - safe - 14 - bot));
+  if (Math.abs(y - SLIDE.y) > 1){ SLIDE.y = y; infoEl.style.setProperty('--idle-y', y + 'px'); }
+  bodyCL.toggle('slid', y > 0);
+}
 
 // ---------------------------------------------------------------- phones: frame the object in the space the interface leaves free, not behind the card or an open panel
 let shiftT0 = 0, shiftTx = 0, shiftTy = 0;
@@ -168,7 +196,7 @@ function updateShift(dt){
 
 { const prev = updateHUD; updateHUD = function(dt){
   prev(dt);
-  updateIdle(); updateLadChip(); updateShift(dt);
+  updateIdle(); idleSlide(performance.now()); updateLadChip(); updateShift(dt);
   const n = OBJ[infoObj].name; if (pillName.textContent !== n) pillName.textContent = n;
 }; }
 applyInfoState();

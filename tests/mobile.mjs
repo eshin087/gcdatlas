@@ -136,6 +136,13 @@ await page.evaluate(() => { __cosmos.startTour('grand'); });
 await fade('quick'); await page.waitForTimeout(500); await wake();
 await page.waitForFunction(() => document.body.classList.contains('ui-idle'), null, { timeout:15000 }).catch(() => fail('the interface did not fade on a tour'));
 await page.waitForTimeout(1300); await shot('6-tour-idle');
+// (0.28.2, owner: faded, the stop, the name and the angle line hung in the sky where the card stood, "randomly floating": they sit at the
+// bottom now, where the dock was, and the dock's faded buttons still take a tap at their middles)
+{ const z = await page.evaluate(() => { let bot = 0; for (const e of document.querySelectorAll('.info .stop, .info .title, .info .progress')){ if (!e.offsetHeight || e.matches('.hintish, .tip')) continue; bot = Math.max(bot, e.getBoundingClientRect().bottom); }
+    const blocked = [...document.querySelectorAll('.controls .btn')].filter(b => b.offsetParent).map(b => { const r = b.getBoundingClientRect(), t = document.elementFromPoint(r.left + r.width/2, r.top + r.height/2); return b.contains(t) ? null : b.textContent.trim(); }).filter(Boolean);
+    return { gap:Math.round(innerHeight - bot), blocked }; });
+  if (!(z.gap >= 6 && z.gap <= 30)) fail(`faded on a tour, the card's last line is ${z.gap} px above the bottom (6 to 30 wanted)`);
+  if (z.blocked.length) fail(`faded, the slid card covers the middle of the dock's ${z.blocked.join(', ')}`); }
 await page.touchscreen.tap(195, 400); await page.waitForTimeout(500);
 if (await has('ui-idle')) fail('a tap did not bring the interface back');
 if (!(await page.evaluate(() => __cosmos.tour.on))) fail('the wake-up tap stopped the tour');
