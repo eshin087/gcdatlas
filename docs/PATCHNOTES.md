@@ -5,6 +5,11 @@
      numbers with units. The newest version comes first and opens by itself; its number must match package.json (tests/smoke.mjs checks it).
      Every detail stays in docs/CHANGELOG.md, which the panel links to. -->
 
+## 0.28.4 · 12 Nov 2026 · Calmer
+- A place's numbers are easier to read: one line each, labels in grey. Long lists, like Earth's live data, show two lines and a "more" button, which remembers your choice.
+- A rocket launch you are not watching is named for 10 seconds, then the notice fades. Its x hides launch notices for the rest of your visit.
+- Today's discovery fades on its own after 15 seconds and does not come back that day.
+
 ## 0.28.2 · 11 Nov 2026 · Easier to read
 - On a big screen (1440 px wide or more) all the text is 10% bigger.
 - "travel", "ruler" and the search key are no longer faint.
