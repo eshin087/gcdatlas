@@ -48,6 +48,10 @@ try {
   // replay, the search, the switch; then without /api, quiet
   { API = { quakes:cannedQuakes(), fires:cannedFires() };
     const { browser, page, errors:pe } = await openPage({ url:URL0, now:NOW });
+    // (off by default since 0.28.3: nothing is asked for until the switch is on)
+    const off = await page.evaluate(() => { const c = window.__cosmos; c.view('earth', 0); c.simulate(3); return { on:c.qk.on(), q:c.qk.dbg().q.state }; });
+    if (off.on || off.q !== 0) errors.push('the earthquakes and fires are not off by default: ' + JSON.stringify(off));
+    await page.evaluate(() => window.__cosmos.setOpt('quakes', true, true));
     const t = await until(page, () => { const d = window.__cosmos.qk.dbg(); return d.q.state === 2 && d.f.state === 2; }, null, 60, 'the earthquakes and fires answers');
     const d = await page.evaluate(() => window.__cosmos.qk.dbg());
     if (d.q.n !== 43 || d.q.n5 !== 3 || !d.q.big || d.q.big[0] !== 7.2 || d.q.newest !== TS - 600) errors.push('the earthquakes: ' + JSON.stringify(d.q));
@@ -91,6 +95,7 @@ try {
   // ---- without /api (as on the artifact page, or when an upstream is down): quiet; a shared link to a quake still opens as an earthquake
   { API = null;
     const { browser, page, errors:pe } = await openPage({ url:URL0 + '#o=earth-place-0&g=' + encodeURIComponent('38.1,142.9,r,1300,,earthquake,M 7.2 earthquake'), now:NOW });
+    await page.evaluate(() => window.__cosmos.setOpt('quakes', true, true));
     await until(page, () => { const d = window.__cosmos.qk.dbg(); return d.q.state === 3 && d.f.state === 3; }, null, 60, 'the earthquakes and fires answers refused');
     const q = await page.evaluate(() => { const c = window.__cosmos, s = c.BYKEY['earth-place-0'], link = { name:s.name, type:s.type, fact:s.fact, ro:s.readout() };
       c.view('earth', 0); return { ro:c.BYKEY.earth.readout(), row:c.qk.dbg().row, link }; });

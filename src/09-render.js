@@ -907,7 +907,7 @@ function setOpt(key, v, quiet){
     case 'labels': SET.labels = labelsOn = !!v; break;
     case 'twinkle': SET.twinkle = !!v; break;
     case 'launchReal': SET.launchReal = !!v; break;
-    case 'quakes': SET.quakes = !!v; if (!quiet) toast(v ? "earthquakes and fires on · this week's quakes (USGS) and the last day's fires (NASA FIRMS) on the real Earth" : 'earthquakes and fires off'); break;
+    case 'quakes': SET.quakes = !!v; SET.quakesPick = true; if (!quiet) toast(v ? "earthquakes and fires on · this week's quakes (USGS) and the last day's fires (NASA FIRMS) on the real Earth" : 'earthquakes and fires off'); break;
     case 'haloMark': SET.haloMark = !!v; if (!quiet) toast(v ? 'Halo indicator on · the ship is marked in blue (ride along from its card)' : 'Halo indicator off'); updateModeUI(); break;
     case 'sound': SET.sound = !!v; music.set(SET.sound); if (!quiet) toast(v ? 'music on' : 'music off'); break;
     case 'volume': SET.volume = clamp(+v, 0, 1); music.volume(); break;

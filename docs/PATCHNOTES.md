@@ -5,6 +5,10 @@
      numbers with units. The newest version comes first and opens by itself; its number must match package.json (tests/smoke.mjs checks it).
      Every detail stays in docs/CHANGELOG.md, which the panel links to. -->
 
+## 0.28.5 · 12 Nov 2026 · Calmer earthquakes
+- Earthquakes and fires on Earth are off unless you turn them on (settings, show).
+- Turned on, each quake is a glowing spot instead of a ring, only from magnitude 3.5, bigger for bigger quakes.
+
 ## 0.28.2 · 11 Nov 2026 · Easier to read
 - On a big screen (1440 px wide or more) all the text is 10% bigger.
 - "travel", "ruler" and the search key are no longer faint.

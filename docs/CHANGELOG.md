@@ -4,6 +4,12 @@ All notable changes, newest first. Dates are UTC.
 
 ## Unreleased
 
+## 0.28.5 · 2026-11-12
+
+**Calmer earthquakes, off by default** (owner: the earthquake circles looked "very meh" and made Earth "very noisy and messy"; glowing spots picked from three looks drawn with the week's real quakes)
+- The earthquakes and fires are off by default (settings, show: quakes & fires). Settings saved before carried the old default on, so they are turned off once for everyone; a click on the switch since (`SET.quakesPick`) counts as a choice and is kept.
+- Quakes are glowing spots, no longer rings: one-pixel rings broke into dotted circles of `:` and `'` over the ocean. Only magnitude 3.5 and over (about half the week's list), each spot bigger and brighter with magnitude (`QSPOT` in e1q-earth-quakes.js). The newest of those still pings, the quake in view keeps its ring, and the replay of the week still shows every quake. The fires are unchanged.
+
 ## 0.28.2 · 2026-11-11
 
 **Easier to read** (the readability part of the review of 2026-11-09; owner's pick C from four stills, and a fix the owner asked for on a phone)
